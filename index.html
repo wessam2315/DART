@@ -38,6 +38,23 @@ header{background:#0b1428;border-bottom:1px solid var(--line);padding:15px;displ
 .comment-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .comment-actions{display:flex;gap:6px;margin-top:7px}
 .comment-actions button{padding:6px 10px;font-size:11px}
+.post-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.post-bottom button{background:transparent;padding:8px 12px;color:#dce8ff}
+.post-bottom .comment-open{background:#172b49;border:1px solid #29466e;flex:1;text-align:center}
+.post-menu-wrap{position:relative}
+.post-menu{position:absolute;left:0;top:43px;z-index:8;background:#172642;border:1px solid #365078;border-radius:13px;padding:7px;width:175px;box-shadow:0 10px 30px #0009}
+.post-menu button{display:block;width:100%;text-align:right;background:transparent;padding:11px;color:white;border-radius:8px}
+.post-menu button:active{background:#29466e}
+.comment-modal{position:fixed;inset:0;z-index:1000;background:#0009;display:flex;align-items:flex-end;justify-content:center}
+.comment-sheet{width:100%;max-width:720px;height:min(78dvh,720px);background:#101a30;border:1px solid #344968;border-bottom:0;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:sheetUp .2s ease-out}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.comment-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:15px;border-bottom:1px solid var(--line);flex-shrink:0}
+.comment-sheet-head strong{font-size:17px}
+.comment-sheet-head button{background:#263653;padding:8px 12px}
+.comment-sheet-list{flex:1;overflow-y:auto;padding:12px}
+.comment-sheet-form{padding:10px 12px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;background:#0b1428;flex-shrink:0}
+.comment-sheet-form input{margin:0;min-width:0;flex:1}
+.comment-sheet-form button{white-space:nowrap;padding:12px}
 .item{padding:12px;border-bottom:1px solid var(--line);overflow:hidden}
 .chat-row{display:flex;align-items:center;gap:11px}
 .chat-row-info{flex:1;min-width:0}
@@ -264,6 +281,21 @@ nav button.active{background:#132c50;color:#48a6ff}
 </div>
 </div>
 
+<!-- نافذة التعليقات السفلية -->
+<div id="commentModal" class="comment-modal hidden" onclick="if(event.target===this)closePostComments()">
+ <div class="comment-sheet">
+  <div class="comment-sheet-head">
+   <strong id="commentModalTitle">💬 التعليقات</strong>
+   <button onclick="closePostComments()">✕</button>
+  </div>
+  <div id="commentModalList" class="comment-sheet-list">جارٍ تحميل التعليقات...</div>
+  <div class="comment-sheet-form">
+   <input id="commentInput" placeholder="اكتب تعليقك..." maxlength="1000">
+   <button id="sendCommentBtn">إرسال</button>
+  </div>
+ </div>
+</div>
+
 <script>
 const SUPABASE_URL="https://forwefmjghgcybiccdxz.supabase.co";
 const SUPABASE_KEY="sb_publishable_xsXMr3yr2yJXOgRn9ZjMtQ_sfoS0OIR";
@@ -271,6 +303,7 @@ const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const ADMIN_ID="221ecf80-7f89-4172-b61a-304369cbe870";
 let currentUser=null,currentProfile=null,activeConversation=null,activeReceiver=null;
 let activeChannel=null,alertsChannel=null,pendingPhone=null,chatCache=[];
+let activeCommentPost=null;
 
 const el=id=>document.getElementById(id);
 function msg(id,text){el(id).textContent=text}
@@ -305,6 +338,7 @@ function openTab(name,button){
  if(name==="admin"){loadAdminRequests();loadReports();loadAdminSupport()}
 }
 function showLogin(){
+ closePostComments();
  el("auth").classList.remove("hidden");el("home").classList.add("hidden");
  el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
  currentUser=null;currentProfile=null;activeConversation=null;activeReceiver=null;
@@ -439,7 +473,7 @@ el("publishBtn").onclick=async()=>{
  }catch(e){msg("postMessage","تعذر النشر: "+e.message)}finally{b.disabled=false}
 };
 
-/* المنشورات والتعديل والحذف والتعليقات والبلاغات */
+/* المنشورات: التعليقات تفتح عند الطلب */
 async function loadPosts(){
  const list=el("postsList");list.textContent="جارٍ تحميل المنشورات...";
  const {data,error}=await client.from("posts").select("*").order("created_at",{ascending:false});
@@ -449,7 +483,7 @@ async function loadPosts(){
  const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
  const names={};(profiles||[]).forEach(p=>names[p.id]=p);
  for(const post of data){
-  const card=document.createElement("article");card.className="post";
+  const card=document.createElement("article");card.className="post";card.id="post-"+post.id;
   const author=document.createElement("strong"),p=names[post.user_id];
   addVerifiedName(author,p?(p.full_name||"مستخدم")+" @"+(p.username||""):"مستخدم DERT",p?.is_verified===true);card.appendChild(author);
   if(post.location_name){const loc=document.createElement("div");loc.className="post-location";loc.textContent="📍 "+post.location_name;card.appendChild(loc)}
@@ -466,40 +500,89 @@ async function loadPosts(){
   }
   const date=document.createElement("div");date.className="post-date";date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");card.appendChild(date);
 
-  const actions=document.createElement("div");actions.className="post-actions";
-  if(post.user_id===currentUser.id){
-   const edit=document.createElement("button");edit.className="gray";edit.textContent="✏️ تعديل";
-   edit.onclick=()=>editPost(post);actions.appendChild(edit);
-   const del=document.createElement("button");del.className="red";del.textContent="🗑️ حذف";
-   del.onclick=()=>deletePost(post.id,del);actions.appendChild(del);
-  }
-  const report=document.createElement("button");report.className="gray";report.textContent="🚩 إبلاغ";
-  report.onclick=()=>reportContent("post",post.id);actions.appendChild(report);
-  card.appendChild(actions);
+  const bottom=document.createElement("div");bottom.className="post-bottom";
+  const commentBtn=document.createElement("button");commentBtn.className="comment-open";commentBtn.textContent="💬 التعليقات";
+  const count=document.createElement("span");count.className="small";count.textContent="...";
+  commentBtn.appendChild(count);
+  commentBtn.onclick=()=>openPostComments(post);
+  bottom.appendChild(commentBtn);
 
-  const commentBox=document.createElement("div");commentBox.className="comment-box";
-  const heading=document.createElement("strong");heading.textContent="💬 التعليقات";commentBox.appendChild(heading);
-  const comments=document.createElement("div");comments.textContent="جارٍ تحميل التعليقات...";commentBox.appendChild(comments);
-  const form=document.createElement("div");const input=document.createElement("input");input.placeholder="اكتب تعليقك...";
-  const send=document.createElement("button");send.className="full";send.textContent="إضافة تعليق";
-  send.onclick=async()=>{
-   const text=input.value.trim();if(!text)return;
-   send.disabled=true;
-   try{
-    const {error}=await client.from("post_comments").insert({post_id:post.id,user_id:currentUser.id,content:text});
-    if(error)throw error;input.value="";await loadComments(post,comments);
-   }catch(e){alert("تعذر إضافة التعليق: "+e.message)}finally{send.disabled=false}
+  const menuWrap=document.createElement("div");menuWrap.className="post-menu-wrap";
+  const menuBtn=document.createElement("button");menuBtn.textContent="⋮";menuBtn.title="خيارات المنشور";
+  const menu=document.createElement("div");menu.className="post-menu hidden";
+
+  function addMenuItem(label,handler,cls=""){
+   const b=document.createElement("button");b.textContent=label;if(cls)b.className=cls;
+   b.onclick=()=>{menu.classList.add("hidden");handler()};menu.appendChild(b);
+  }
+
+  if(post.user_id===currentUser.id){
+   addMenuItem("✏️ تعديل المنشور",()=>editPost(post));
+   addMenuItem("🗑️ حذف المنشور",()=>deletePost(post.id,menuBtn),"red");
+  }
+  addMenuItem("📤 مشاركة المنشور",()=>sharePost(post.id));
+  addMenuItem("🔗 نسخ رابط المنشور",()=>copyPostLink(post.id));
+  addMenuItem("🚩 إبلاغ عن المنشور",()=>reportContent("post",post.id));
+  menuBtn.onclick=(e)=>{
+   e.stopPropagation();
+   document.querySelectorAll(".post-menu").forEach(m=>{if(m!==menu)m.classList.add("hidden")});
+   menu.classList.toggle("hidden");
   };
-  form.append(input,send);commentBox.appendChild(form);card.appendChild(commentBox);
+  menu.onclick=e=>e.stopPropagation();
+  menuWrap.append(menuBtn,menu);bottom.appendChild(menuWrap);
+  card.appendChild(bottom);
   list.appendChild(card);
-  await loadComments(post,comments);
+  updatePostCommentCount(post.id,count);
  }
 }
+document.addEventListener("click",()=>document.querySelectorAll(".post-menu").forEach(m=>m.classList.add("hidden")));
+
+async function updatePostCommentCount(postId,element){
+ const {count,error}=await client.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",postId);
+ if(error){element.textContent="";return}
+ element.textContent=" ("+(count||0)+")";
+}
+
+async function openPostComments(post){
+ if(!currentUser)return;
+ activeCommentPost=post;
+ el("commentModal").classList.remove("hidden");
+ el("commentModalTitle").textContent="💬 التعليقات";
+ el("commentModalList").textContent="جارٍ تحميل التعليقات...";
+ el("commentInput").value="";
+ document.body.style.overflow="hidden";
+ await loadComments(post,el("commentModalList"));
+}
+function closePostComments(){
+ el("commentModal").classList.add("hidden");
+ document.body.style.overflow="";
+ activeCommentPost=null;
+}
+el("sendCommentBtn").onclick=async()=>{
+ if(!activeCommentPost||!currentUser)return;
+ const input=el("commentInput"),text=input.value.trim();
+ if(!text){alert("اكتب تعليقك أولاً");return}
+ const b=el("sendCommentBtn");b.disabled=true;
+ try{
+  const {error}=await client.from("post_comments").insert({post_id:activeCommentPost.id,user_id:currentUser.id,content:text});
+  if(error)throw error;
+  input.value="";
+  await loadComments(activeCommentPost,el("commentModalList"));
+  const countElement=document.querySelector("#post-"+activeCommentPost.id+" .comment-open span");
+  if(countElement)await updatePostCommentCount(activeCommentPost.id,countElement);
+  el("commentModalList").scrollTop=el("commentModalList").scrollHeight;
+ }catch(e){alert("تعذر إضافة التعليق: "+e.message)}
+ finally{b.disabled=false}
+};
+el("commentInput").addEventListener("keydown",e=>{
+ if(e.key==="Enter"){e.preventDefault();el("sendCommentBtn").click()}
+});
+
 async function loadComments(post,container){
  const {data,error}=await client.from("post_comments").select("*").eq("post_id",post.id).order("created_at",{ascending:true});
  container.replaceChildren();
  if(error){container.textContent="تعذر تحميل التعليقات: "+error.message;return}
- if(!data?.length){container.textContent="لا توجد تعليقات بعد";return}
+ if(!data?.length){container.textContent="لا توجد تعليقات بعد. كن أول من يعلّق ❤️";return}
  const ids=[...new Set(data.map(c=>c.user_id))];
  const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
@@ -522,12 +605,44 @@ async function loadComments(post,container){
     const {error}=await client.from("post_comments").delete().eq("id",c.id);
     if(error){alert("تعذر الحذف: "+error.message);del.disabled=false;return}
     await loadComments(post,container);
+    const countElement=document.querySelector("#post-"+post.id+" .comment-open span");
+    if(countElement)await updatePostCommentCount(post.id,countElement);
    };tools.appendChild(del);
   }
   row.appendChild(tools);container.appendChild(row);
  });
 }
+
+async function sharePost(postId){
+ const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(postId);
+ try{
+  if(navigator.share){
+   await navigator.share({title:"منشور على DERT 🌍",text:"شاهد هذا المنشور على DERT",url});
+  }else{
+   await copyPostLink(postId);
+  }
+ }catch(e){
+  if(e.name!=="AbortError")alert("تعذرت المشاركة. يمكنك نسخ الرابط بدلاً من ذلك.");
+ }
+}
+async function copyPostLink(postId){
+ const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(postId);
+ try{
+  if(navigator.clipboard&&window.isSecureContext){
+   await navigator.clipboard.writeText(url);
+  }else{
+   const temp=document.createElement("textarea");temp.value=url;document.body.appendChild(temp);temp.select();
+   const ok=document.execCommand("copy");temp.remove();
+   if(!ok)throw new Error("copy failed");
+  }
+  alert("تم نسخ رابط المنشور");
+ }catch(e){
+  prompt("انسخ رابط المنشور:",url);
+ }
+}
+
 async function editPost(post){
+ if(post.user_id!==currentUser.id){alert("لا يمكنك تعديل منشور شخص آخر");return}
  const content=prompt("عدّل نص المنشور:",post.content||"");
  if(content===null)return;
  const locationName=prompt("عدّل الموقع (اتركه فارغاً إذا لا تريد موقعاً):",post.location_name||"");

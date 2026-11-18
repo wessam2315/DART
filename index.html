@@ -8,102 +8,117 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f1f4f9;color:#172033;font-family:Arial,sans-serif}
+:root{--bg:#070d1b;--panel:#101a30;--panel2:#15223e;--blue:#1685ff;--purple:#873cff;--muted:#9baaca;--line:#263653}
+body{margin:0;background:var(--bg);color:#f5f7ff;font-family:Arial,sans-serif}
 .hidden{display:none!important}
-header{background:#10172a;color:white;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;font-size:23px;font-weight:bold}
-.container{max-width:720px;margin:auto;padding:12px}
-.card,.post{background:white;border-radius:16px;padding:15px;margin:12px 0;box-shadow:0 3px 12px #0001}
-input,textarea{width:100%;padding:12px;margin:6px 0;border:1px solid #ddd;border-radius:10px;font-size:16px}
-textarea{min-height:75px}
-button,.choose{border:0;background:#175fe5;color:white;padding:12px 15px;border-radius:10px;margin:5px 2px;font-size:15px;cursor:pointer}
+button{border:0;border-radius:12px;padding:12px 15px;background:var(--blue);color:white;font-size:15px;cursor:pointer}
 button:disabled{opacity:.5}
-.full{width:100%}.gray{background:#475569}.red{background:#dc2626}
-.small{font-size:12px;color:#64748b}
+input,textarea{width:100%;padding:13px;margin:6px 0;border:1px solid var(--line);border-radius:12px;background:#0b1428;color:white;font-size:16px;outline:none}
+input:focus,textarea:focus{border-color:var(--blue)}
+input::placeholder,textarea::placeholder{color:#8493b4}
+textarea{min-height:80px;resize:vertical}
+.full{width:100%}.gray{background:#273653}.red{background:#bd3150}
+.small{font-size:12px;color:var(--muted)}
+.card,.post{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0}
+header{background:#0b1428;border-bottom:1px solid var(--line);padding:15px 17px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.header-brand{font-size:24px;font-weight:900;letter-spacing:2px;color:#fff;text-shadow:0 0 15px #287bff}
+.header-sub{font-size:12px;color:#9eb6e9}
+.container{max-width:720px;margin:auto;padding:12px;padding-bottom:95px}
 .section{display:none}.section.active{display:block}
-.avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;background:#175fe5;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;background:linear-gradient(140deg,#167eff,#793eff);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
 .profiletop,.chat-row{display:flex;align-items:center;gap:11px}
-.stats{display:flex;justify-content:space-around;text-align:center;padding:14px;border-block:1px solid #eee;margin:14px 0}
-.stats strong{display:block;font-size:20px}
-.post img,.media{width:100%;max-height:420px;object-fit:contain;border-radius:10px;margin-top:10px}
+.stats{display:flex;justify-content:space-around;text-align:center;padding:14px;border-block:1px solid var(--line);margin:14px 0}
+.stats strong{display:block;font-size:20px;color:#71b6ff}
+.post img,.media{width:100%;max-height:420px;object-fit:contain;border-radius:12px;margin-top:10px}
 .post-text{white-space:pre-wrap;line-height:1.7}
-.post-date{font-size:12px;color:#777;margin-top:10px}
-.item{padding:12px;border-bottom:1px solid #eee;overflow:hidden}
+.post-date{font-size:12px;color:var(--muted);margin-top:10px}
+.item{padding:12px;border-bottom:1px solid var(--line);overflow:hidden}
 .chat-row-info{flex:1;min-width:0}
-.chat-preview{font-size:13px;color:#64748b;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chatbox{height:390px;overflow:auto;background:#edf2f8;padding:12px;border-radius:12px;display:flex;flex-direction:column}
-.bubble{padding:10px 13px;border-radius:15px;margin:7px 0;max-width:85%;background:white;white-space:pre-wrap;box-shadow:0 2px 5px #0001;align-self:flex-start}
-.bubble.mine{background:#d7e8ff;align-self:flex-end}
+.chat-preview{font-size:13px;color:var(--muted);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chatbox{height:390px;overflow:auto;background:#091326;padding:12px;border-radius:14px;display:flex;flex-direction:column}
+.bubble{padding:10px 13px;border-radius:15px;margin:7px 0;max-width:85%;background:#1b2a46;white-space:pre-wrap;align-self:flex-start;box-shadow:0 2px 5px #0003}
+.bubble.mine{background:#174b83;align-self:flex-end}
 .bubble .media{display:block;max-width:100%;margin-top:7px}
-.message-meta{font-size:11px;color:#64748b;margin-top:7px;text-align:left}
-.read-status{color:#1684e8;font-weight:bold}
-.chat-person{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #eee}
-.chat-person strong{display:block}
+.message-meta{font-size:11px;color:#aab9d5;margin-top:7px;text-align:left}
+.read-status{color:#75c4ff;font-weight:bold}
+.chat-person{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 #avatarFile{display:none}
-.choose{display:block;text-align:center;background:#475569}
-nav{position:sticky;bottom:0;z-index:5;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:12px -12px 0;padding:9px 5px;background:white;border-radius:17px 17px 0 0;box-shadow:0 -3px 15px #0001}
-nav button{margin:0;padding:9px 2px;background:transparent;color:#64748b;border-radius:12px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:5px}
-nav button.active{background:#e9f1ff;color:#175fe5}
+.choose{display:block;text-align:center;background:#273653;color:white;padding:12px;border-radius:12px;cursor:pointer}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:9px 5px calc(9px + env(safe-area-inset-bottom));background:#0b1428ed;border-top:1px solid #263958;backdrop-filter:blur(15px);max-width:720px;margin:auto}
+nav button{margin:0;padding:7px 2px;background:transparent;color:#91a2c2;border-radius:12px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:4px}
+nav button.active{background:#132c50;color:#48a6ff}
 .nav-icon{font-size:22px}
-.chat-search{background:#edf1f6;border:0;border-radius:25px;padding:13px}
+.chat-search{background:#111f39;border:1px solid #263958;border-radius:25px;padding:13px}
 .chat-list-heading{display:flex;align-items:center;justify-content:space-between}
 .chat-list-heading h2{margin:8px 0}
-.chat-entry{display:flex;align-items:center;gap:12px;padding:13px 5px;border-bottom:1px solid #edf0f5;cursor:pointer}
+.chat-entry{display:flex;align-items:center;gap:12px;padding:13px 5px;border-bottom:1px solid #263653;cursor:pointer}
 .chat-entry .avatar{width:54px;height:54px}
 .chat-entry-info{flex:1;min-width:0}
 .chat-entry-info strong{display:block}
-.chat-time{font-size:11px;color:#8792a5}
-.chat-last{font-size:13px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:5px}
-.unread-dot{width:9px;height:9px;background:#1769e8;border-radius:50%}
-.auth-screen{min-height:100vh;background:radial-gradient(ellipse at 50% 25%,#302c68 0%,#151a35 42%,#080d19 100%);color:white;display:flex;align-items:center;justify-content:center;padding:22px}
-.auth-inner{width:100%;max-width:390px;text-align:center}
-.brand-mark{width:130px;height:130px;margin:0 auto 18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:64px;color:white;border:2px solid #7187ff;box-shadow:0 0 35px #596dff88,inset 0 0 30px #596dff55;background:radial-gradient(circle at 35% 30%,#647dff,#282d72 55%,#10172c)}
-.brand-name{font-size:48px;font-weight:900;letter-spacing:5px;text-shadow:0 0 25px #668aff}
-.auth-inner .sub{color:#aeb9dd;font-size:14px;margin:8px 0 26px}
-.auth-panel{background:#ffffff0d;border:1px solid #ffffff20;border-radius:20px;padding:17px;text-align:right;backdrop-filter:blur(12px)}
-.auth-panel input{background:#111b35;color:white;border:1px solid #52618b}
-.auth-panel input::placeholder{color:#aab4d1}
-.auth-panel button{margin:6px 0}
-.auth-primary{background:linear-gradient(100deg,#536bff,#854bdf)}
-.auth-outline{background:transparent;border:1px solid #7188ff;color:white}
+.chat-time{font-size:11px;color:#9baaca}
+.chat-last{font-size:13px;color:#9baaca;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:5px}
+.auth-screen{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 50% 35%,#182a64 0%,#11152f 42%,#050a16 100%);color:white;display:flex;align-items:center;justify-content:center;padding:22px;overflow:hidden;position:relative}
+.auth-screen:before,.auth-screen:after{content:"";position:absolute;width:300px;height:300px;border-radius:50%;filter:blur(80px);opacity:.3;pointer-events:none}
+.auth-screen:before{background:#174fff;top:-120px;right:-100px}
+.auth-screen:after{background:#8a25ff;bottom:-140px;left:-100px}
+.auth-inner{width:100%;max-width:390px;text-align:center;position:relative;z-index:1}
+.brand-mark{width:190px;height:190px;margin:0 auto 15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:105px;color:white;border:2px solid #428dff;box-shadow:0 0 35px #286bff99,inset 0 0 35px #536dff66;background:radial-gradient(circle at 35% 30%,#244d9d,#101c49 60%,#080f25);position:relative}
+.brand-mark:after{content:"";position:absolute;width:220px;height:65px;border:5px solid #8d55ff;border-left-color:#2499ff;border-right-color:#2499ff;border-radius:50%;transform:rotate(-23deg);box-shadow:0 0 18px #397dff}
+.brand-name{font-size:53px;font-weight:900;letter-spacing:7px;text-shadow:0 0 25px #668aff}
+.auth-tag{color:#9db9ef;font-size:13px;letter-spacing:4px;margin:8px 0 35px}
+.auth-actions{display:grid;gap:14px;margin-top:25px}
+.auth-actions button{padding:17px;border-radius:30px;font-size:18px;font-weight:bold;box-shadow:0 0 20px #1d62ff55}
+.auth-primary{background:linear-gradient(100deg,#126fff,#694bff)}
+.auth-purple{background:linear-gradient(100deg,#672cff,#a02bfa)}
+.auth-outline{background:transparent;border:1px solid #678dff;color:white}
+.auth-panel{background:#0d1830e8;border:1px solid #354b78;border-radius:20px;padding:17px;text-align:right;backdrop-filter:blur(12px);margin-top:20px}
 .auth-switch{display:flex;gap:6px;margin-bottom:12px}
-.auth-switch button{flex:1;background:#202b4a;color:#bdc8e8}
+.auth-switch button{flex:1;background:#202e4c;color:#bdc8e8;font-size:13px}
 .auth-switch button.active{background:#536bff;color:white}
-#otpArea{margin-top:12px}
 .auth-message{font-size:13px;color:#cbd5ff;min-height:20px}
-@media(max-width:380px){nav button{font-size:10px}.nav-icon{font-size:20px}}
+@media(max-width:380px){.brand-mark{width:155px;height:155px;font-size:85px}.brand-name{font-size:45px}nav button{font-size:10px}}
 </style>
 </head>
 <body>
 
-<!-- شاشة الدخول -->
+<!-- الواجهة الافتتاحية -->
 <section id="auth" class="auth-screen">
  <div class="auth-inner">
-  <div class="brand-mark">🌐</div>
-  <div class="brand-name">DERT</div>
-  <div class="sub">DERT WORLD</div>
-
-  <div class="auth-panel">
-   <div class="auth-switch">
-    <button id="emailMode" class="active">البريد الإلكتروني</button>
-    <button id="phoneMode">رقم الهاتف</button>
+  <div id="welcomeScreen">
+   <div class="brand-mark">🌍</div>
+   <div class="brand-name">DERT</div>
+   <div class="auth-tag">WORLD SOCIAL NETWORK</div>
+   <div class="auth-actions">
+    <button class="auth-primary" id="openSignup">إنشاء حساب</button>
+    <button class="auth-purple" id="openLogin">تسجيل الدخول</button>
    </div>
+  </div>
 
-   <div id="emailArea">
-    <input id="email" type="email" placeholder="البريد الإلكتروني">
-    <input id="password" type="password" placeholder="كلمة المرور">
-    <button class="full auth-primary" id="loginBtn">تسجيل الدخول</button>
-    <button class="full auth-outline" id="signupBtn">إنشاء حساب جديد</button>
-   </div>
-
-   <div id="phoneArea" class="hidden">
-    <input id="phone" type="tel" placeholder="+9647XXXXXXXXX" dir="ltr">
-    <button class="full auth-primary" id="sendOtpBtn">إرسال رمز التحقق</button>
-    <div id="otpArea" class="hidden">
-     <input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="رمز التحقق SMS" dir="ltr">
-     <button class="full auth-primary" id="verifyOtpBtn">تأكيد الرمز والدخول</button>
+  <div id="authForm" class="hidden">
+   <div class="brand-name" style="font-size:36px">DERT 🌍</div>
+   <p class="small">مرحباً بك في عالم DERT</p>
+   <div class="auth-panel">
+    <button id="backWelcome" class="gray full">← رجوع</button>
+    <div class="auth-switch">
+     <button id="emailMode" class="active">البريد الإلكتروني</button>
+     <button id="phoneMode">رقم الهاتف</button>
     </div>
+    <div id="emailArea">
+     <input id="email" type="email" placeholder="البريد الإلكتروني">
+     <input id="password" type="password" placeholder="كلمة المرور">
+     <button class="full auth-primary" id="loginBtn">تسجيل الدخول</button>
+     <button class="full auth-outline" id="signupBtn">إنشاء حساب جديد</button>
+    </div>
+    <div id="phoneArea" class="hidden">
+     <input id="phone" type="tel" placeholder="+9647XXXXXXXXX" dir="ltr">
+     <button class="full auth-primary" id="sendOtpBtn">إرسال رمز التحقق</button>
+     <div id="otpArea" class="hidden">
+      <input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="رمز التحقق SMS" dir="ltr">
+      <button class="full auth-primary" id="verifyOtpBtn">تأكيد الرمز والدخول</button>
+     </div>
+    </div>
+    <p id="message" class="auth-message"></p>
    </div>
-   <p id="message" class="auth-message"></p>
   </div>
  </div>
 </section>
@@ -111,13 +126,12 @@ nav button.active{background:#e9f1ff;color:#175fe5}
 <!-- التطبيق -->
 <div id="home" class="hidden">
 <header>
- <span>DERT 🌍</span>
- <span style="font-size:14px">عالم التواصل</span>
+ <span class="header-brand">DERT 🌍</span>
+ <span class="header-sub">عالم التواصل</span>
 </header>
 
 <div class="container">
 
-<!-- المحادثات: الصفحة الرئيسية -->
 <section id="chats" class="section active">
  <div class="card">
   <div class="chat-list-heading">
@@ -128,7 +142,6 @@ nav button.active{background:#e9f1ff;color:#175fe5}
   <div id="chatList">جارٍ تحميل المحادثات...</div>
   <button class="full auth-primary" id="newChatBtn">＋ محادثة جديدة</button>
  </div>
-
  <div class="card hidden" id="chatPanel">
   <div class="chat-person">
    <div id="chatAvatar" class="avatar">D</div>
@@ -198,12 +211,11 @@ nav button.active{background:#e9f1ff;color:#175fe5}
 
 <nav>
  <button class="active" onclick="openTab('chats',this)"><span class="nav-icon">💬</span>المحادثات</button>
- <button onclick="openTab('feed',this)"><span class="nav-icon">🏠</span>المنشورات</button>
+ <button onclick="openTab('feed',this)"><span class="nav-icon">▦</span>المنشورات</button>
  <button onclick="openTab('people',this)"><span class="nav-icon">🌐</span>اكتشف</button>
- <button onclick="openTab('alerts',this)"><span class="nav-icon">🔔</span>الإشعارات</button>
+ <button onclick="openTab('alerts',this)"><span class="nav-icon">♧</span>الإشعارات</button>
  <button onclick="openTab('profile',this)"><span class="nav-icon">👤</span>حسابي</button>
 </nav>
-
 </div>
 </div>
 
@@ -219,6 +231,42 @@ let authMode="email",pendingPhone=null,chatCache=[];
 
 const el=id=>document.getElementById(id);
 function msg(id,text){el(id).textContent=text}
+
+/* شاشة البداية */
+function showAuthForm(mode){
+ el("welcomeScreen").classList.add("hidden");
+ el("authForm").classList.remove("hidden");
+ if(mode==="signup"){
+  el("loginBtn").classList.add("hidden");
+  el("signupBtn").classList.remove("hidden");
+ }else{
+  el("signupBtn").classList.add("hidden");
+  el("loginBtn").classList.remove("hidden");
+ }
+}
+el("openSignup").onclick=()=>showAuthForm("signup");
+el("openLogin").onclick=()=>showAuthForm("login");
+el("backWelcome").onclick=()=>{
+ el("authForm").classList.add("hidden");
+ el("welcomeScreen").classList.remove("hidden");
+ msg("message","");
+};
+el("emailMode").onclick=()=>{
+ authMode="email";
+ el("emailMode").classList.add("active");
+ el("phoneMode").classList.remove("active");
+ el("emailArea").classList.remove("hidden");
+ el("phoneArea").classList.add("hidden");
+ msg("message","");
+};
+el("phoneMode").onclick=()=>{
+ authMode="phone";
+ el("phoneMode").classList.add("active");
+ el("emailMode").classList.remove("active");
+ el("emailArea").classList.add("hidden");
+ el("phoneArea").classList.remove("hidden");
+ msg("message","");
+};
 
 function openTab(name,button){
  document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
@@ -238,6 +286,8 @@ function openTab(name,button){
 function showLogin(){
  el("auth").classList.remove("hidden");
  el("home").classList.add("hidden");
+ el("authForm").classList.add("hidden");
+ el("welcomeScreen").classList.remove("hidden");
  currentUser=null;currentProfile=null;
  activeConversation=null;activeReceiver=null;
  stopRealtime();stopAlertsRealtime();
@@ -254,15 +304,11 @@ function makeAvatar(url,name){
  div.textContent=(name||"D").charAt(0).toUpperCase();
  return div;
 }
-
-function showAvatar(url,name){
- el("avatarDisplay").replaceChildren(makeAvatar(url,name));
-}
+function showAvatar(url,name){el("avatarDisplay").replaceChildren(makeAvatar(url,name))}
 
 async function uploadFile(file,folder){
  if(!file)return null;
- if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))
-  throw new Error("نوع الملف غير مدعوم");
+ if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))throw new Error("نوع الملف غير مدعوم");
  if(file.size>50*1024*1024)throw new Error("حجم الملف أكبر من 50 ميغابايت");
  const ext=(file.name.split(".").pop()||"file").toLowerCase().replace(/[^a-z0-9]/g,"");
  const path=currentUser.id+"/"+folder+"/"+crypto.randomUUID()+"."+ext;
@@ -287,9 +333,7 @@ async function loadProfile(){
 async function saveProfile(){
  const username=el("username").value.trim().toLowerCase();
  const file=el("avatarFile").files[0];
- if(!/^[a-z0-9_]{3,25}$/.test(username)){
-  msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");return;
- }
+ if(!/^[a-z0-9_]{3,25}$/.test(username)){msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");return}
  const btn=el("saveProfileBtn");btn.disabled=true;
  try{
   let avatar=currentProfile?.avatar_url||null;
@@ -322,25 +366,7 @@ async function showHome(user){
  }catch(e){msg("profileMessage","ملاحظة: "+e.message)}
 }
 
-/* تبديل تسجيل الدخول */
-el("emailMode").onclick=()=>{
- authMode="email";
- el("emailMode").classList.add("active");
- el("phoneMode").classList.remove("active");
- el("emailArea").classList.remove("hidden");
- el("phoneArea").classList.add("hidden");
- msg("message","");
-};
-el("phoneMode").onclick=()=>{
- authMode="phone";
- el("phoneMode").classList.add("active");
- el("emailMode").classList.remove("active");
- el("emailArea").classList.add("hidden");
- el("phoneArea").classList.remove("hidden");
- msg("message","");
-};
-
-/* البريد الإلكتروني */
+/* تسجيل الحساب والدخول */
 el("signupBtn").onclick=async()=>{
  const email=el("email").value.trim(),password=el("password").value;
  if(!email||password.length<6){msg("message","أدخل البريد وكلمة مرور من 6 أحرف على الأقل");return}
@@ -350,7 +376,6 @@ el("signupBtn").onclick=async()=>{
  if(data.session)await showHome(data.user);
  else msg("message","تم إنشاء الحساب. افحص بريدك لتأكيد الحساب ثم سجّل الدخول.");
 };
-
 el("loginBtn").onclick=async()=>{
  const email=el("email").value.trim(),password=el("password").value;
  if(!email||!password){msg("message","أدخل البريد وكلمة المرور");return}
@@ -360,12 +385,10 @@ el("loginBtn").onclick=async()=>{
  await showHome(data.user);
 };
 
-/* تسجيل الهاتف بواسطة OTP */
+/* تسجيل الهاتف - يحتاج إعداد SMS في Supabase */
 el("sendOtpBtn").onclick=async()=>{
  const phone=el("phone").value.trim();
- if(!/^\+[1-9]\d{7,14}$/.test(phone)){
-  msg("message","اكتب الرقم بالصيغة الدولية، مثال: +9647XXXXXXXXX");return;
- }
+ if(!/^\+[1-9]\d{7,14}$/.test(phone)){msg("message","اكتب الرقم بالصيغة الدولية، مثال: +9647XXXXXXXXX");return}
  pendingPhone=phone;
  msg("message","جارٍ إرسال رمز التحقق...");
  const {error}=await client.auth.signInWithOtp({phone});
@@ -373,25 +396,20 @@ el("sendOtpBtn").onclick=async()=>{
  el("otpArea").classList.remove("hidden");
  msg("message","تم طلب رمز التحقق. افحص رسائل هاتفك.");
 };
-
 el("verifyOtpBtn").onclick=async()=>{
  const token=el("otp").value.trim();
  if(!pendingPhone||!token){msg("message","أدخل رمز التحقق");return}
  msg("message","جارٍ التحقق...");
- const {data,error}=await client.auth.verifyOtp({
-  phone:pendingPhone,token,type:"sms"
- });
+ const {data,error}=await client.auth.verifyOtp({phone:pendingPhone,token,type:"sms"});
  if(error){msg("message","تعذر التحقق: "+error.message);return}
  if(data.user)await showHome(data.user);
 };
 
-/* تسجيل الخروج */
 el("logoutBtn").onclick=async()=>{
  const {error}=await client.auth.signOut();
  if(error){msg("profileMessage",error.message);return}
  showLogin();
 };
-
 el("saveProfileBtn").onclick=saveProfile;
 
 /* المنشورات */
@@ -425,8 +443,7 @@ async function loadPosts(){
  const names={};(profiles||[]).forEach(p=>names[p.id]=p);
  data.forEach(post=>{
   const card=document.createElement("article");card.className="post";
-  const author=document.createElement("strong");
-  const p=names[post.user_id];
+  const author=document.createElement("strong"),p=names[post.user_id];
   author.textContent=p?(p.full_name||"مستخدم")+" @"+(p.username||""):"مستخدم DERT";
   card.appendChild(author);
   if(post.content){const t=document.createElement("p");t.className="post-text";t.textContent=post.content;card.appendChild(t)}
@@ -448,8 +465,8 @@ async function loadStats(){
 
 /* المستخدمون */
 el("searchBtn").onclick=async()=>{
- const q=el("searchUser").value.trim();
- const list=el("peopleList");list.textContent="جارٍ البحث...";
+ const q=el("searchUser").value.trim(),list=el("peopleList");
+ list.textContent="جارٍ البحث...";
  if(!q){list.textContent="اكتب اسم المستخدم أولاً";return}
  const {data,error}=await client.from("profiles").select("id,username,full_name,avatar_url,bio").ilike("username","%"+q+"%").limit(25);
  if(error){list.textContent="تعذر البحث: "+error.message;return}
@@ -534,8 +551,7 @@ async function loadChats(){
   chats.push({id:m.conversation_id,other:other.user_id,profile,latest:latest?.[0]});
  }
  chats.sort((a,b)=>new Date(b.latest?.created_at||0)-new Date(a.latest?.created_at||0));
- chatCache=chats;
- renderChatList(chats);
+ chatCache=chats;renderChatList(chats);
 }
 
 function renderChatList(chats){
@@ -553,25 +569,19 @@ function renderChatList(chats){
   const side=document.createElement("div");side.style.textAlign="center";
   const time=document.createElement("div");time.className="chat-time";
   time.textContent=last?.created_at?new Date(last.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"}):"";
-  side.appendChild(time);
-  row.append(info,side);
+  side.appendChild(time);row.append(info,side);
   row.onclick=()=>openChat(c.id,c.other,c.profile?.username||"مستخدم");
   list.appendChild(row);
  });
 }
-
 el("chatSearch").oninput=()=>{
  const q=el("chatSearch").value.trim().toLowerCase();
  renderChatList(chatCache.filter(c=>(c.profile?.full_name||"").toLowerCase().includes(q)||(c.profile?.username||"").toLowerCase().includes(q)));
 };
-
 el("refreshChats").onclick=loadChats;
-el("newChatBtn").onclick=()=>{
- openTab("people");
- el("searchUser").focus();
-};
+el("newChatBtn").onclick=()=>{openTab("people");el("searchUser").focus()};
 
-/* فتح محادثة */
+/* فتح المحادثة */
 async function openChat(conversationId,receiverId,username){
  stopRealtime();
  activeConversation=conversationId;activeReceiver=receiverId;
@@ -587,14 +597,11 @@ async function openChat(conversationId,receiverId,username){
  await loadMessages();await markMessagesRead();startRealtime();
  el("chatPanel").scrollIntoView({behavior:"smooth"});
 }
-
 el("closeChatBtn").onclick=()=>{
  stopRealtime();activeConversation=null;activeReceiver=null;
- el("chatPanel").classList.add("hidden");
- loadChats();
+ el("chatPanel").classList.add("hidden");loadChats();
 };
 
-/* تحميل الرسائل */
 async function loadMessages(){
  if(!activeConversation)return;
  const box=el("chatMessages");
@@ -629,13 +636,10 @@ async function loadMessages(){
 async function markMessagesRead(){
  if(!activeConversation||!currentUser)return;
  const {error}=await client.from("messages").update({is_read:true})
-  .eq("conversation_id",activeConversation)
-  .eq("receiver_id",currentUser.id)
-  .eq("is_read",false);
+  .eq("conversation_id",activeConversation).eq("receiver_id",currentUser.id).eq("is_read",false);
  if(error)console.log("تعذر تحديث حالة القراءة:",error.message);
 }
 
-/* إرسال الرسائل */
 el("sendMessageBtn").onclick=async()=>{
  if(!activeConversation||!activeReceiver)return;
  const content=el("chatText").value.trim(),file=el("chatFile").files[0];
@@ -662,7 +666,7 @@ el("sendMessageBtn").onclick=async()=>{
  finally{btn.disabled=false}
 };
 
-/* التحديث المباشر */
+/* التحديث المباشر للرسائل */
 function startRealtime(){
  if(!activeConversation)return;
  const conversationId=activeConversation;
@@ -672,7 +676,6 @@ function startRealtime(){
    await loadMessages();await markMessagesRead();loadChats();
   }).subscribe();
 }
-
 function stopRealtime(){
  if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}
 }
@@ -720,11 +723,10 @@ function stopAlertsRealtime(){
  if(alertsChannel){client.removeChannel(alertsChannel);alertsChannel=null}
 }
 
-/* حالة تسجيل الدخول */
+/* استعادة جلسة الدخول */
 client.auth.onAuthStateChange((event,session)=>{
  if(event==="SIGNED_OUT")showLogin();
 });
-
 async function checkSession(){
  const {data,error}=await client.auth.getSession();
  if(error){msg("message",error.message);return}

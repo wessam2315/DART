@@ -23,87 +23,73 @@ header{
   font-size:25px;
   font-weight:bold;
 }
-.container{
-  max-width:600px;
-  margin:20px auto;
-  padding:12px;
-}
+.container{max-width:600px;margin:20px auto;padding:12px}
 .card{
-  background:white;
-  padding:18px;
-  margin-bottom:15px;
-  border-radius:15px;
-  box-shadow:0 3px 12px #00000010;
+  background:white;padding:18px;margin-bottom:15px;
+  border-radius:15px;box-shadow:0 3px 12px #00000010;
 }
 input,textarea{
-  width:100%;
-  padding:13px;
-  margin:7px 0;
-  border:1px solid #ddd;
-  border-radius:10px;
-  font-size:16px;
+  width:100%;padding:13px;margin:7px 0;
+  border:1px solid #ddd;border-radius:10px;font-size:16px;
 }
 textarea{min-height:100px;resize:vertical}
 button{
-  border:0;
-  border-radius:10px;
-  padding:13px;
-  background:#2563eb;
-  color:white;
-  font-size:16px;
-  cursor:pointer;
-  margin-top:8px;
+  border:0;border-radius:10px;padding:13px;
+  background:#2563eb;color:white;font-size:16px;
+  cursor:pointer;margin-top:8px;
 }
+button:disabled{opacity:.6;cursor:not-allowed}
 .full{width:100%}
 .secondary{background:#475569}
 .danger{background:#dc2626}
 #home{display:none}
-#message,#postMessage{
-  text-align:center;
-  color:#2563eb;
-  line-height:1.7;
+#message,#postMessage,#profileMessage{
+  text-align:center;color:#2563eb;line-height:1.7;
 }
 .post{
-  background:white;
-  border-radius:15px;
-  padding:15px;
-  margin-bottom:15px;
+  background:white;border-radius:15px;
+  padding:15px;margin-bottom:15px;
 }
 .post img{
-  width:100%;
-  max-height:450px;
-  object-fit:contain;
-  border-radius:10px;
-  margin-top:10px;
+  width:100%;max-height:450px;object-fit:contain;
+  border-radius:10px;margin-top:10px;
 }
-.post-text{
-  white-space:pre-wrap;
-  line-height:1.7;
-}
-.post-date{
-  color:#777;
-  font-size:12px;
-  margin-top:8px;
-}
+.post-text{white-space:pre-wrap;line-height:1.7}
+.post-date{color:#777;font-size:12px;margin-top:8px}
 .small{color:#64748b;font-size:13px}
+.profile-head{
+  display:flex;align-items:center;gap:15px;
+  margin-bottom:15px;
+}
+.avatar{
+  width:85px;height:85px;border-radius:50%;
+  object-fit:cover;background:#e2e8f0;
+  border:3px solid #dbeafe;
+}
+.profile-name{font-size:20px;font-weight:bold}
+.username{color:#64748b;font-size:14px;margin-top:5px}
+.stats{
+  display:flex;justify-content:space-around;
+  text-align:center;padding:12px 0;
+  border-top:1px solid #eee;border-bottom:1px solid #eee;
+}
+.stats strong{display:block;font-size:19px}
+.stats span{font-size:12px;color:#64748b}
+.section-title{margin-top:0}
 </style>
 </head>
 
 <body>
-
 <header>DERT</header>
 
 <div class="container">
 
 <section id="auth" class="card">
 <h2 style="text-align:center">مرحباً بك في DERT</h2>
-
 <input id="email" type="email" placeholder="البريد الإلكتروني">
 <input id="password" type="password" placeholder="كلمة المرور">
-
 <button class="full" id="loginBtn">تسجيل الدخول</button>
 <button class="full secondary" id="signupBtn">إنشاء حساب جديد</button>
-
 <p id="message"></p>
 </section>
 
@@ -115,20 +101,44 @@ button{
 <button class="danger" id="logoutBtn">تسجيل الخروج</button>
 </div>
 
+<!-- الملف الشخصي -->
+<div class="card">
+<h3 class="section-title">ملفي الشخصي</h3>
+
+<div class="profile-head">
+<img id="profileAvatar" class="avatar" alt="الصورة الشخصية">
+<div>
+<div id="profileName" class="profile-name">مستخدم DERT</div>
+<div id="profileUsername" class="username">@username</div>
+</div>
+</div>
+
+<div class="stats">
+<div><strong id="myPostsCount">0</strong><span>منشورات</span></div>
+<div><strong>0</strong><span>متابعون</span></div>
+<div><strong>0</strong><span>يتابع</span></div>
+</div>
+
+<h3>تعديل الملف الشخصي</h3>
+<input id="editFullName" type="text" placeholder="الاسم الكامل">
+<input id="editUsername" type="text" placeholder="اسم المستخدم">
+<textarea id="editBio" placeholder="اكتب نبذة عن نفسك"></textarea>
+<input id="editAvatar" type="url" placeholder="رابط صورتك الشخصية (اختياري)">
+<button class="full" id="saveProfileBtn">حفظ التغييرات</button>
+<p id="profileMessage"></p>
+</div>
+
+<!-- إنشاء منشور -->
 <div class="card">
 <h3>إنشاء منشور جديد</h3>
-
 <textarea id="postContent" placeholder="بماذا تفكر؟"></textarea>
-
 <label for="postImage">اختر صورة من هاتفك:</label>
 <input id="postImage" type="file" accept="image/*">
-
 <button class="full" id="publishBtn">نشر المنشور</button>
 <p id="postMessage"></p>
 </div>
 
 <h2>المنشورات</h2>
-
 <div id="postsList">
 <p class="small">جارٍ تحميل المنشورات...</p>
 </div>
@@ -144,38 +154,182 @@ const SUPABASE_KEY =
 "sb_publishable_xsXMr3yr2yJXOgRn9ZjMtQ_sfoS0OIR";
 
 const client = window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY
+  SUPABASE_URL,
+  SUPABASE_KEY
 );
 
 const auth = document.getElementById("auth");
 const home = document.getElementById("home");
 const message = document.getElementById("message");
 const postMessage = document.getElementById("postMessage");
+const profileMessage = document.getElementById("profileMessage");
 
 let currentUser = null;
+let currentProfile = null;
 
 function showLogin(){
   auth.style.display = "block";
   home.style.display = "none";
   currentUser = null;
+  currentProfile = null;
 }
 
-function showHome(user){
+async function showHome(user){
+  if(!user) return;
+
   currentUser = user;
   auth.style.display = "none";
   home.style.display = "block";
 
   document.getElementById("welcomeTitle").textContent =
-  "أهلاً بك في DERT";
+    "أهلاً بك في DERT";
 
   document.getElementById("userEmail").textContent =
-  user.email || "";
+    user.email || "";
 
-  loadPosts();
+  await loadProfile();
+  await loadPosts();
 }
 
-document.getElementById("signupBtn").onclick = async function(){
+async function loadProfile(){
+  if(!currentUser) return;
+
+  profileMessage.textContent = "جارٍ تحميل الملف الشخصي...";
+
+  const {data,error} = await client
+    .from("profiles")
+    .select("*")
+    .eq("id",currentUser.id)
+    .maybeSingle();
+
+  if(error){
+    profileMessage.textContent =
+      "تعذّر تحميل الملف الشخصي: " + error.message;
+    return;
+  }
+
+  if(!data){
+    profileMessage.textContent =
+      "لم يتم العثور على الملف الشخصي لهذا الحساب.";
+    return;
+  }
+
+  currentProfile = data;
+
+  document.getElementById("profileName").textContent =
+    data.full_name || "مستخدم DERT";
+
+  document.getElementById("profileUsername").textContent =
+    "@" + (data.username || "user");
+
+  document.getElementById("editFullName").value =
+    data.full_name || "";
+
+  document.getElementById("editUsername").value =
+    data.username || "";
+
+  document.getElementById("editBio").value =
+    data.bio || "";
+
+  document.getElementById("editAvatar").value =
+    data.avatar_url || "";
+
+  const avatar = document.getElementById("profileAvatar");
+
+  avatar.src = data.avatar_url ||
+    "https://placehold.co/150x150/e2e8f0/475569?text=DERT";
+
+  profileMessage.textContent = "";
+}
+
+document.getElementById("saveProfileBtn").onclick =
+async function(){
+
+  if(!currentUser) return;
+
+  const fullName =
+    document.getElementById("editFullName").value.trim();
+
+  const username =
+    document.getElementById("editUsername").value.trim().toLowerCase();
+
+  const bio =
+    document.getElementById("editBio").value.trim();
+
+  const avatarUrl =
+    document.getElementById("editAvatar").value.trim();
+
+  if(!username){
+    profileMessage.textContent = "اكتب اسم المستخدم";
+    return;
+  }
+
+  if(!/^[a-z0-9_]{3,25}$/.test(username)){
+    profileMessage.textContent =
+      "اسم المستخدم يجب أن يكون من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _";
+    return;
+  }
+
+  if(avatarUrl){
+    try{
+      const parsedUrl = new URL(avatarUrl);
+      if(parsedUrl.protocol !== "https:"){
+        throw new Error("رابط الصورة يجب أن يبدأ بـ HTTPS");
+      }
+    }catch(e){
+      profileMessage.textContent =
+        "رابط الصورة غير صحيح. استخدم رابط HTTPS صالحاً.";
+      return;
+    }
+  }
+
+  const button = document.getElementById("saveProfileBtn");
+  button.disabled = true;
+  button.textContent = "جارٍ الحفظ...";
+  profileMessage.textContent = "";
+
+  try{
+    const {data,error} = await client
+      .from("profiles")
+      .update({
+        full_name: fullName,
+        username: username,
+        bio: bio,
+        avatar_url: avatarUrl || null
+      })
+      .eq("id",currentUser.id)
+      .select()
+      .single();
+
+    if(error) throw error;
+
+    currentProfile = data;
+
+    document.getElementById("profileName").textContent =
+      data.full_name || "مستخدم DERT";
+
+    document.getElementById("profileUsername").textContent =
+      "@" + data.username;
+
+    document.getElementById("profileAvatar").src =
+      data.avatar_url ||
+      "https://placehold.co/150x150/e2e8f0/475569?text=DERT";
+
+    profileMessage.textContent =
+      "تم حفظ الملف الشخصي بنجاح ❤️";
+
+  }catch(error){
+    profileMessage.textContent =
+      "تعذّر حفظ التغييرات: " + error.message;
+  }finally{
+    button.disabled = false;
+    button.textContent = "حفظ التغييرات";
+  }
+};
+
+document.getElementById("signupBtn").onclick =
+async function(){
+
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
@@ -185,7 +339,8 @@ document.getElementById("signupBtn").onclick = async function(){
   }
 
   if(password.length < 6){
-    message.textContent = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+    message.textContent =
+      "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
     return;
   }
 
@@ -202,14 +357,16 @@ document.getElementById("signupBtn").onclick = async function(){
   }
 
   if(data.session){
-    showHome(data.user);
+    await showHome(data.user);
   }else{
     message.textContent =
-    "تم إنشاء الحساب. افحص بريدك لتأكيد الحساب ثم سجّل الدخول.";
+      "تم إنشاء الحساب. افحص بريدك لتأكيد الحساب ثم سجّل الدخول.";
   }
 };
 
-document.getElementById("loginBtn").onclick = async function(){
+document.getElementById("loginBtn").onclick =
+async function(){
+
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
 
@@ -230,11 +387,13 @@ document.getElementById("loginBtn").onclick = async function(){
     return;
   }
 
-  showHome(data.user);
+  await showHome(data.user);
   message.textContent = "تم تسجيل الدخول بنجاح";
 };
 
-document.getElementById("logoutBtn").onclick = async function(){
+document.getElementById("logoutBtn").onclick =
+async function(){
+
   const {error} = await client.auth.signOut();
 
   if(error){
@@ -246,17 +405,19 @@ document.getElementById("logoutBtn").onclick = async function(){
   message.textContent = "تم تسجيل الخروج";
 };
 
-document.getElementById("publishBtn").onclick = async function(){
+document.getElementById("publishBtn").onclick =
+async function(){
+
   if(!currentUser){
     postMessage.textContent = "سجّل الدخول أولاً";
     return;
   }
 
   const content =
-  document.getElementById("postContent").value.trim();
+    document.getElementById("postContent").value.trim();
 
   const file =
-  document.getElementById("postImage").files[0];
+    document.getElementById("postImage").files[0];
 
   if(!content && !file){
     postMessage.textContent = "اكتب منشوراً أو اختر صورة";
@@ -269,7 +430,8 @@ document.getElementById("publishBtn").onclick = async function(){
   }
 
   if(file && file.size > 5 * 1024 * 1024){
-    postMessage.textContent = "حجم الصورة يجب ألا يتجاوز 5 ميغابايت";
+    postMessage.textContent =
+      "حجم الصورة يجب ألا يتجاوز 5 ميغابايت";
     return;
   }
 
@@ -283,34 +445,35 @@ document.getElementById("publishBtn").onclick = async function(){
 
     if(file){
       const extension =
-      file.name.split(".").pop().toLowerCase();
+        file.name.split(".").pop().toLowerCase();
 
       const filePath =
-      currentUser.id + "/" + crypto.randomUUID() + "." + extension;
+        currentUser.id + "/" +
+        crypto.randomUUID() + "." + extension;
 
       const {error:uploadError} = await client.storage
-      .from("posts")
-      .upload(filePath,file,{
-        contentType:file.type,
-        upsert:false
-      });
+        .from("posts")
+        .upload(filePath,file,{
+          contentType:file.type,
+          upsert:false
+        });
 
       if(uploadError) throw uploadError;
 
       const {data:urlData} = client.storage
-      .from("posts")
-      .getPublicUrl(filePath);
+        .from("posts")
+        .getPublicUrl(filePath);
 
       imageUrl = urlData.publicUrl;
     }
 
     const {error:insertError} = await client
-    .from("posts")
-    .insert({
-      user_id:currentUser.id,
-      content:content || null,
-      image_url:imageUrl
-    });
+      .from("posts")
+      .insert({
+        user_id:currentUser.id,
+        content:content || null,
+        image_url:imageUrl
+      });
 
     if(insertError) throw insertError;
 
@@ -321,7 +484,8 @@ document.getElementById("publishBtn").onclick = async function(){
     await loadPosts();
 
   }catch(error){
-    postMessage.textContent = "تعذّر النشر: " + error.message;
+    postMessage.textContent =
+      "تعذّر النشر: " + error.message;
   }finally{
     button.disabled = false;
     button.textContent = "نشر المنشور";
@@ -329,33 +493,52 @@ document.getElementById("publishBtn").onclick = async function(){
 };
 
 async function loadPosts(){
+
   const list = document.getElementById("postsList");
   list.textContent = "جارٍ تحميل المنشورات...";
 
   const {data,error} = await client
-  .from("posts")
-  .select("*")
-  .order("created_at",{ascending:false});
+    .from("posts")
+    .select("*")
+    .order("created_at",{ascending:false});
 
   if(error){
-    list.textContent = "تعذّر تحميل المنشورات: " + error.message;
+    list.textContent =
+      "تعذّر تحميل المنشورات: " + error.message;
     return;
   }
 
   list.replaceChildren();
 
   if(!data || data.length === 0){
-    list.textContent = "لا توجد منشورات حتى الآن. كن أول من ينشر!";
+    list.textContent =
+      "لا توجد منشورات حتى الآن. كن أول من ينشر!";
+    document.getElementById("myPostsCount").textContent = "0";
     return;
   }
 
+  const myPosts = data.filter(
+    post => post.user_id === currentUser.id
+  );
+
+  document.getElementById("myPostsCount").textContent =
+    myPosts.length;
+
   data.forEach(post => {
+
     const card = document.createElement("article");
     card.className = "post";
 
     const author = document.createElement("strong");
-    author.textContent =
-    post.user_id === currentUser.id ? "أنت" : "مستخدم DERT";
+
+    if(post.user_id === currentUser.id){
+      author.textContent =
+        currentProfile?.username
+          ? "@" + currentProfile.username
+          : "أنت";
+    }else{
+      author.textContent = "مستخدم DERT";
+    }
 
     card.appendChild(author);
 
@@ -376,14 +559,16 @@ async function loadPosts(){
 
     const date = document.createElement("div");
     date.className = "post-date";
-    date.textContent = new Date(post.created_at).toLocaleString("ar-IQ");
-    card.appendChild(date);
+    date.textContent =
+      new Date(post.created_at).toLocaleString("ar-IQ");
 
+    card.appendChild(date);
     list.appendChild(card);
   });
 }
 
 client.auth.onAuthStateChange((event,session)=>{
+
   if(session){
     showHome(session.user);
   }else if(event === "SIGNED_OUT"){
@@ -392,6 +577,7 @@ client.auth.onAuthStateChange((event,session)=>{
 });
 
 async function checkSession(){
+
   const {data,error} = await client.auth.getSession();
 
   if(error){
@@ -400,7 +586,7 @@ async function checkSession(){
   }
 
   if(data.session){
-    showHome(data.session.user);
+    await showHome(data.session.user);
   }else{
     showLogin();
   }
@@ -408,6 +594,5 @@ async function checkSession(){
 
 checkSession();
 </script>
-
 </body>
 </html>

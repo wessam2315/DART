@@ -2,250 +2,412 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DERT - ديرت</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f2f4f8;
-      color: #172033;
-    }
-    .container {
-      width: 92%;
-      max-width: 440px;
-      margin: 55px auto;
-      background: white;
-      padding: 25px;
-      border-radius: 18px;
-      box-shadow: 0 5px 25px #00000012;
-    }
-    h1 { text-align: center; color: #2563eb; }
-    h2 { text-align: center; }
-    input {
-      width: 100%;
-      padding: 14px;
-      margin: 8px 0;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 16px;
-    }
-    button {
-      width: 100%;
-      padding: 14px;
-      margin-top: 10px;
-      border: 0;
-      border-radius: 10px;
-      background: #2563eb;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button.secondary { background: #475569; }
-    button.danger { background: #dc2626; }
-    #message {
-      text-align: center;
-      margin-top: 15px;
-      line-height: 1.7;
-      color: #2563eb;
-    }
-    #home { display: none; }
-    .welcome {
-      background: #eff6ff;
-      padding: 18px;
-      border-radius: 12px;
-      text-align: center;
-      margin: 15px 0;
-    }
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 7px;
-    }
-    .tabs button { font-size: 13px; }
-    .small { color: #64748b; font-size: 13px; text-align: center; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DERT - منصة التواصل</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f1f3f7;
+  color:#172033;
+}
+header{
+  background:#2563eb;
+  color:white;
+  padding:18px;
+  text-align:center;
+  font-size:25px;
+  font-weight:bold;
+}
+.container{
+  max-width:600px;
+  margin:20px auto;
+  padding:12px;
+}
+.card{
+  background:white;
+  padding:18px;
+  margin-bottom:15px;
+  border-radius:15px;
+  box-shadow:0 3px 12px #00000010;
+}
+input,textarea{
+  width:100%;
+  padding:13px;
+  margin:7px 0;
+  border:1px solid #ddd;
+  border-radius:10px;
+  font-size:16px;
+}
+textarea{min-height:100px;resize:vertical}
+button{
+  border:0;
+  border-radius:10px;
+  padding:13px;
+  background:#2563eb;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+  margin-top:8px;
+}
+.full{width:100%}
+.secondary{background:#475569}
+.danger{background:#dc2626}
+#home{display:none}
+#message,#postMessage{
+  text-align:center;
+  color:#2563eb;
+  line-height:1.7;
+}
+.post{
+  background:white;
+  border-radius:15px;
+  padding:15px;
+  margin-bottom:15px;
+}
+.post img{
+  width:100%;
+  max-height:450px;
+  object-fit:contain;
+  border-radius:10px;
+  margin-top:10px;
+}
+.post-text{
+  white-space:pre-wrap;
+  line-height:1.7;
+}
+.post-date{
+  color:#777;
+  font-size:12px;
+  margin-top:8px;
+}
+.small{color:#64748b;font-size:13px}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>DERT</h1>
-    <p class="small">منصة تواصل اجتماعي للجميع</p>
+<header>DERT</header>
 
-    <section id="auth">
-      <h2>مرحباً بك</h2>
-      <input id="email" type="email" placeholder="البريد الإلكتروني">
-      <input id="password" type="password" placeholder="كلمة المرور">
+<div class="container">
 
-      <button id="loginBtn">تسجيل الدخول</button>
-      <button id="signupBtn" class="secondary">إنشاء حساب جديد</button>
+<section id="auth" class="card">
+<h2 style="text-align:center">مرحباً بك في DERT</h2>
 
-      <p id="message"></p>
-    </section>
+<input id="email" type="email" placeholder="البريد الإلكتروني">
+<input id="password" type="password" placeholder="كلمة المرور">
 
-    <section id="home">
-      <div class="welcome">
-        <h2 id="welcomeTitle">أهلاً بك في DERT</h2>
-        <p id="userEmail"></p>
-      </div>
+<button class="full" id="loginBtn">تسجيل الدخول</button>
+<button class="full secondary" id="signupBtn">إنشاء حساب جديد</button>
 
-      <div class="tabs">
-        <button onclick="showSection('الرئيسية')">الرئيسية</button>
-        <button onclick="showSection('استكشاف')">استكشاف</button>
-        <button onclick="showSection('حسابي')">حسابي</button>
-      </div>
+<p id="message"></p>
+</section>
 
-      <div class="welcome">
-        <h3 id="sectionTitle">الرئيسية</h3>
-        <p>أهلاً بك في عالم DERT</p>
-        <p class="small">نعمل على إضافة المنشورات والرسائل والتعليقات.</p>
-      </div>
+<section id="home">
 
-      <button id="logoutBtn" class="danger">تسجيل الخروج</button>
-      <p id="homeMessage"></p>
-    </section>
-  </div>
+<div class="card">
+<h2 id="welcomeTitle">أهلاً بك في DERT</h2>
+<p id="userEmail" class="small"></p>
+<button class="danger" id="logoutBtn">تسجيل الخروج</button>
+</div>
 
-  <script>
-    const SUPABASE_URL =
-      "https://forwefmjghgcybiccdxz.supabase.co";
+<div class="card">
+<h3>إنشاء منشور جديد</h3>
 
-    const SUPABASE_KEY =
-      "sb_publishable_xsXMr3yr2yJXOgRn9ZjMtQ_sfoS0OIR";
+<textarea id="postContent" placeholder="بماذا تفكر؟"></textarea>
 
-    const client = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+<label for="postImage">اختر صورة من هاتفك:</label>
+<input id="postImage" type="file" accept="image/*">
 
-    const authSection = document.getElementById("auth");
-    const homeSection = document.getElementById("home");
-    const message = document.getElementById("message");
+<button class="full" id="publishBtn">نشر المنشور</button>
+<p id="postMessage"></p>
+</div>
 
-    function showMessage(text) {
-      message.textContent = text;
-    }
+<h2>المنشورات</h2>
 
-    function showHome(user) {
-      authSection.style.display = "none";
-      homeSection.style.display = "block";
+<div id="postsList">
+<p class="small">جارٍ تحميل المنشورات...</p>
+</div>
 
-      document.getElementById("welcomeTitle").textContent =
-        "أهلاً بك في DERT";
+</section>
+</div>
 
-      document.getElementById("userEmail").textContent =
-        user.email || "";
+<script>
+const SUPABASE_URL =
+"https://forwefmjghgcybiccdxz.supabase.co";
 
-      document.getElementById("homeMessage").textContent = "";
-    }
+const SUPABASE_KEY =
+"sb_publishable_xsXMr3yr2yJXOgRn9ZjMtQ_sfoS0OIR";
 
-    function showLogin() {
-      authSection.style.display = "block";
-      homeSection.style.display = "none";
-    }
+const client = window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
 
-    document.getElementById("signupBtn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+const auth = document.getElementById("auth");
+const home = document.getElementById("home");
+const message = document.getElementById("message");
+const postMessage = document.getElementById("postMessage");
 
-      if (!email || !password) {
-        showMessage("أدخل البريد الإلكتروني وكلمة المرور");
-        return;
-      }
+let currentUser = null;
 
-      if (password.length < 6) {
-        showMessage("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
-        return;
-      }
+function showLogin(){
+  auth.style.display = "block";
+  home.style.display = "none";
+  currentUser = null;
+}
 
-      showMessage("جارٍ إنشاء الحساب...");
+function showHome(user){
+  currentUser = user;
+  auth.style.display = "none";
+  home.style.display = "block";
 
-      const { data, error } = await client.auth.signUp({
-        email: email,
-        password: password
+  document.getElementById("welcomeTitle").textContent =
+  "أهلاً بك في DERT";
+
+  document.getElementById("userEmail").textContent =
+  user.email || "";
+
+  loadPosts();
+}
+
+document.getElementById("signupBtn").onclick = async function(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    message.textContent = "أدخل البريد وكلمة المرور";
+    return;
+  }
+
+  if(password.length < 6){
+    message.textContent = "كلمة المرور يجب أن تكون 6 أحرف على الأقل";
+    return;
+  }
+
+  message.textContent = "جارٍ إنشاء الحساب...";
+
+  const {data,error} = await client.auth.signUp({
+    email,
+    password
+  });
+
+  if(error){
+    message.textContent = error.message;
+    return;
+  }
+
+  if(data.session){
+    showHome(data.user);
+  }else{
+    message.textContent =
+    "تم إنشاء الحساب. افحص بريدك لتأكيد الحساب ثم سجّل الدخول.";
+  }
+};
+
+document.getElementById("loginBtn").onclick = async function(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    message.textContent = "أدخل البريد وكلمة المرور";
+    return;
+  }
+
+  message.textContent = "جارٍ تسجيل الدخول...";
+
+  const {data,error} = await client.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if(error){
+    message.textContent = "خطأ: " + error.message;
+    return;
+  }
+
+  showHome(data.user);
+  message.textContent = "تم تسجيل الدخول بنجاح";
+};
+
+document.getElementById("logoutBtn").onclick = async function(){
+  const {error} = await client.auth.signOut();
+
+  if(error){
+    postMessage.textContent = error.message;
+    return;
+  }
+
+  showLogin();
+  message.textContent = "تم تسجيل الخروج";
+};
+
+document.getElementById("publishBtn").onclick = async function(){
+  if(!currentUser){
+    postMessage.textContent = "سجّل الدخول أولاً";
+    return;
+  }
+
+  const content =
+  document.getElementById("postContent").value.trim();
+
+  const file =
+  document.getElementById("postImage").files[0];
+
+  if(!content && !file){
+    postMessage.textContent = "اكتب منشوراً أو اختر صورة";
+    return;
+  }
+
+  if(file && !file.type.startsWith("image/")){
+    postMessage.textContent = "الملف المختار يجب أن يكون صورة";
+    return;
+  }
+
+  if(file && file.size > 5 * 1024 * 1024){
+    postMessage.textContent = "حجم الصورة يجب ألا يتجاوز 5 ميغابايت";
+    return;
+  }
+
+  const button = document.getElementById("publishBtn");
+  button.disabled = true;
+  button.textContent = "جارٍ النشر...";
+  postMessage.textContent = "";
+
+  try{
+    let imageUrl = null;
+
+    if(file){
+      const extension =
+      file.name.split(".").pop().toLowerCase();
+
+      const filePath =
+      currentUser.id + "/" + crypto.randomUUID() + "." + extension;
+
+      const {error:uploadError} = await client.storage
+      .from("posts")
+      .upload(filePath,file,{
+        contentType:file.type,
+        upsert:false
       });
 
-      if (error) {
-        showMessage("خطأ: " + error.message);
-        return;
-      }
+      if(uploadError) throw uploadError;
 
-      if (data.session) {
-        showHome(data.user);
-      } else {
-        showMessage("تم إنشاء الحساب. افحص بريدك الإلكتروني لتأكيد الحساب، ثم سجّل الدخول.");
-      }
-    });
+      const {data:urlData} = client.storage
+      .from("posts")
+      .getPublicUrl(filePath);
 
-    document.getElementById("loginBtn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-
-      if (!email || !password) {
-        showMessage("أدخل البريد الإلكتروني وكلمة المرور");
-        return;
-      }
-
-      showMessage("جارٍ تسجيل الدخول...");
-
-      const { data, error } = await client.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
-
-      if (error) {
-        showMessage("تعذّر تسجيل الدخول: " + error.message);
-        return;
-      }
-
-      showHome(data.user);
-    });
-
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-      const { error } = await client.auth.signOut();
-
-      if (error) {
-        document.getElementById("homeMessage").textContent =
-          "حدث خطأ: " + error.message;
-        return;
-      }
-
-      showLogin();
-      showMessage("تم تسجيل الخروج");
-    });
-
-    function showSection(name) {
-      document.getElementById("sectionTitle").textContent = name;
+      imageUrl = urlData.publicUrl;
     }
 
-    async function checkSession() {
-      const { data, error } = await client.auth.getSession();
-
-      if (error) {
-        showMessage("تعذّر التحقق من الجلسة: " + error.message);
-        return;
-      }
-
-      if (data.session) {
-        showHome(data.session.user);
-      } else {
-        showLogin();
-      }
-    }
-
-    client.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        showHome(session.user);
-      } else if (event === "SIGNED_OUT") {
-        showLogin();
-      }
+    const {error:insertError} = await client
+    .from("posts")
+    .insert({
+      user_id:currentUser.id,
+      content:content || null,
+      image_url:imageUrl
     });
 
-    checkSession();
-  </script>
+    if(insertError) throw insertError;
+
+    document.getElementById("postContent").value = "";
+    document.getElementById("postImage").value = "";
+
+    postMessage.textContent = "تم نشر منشورك بنجاح ❤️";
+    await loadPosts();
+
+  }catch(error){
+    postMessage.textContent = "تعذّر النشر: " + error.message;
+  }finally{
+    button.disabled = false;
+    button.textContent = "نشر المنشور";
+  }
+};
+
+async function loadPosts(){
+  const list = document.getElementById("postsList");
+  list.textContent = "جارٍ تحميل المنشورات...";
+
+  const {data,error} = await client
+  .from("posts")
+  .select("*")
+  .order("created_at",{ascending:false});
+
+  if(error){
+    list.textContent = "تعذّر تحميل المنشورات: " + error.message;
+    return;
+  }
+
+  list.replaceChildren();
+
+  if(!data || data.length === 0){
+    list.textContent = "لا توجد منشورات حتى الآن. كن أول من ينشر!";
+    return;
+  }
+
+  data.forEach(post => {
+    const card = document.createElement("article");
+    card.className = "post";
+
+    const author = document.createElement("strong");
+    author.textContent =
+    post.user_id === currentUser.id ? "أنت" : "مستخدم DERT";
+
+    card.appendChild(author);
+
+    if(post.content){
+      const text = document.createElement("p");
+      text.className = "post-text";
+      text.textContent = post.content;
+      card.appendChild(text);
+    }
+
+    if(post.image_url){
+      const image = document.createElement("img");
+      image.src = post.image_url;
+      image.alt = "صورة المنشور";
+      image.loading = "lazy";
+      card.appendChild(image);
+    }
+
+    const date = document.createElement("div");
+    date.className = "post-date";
+    date.textContent = new Date(post.created_at).toLocaleString("ar-IQ");
+    card.appendChild(date);
+
+    list.appendChild(card);
+  });
+}
+
+client.auth.onAuthStateChange((event,session)=>{
+  if(session){
+    showHome(session.user);
+  }else if(event === "SIGNED_OUT"){
+    showLogin();
+  }
+});
+
+async function checkSession(){
+  const {data,error} = await client.auth.getSession();
+
+  if(error){
+    message.textContent = error.message;
+    return;
+  }
+
+  if(data.session){
+    showHome(data.session.user);
+  }else{
+    showLogin();
+  }
+}
+
+checkSession();
+</script>
 
 </body>
 </html>

@@ -15,7 +15,7 @@ header{background:#2563eb;color:white;padding:18px;text-align:center;font-size:2
 .card,.post{background:white;padding:18px;margin-bottom:15px;border-radius:15px;box-shadow:0 3px 12px #00000010}
 input,textarea{width:100%;padding:13px;margin:7px 0;border:1px solid #ddd;border-radius:10px;font-size:16px}
 textarea{min-height:90px;resize:vertical}
-button{border:0;border-radius:10px;padding:13px;background:#2563eb;color:white;font-size:16px;cursor:pointer;margin-top:8px}
+button,.choose-photo{display:inline-block;border:0;border-radius:10px;padding:13px;background:#2563eb;color:white;font-size:16px;cursor:pointer;margin-top:8px;text-align:center}
 button:disabled{opacity:.6}
 .full{width:100%}
 .secondary{background:#475569}
@@ -34,6 +34,9 @@ button:disabled{opacity:.6}
 .post img{width:100%;max-height:450px;object-fit:contain;border-radius:10px;margin-top:10px}
 .post-text{white-space:pre-wrap;line-height:1.7}
 .post-date{font-size:12px;color:#777;margin-top:10px}
+#avatarFile{display:none}
+.choose-photo{width:100%;background:#475569}
+.photo-help{font-size:12px;color:#64748b;margin-top:5px}
 </style>
 </head>
 
@@ -53,7 +56,6 @@ button:disabled{opacity:.6}
 
 <section id="home">
 
-<!-- الملف الشخصي -->
 <div class="card profile" id="profileSection">
 <h2>👤 ملفي الشخصي</h2>
 
@@ -75,7 +77,10 @@ button:disabled{opacity:.6}
 <input id="fullName" placeholder="الاسم الكامل">
 <input id="username" placeholder="اسم المستخدم بالإنجليزية">
 <textarea id="bio" placeholder="اكتب نبذة عن نفسك"></textarea>
-<input id="avatarUrl" placeholder="رابط الصورة الشخصية (اختياري)">
+
+<label class="choose-photo" for="avatarFile">📷 اختيار صورة من الهاتف</label>
+<input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp">
+<p class="photo-help">اختر صورة بصيغة JPG أو PNG أو WEBP، بحجم لا يتجاوز 5 ميغابايت.</p>
 
 <button class="full" id="saveProfileBtn">💾 حفظ الملف الشخصي</button>
 <p id="profileMessage"></p>
@@ -110,6 +115,7 @@ const client = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let currentUser = null;
 let currentProfile = null;
+let previewUrl = null;
 
 const el = id => document.getElementById(id);
 
@@ -148,6 +154,31 @@ function makeUsername(email,id){
   if(!base) base = "user";
   return base + "_" + id.replace(/-/g,"").slice(0,6);
 }
+
+/* معاينة الصورة المختارة */
+el("avatarFile").addEventListener("change",function(){
+  const file = this.files[0];
+
+  if(!file) return;
+
+  if(!file.type.startsWith("image/")){
+    el("profileMessage").textContent = "الملف يجب أن يكون صورة.";
+    this.value = "";
+    return;
+  }
+
+  if(file.size > 5 * 1024 * 1024){
+    el("profileMessage").textContent = "حجم الصورة يجب ألا يتجاوز 5 ميغابايت.";
+    this.value = "";
+    return;
+  }
+
+  if(previewUrl) URL.revokeObjectURL(previewUrl);
+  previewUrl = URL.createObjectURL(file);
+
+  showAvatar(previewUrl,el("fullName").value || "D");
+  el("profileMessage").textContent = "تم اختيار الصورة. اضغط حفظ الملف الشخصي.";
+});
 
 async function loadProfile(){
   if(!currentUser) return;
@@ -200,10 +231,14 @@ async function loadProfile(){
     el("fullName").value = data.full_name || "";
     el("username").value = data.username || "";
     el("bio").value = data.bio || "";
-    el("avatarUrl").value = data.avatar_url || "";
+    el("avatarFile").value = "";
+
+    if(previewUrl){
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
 
     showAvatar(data.avatar_url,data.full_name || data.username);
-
     el("profileMessage").textContent = "";
 
   }catch(error){
@@ -211,13 +246,14 @@ async function loadProfile(){
   }
 }
 
+/* حفظ الملف الشخصي ورفع الصورة */
 el("saveProfileBtn").onclick = async function(){
   if(!currentUser) return;
 
   const fullName = el("fullName").value.trim();
   const username = el("username").value.trim().toLowerCase();
   const bio = el("bio").value.trim();
-  const avatarUrl = el("avatarUrl").value.trim();
+  const file = el("avatarFile").files[0];
 
   if(!/^[a-z0-9_]{3,25}$/.test(username)){
     el("profileMessage").textContent =
@@ -225,15 +261,14 @@ el("saveProfileBtn").onclick = async function(){
     return;
   }
 
-  if(avatarUrl){
-    try{
-      const parsed = new URL(avatarUrl);
-      if(parsed.protocol !== "https:") throw new Error();
-    }catch(e){
-      el("profileMessage").textContent =
-        "رابط الصورة غير صحيح. استخدم رابط HTTPS.";
-      return;
-    }
+  if(file && !file.type.startsWith("image/")){
+    el("profileMessage").textContent = "الملف يجب أن يكون صورة.";
+    return;
+  }
+
+  if(file && file.size > 5 * 1024 * 1024){
+    el("profileMessage").textContent = "حجم الصورة يجب ألا يتجاوز 5 ميغابايت.";
+    return;
   }
 
   const button = el("saveProfileBtn");
@@ -241,13 +276,51 @@ el("saveProfileBtn").onclick = async function(){
   button.textContent = "جارٍ الحفظ...";
 
   try{
+    let avatarUrl = currentProfile?.avatar_url || null;
+
+    if(file){
+      el("profileMessage").textContent = "جارٍ رفع الصورة...";
+
+      const extensionMap = {
+        "image/jpeg":"jpg",
+        "image/png":"png",
+        "image/webp":"webp"
+      };
+
+      const extension = extensionMap[file.type];
+
+      if(!extension){
+        throw new Error("اختر صورة بصيغة JPG أو PNG أو WEBP.");
+      }
+
+      const path = currentUser.id + "/profile/" +
+        crypto.randomUUID() + "." + extension;
+
+      const {error:uploadError} = await client.storage
+        .from("posts")
+        .upload(path,file,{
+          contentType:file.type,
+          upsert:false
+        });
+
+      if(uploadError) throw uploadError;
+
+      const {data:urlData} = client.storage
+        .from("posts")
+        .getPublicUrl(path);
+
+      avatarUrl = urlData.publicUrl;
+    }
+
+    el("profileMessage").textContent = "جارٍ حفظ البيانات...";
+
     const {data,error} = await client
       .from("profiles")
       .update({
         full_name:fullName,
         username:username,
         bio:bio,
-        avatar_url:avatarUrl || null
+        avatar_url:avatarUrl
       })
       .eq("id",currentUser.id)
       .select()
@@ -262,7 +335,14 @@ el("saveProfileBtn").onclick = async function(){
 
     showAvatar(data.avatar_url,data.full_name || data.username);
 
-    el("profileMessage").textContent = "تم حفظ التغييرات بنجاح ❤️";
+    el("avatarFile").value = "";
+
+    if(previewUrl){
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+
+    el("profileMessage").textContent = "تم حفظ التغييرات والصورة بنجاح ❤️";
 
   }catch(error){
     el("profileMessage").textContent = "تعذر الحفظ: " + error.message;

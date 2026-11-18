@@ -123,7 +123,6 @@ nav button.active{background:#e9f1ff;color:#175fe5;border-color:#b9d1ff}
 <button class="full gray" id="refreshChats">تحديث المحادثات</button>
 <div id="chatList">جارٍ التحميل...</div>
 </div>
-
 <div class="card hidden" id="chatPanel">
 <div class="chat-person">
 <div id="chatAvatar" class="avatar">D</div>
@@ -156,7 +155,7 @@ const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 let currentUser=null,currentProfile=null;
 let activeConversation=null,activeReceiver=null;
-let activeChannel=null;
+let activeChannel=null,alertsChannel=null;
 
 const el=id=>document.getElementById(id);
 function msg(id,text){el(id).textContent=text}
@@ -177,14 +176,18 @@ function showLogin(){
  currentUser=null;currentProfile=null;
  activeConversation=null;activeReceiver=null;
  stopRealtime();
+ stopAlertsRealtime();
 }
 
-function makeAvatar(url,name,size){
- const img=document.createElement("img");
- img.className="avatar";img.alt="الصورة الشخصية";
- if(url){img.src=url;return img}
+function makeAvatar(url,name){
+ if(url){
+  const img=document.createElement("img");
+  img.className="avatar";img.alt="الصورة الشخصية";img.src=url;
+  return img;
+ }
  const div=document.createElement("div");
- div.className="avatar";div.textContent=(name||"D").charAt(0).toUpperCase();
+ div.className="avatar";
+ div.textContent=(name||"D").charAt(0).toUpperCase();
  return div;
 }
 
@@ -247,8 +250,12 @@ async function showHome(user){
  currentUser=user;
  el("auth").classList.add("hidden");
  el("home").classList.remove("hidden");
- try{await loadProfile();await loadPosts();await loadStats()}
- catch(e){msg("profileMessage","ملاحظة: "+e.message)}
+ try{
+  await loadProfile();
+  await loadPosts();
+  await loadStats();
+  startAlertsRealtime();
+ }catch(e){msg("profileMessage","ملاحظة: "+e.message)}
 }
 
 el("signupBtn").onclick=async()=>{
@@ -396,7 +403,7 @@ async function startChat(otherId,username){
  }catch(e){alert("تعذر بدء المحادثة: "+e.message)}
 }
 
-/* قائمة المحادثات مع آخر رسالة والصورة */
+/* قائمة المحادثات */
 async function loadChats(){
  const list=el("chatList");list.textContent="جارٍ تحميل المحادثات...";
  const {data:members,error}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
@@ -438,8 +445,10 @@ async function openChat(conversationId,receiverId,username){
  const {data:profile}=await client.from("profiles").select("username,full_name,avatar_url").eq("id",receiverId).maybeSingle();
  el("chatTitle").textContent=profile?.full_name||profile?.username||username||"محادثة";
  el("chatUsername").textContent="@"+(profile?.username||username||"");
- el("chatAvatar").replaceWith(makeAvatar(profile?.avatar_url,profile?.full_name||profile?.username));
- el("chatAvatar").id="chatAvatar";
+ const oldAvatar=el("chatAvatar");
+ const newAvatar=makeAvatar(profile?.avatar_url,profile?.full_name||profile?.username);
+ newAvatar.id="chatAvatar";
+ oldAvatar.replaceWith(newAvatar);
  await loadMessages();
  await markMessagesRead();
  startRealtime();
@@ -488,7 +497,7 @@ async function markMessagesRead(){
  if(error)console.log("تعذر تحديث حالة القراءة:",error.message);
 }
 
-/* تحديث مباشر عبر Supabase Realtime */
+/* تحديث مباشر للرسائل */
 function startRealtime(){
  if(!activeConversation)return;
  const conversationId=activeConversation;
@@ -512,63 +521,100 @@ function stopRealtime(){
  }
 }
 
-/* إرسال النص والصورة والفيديو */
-el("sendMessageBtn").onclick=async()=>{
- if(!activeConversation||!activeReceiver)return;
- const content=el("chatText").value.trim(),file=el("chatFile").files[0];
- if(!content&&!file){msg("chatStatus","اكتب رسالة أو اختر صورة أو فيديو");return}
- const btn=el("sendMessageBtn");btn.disabled=true;
- try{
-  let mediaUrl=null,mediaType=null;
-  if(file){
-   if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))throw new Error("اختر صورة أو فيديو");
-   mediaUrl=await uploadFile(file,"messages");
-   mediaType=file.type.startsWith("video/")?"video":"image";
-  }
-  const {error}=await client.from("messages").insert({
-   conversation_id:activeConversation,
-   sender_id:currentUser.id,
-   receiver_id:activeReceiver,
-   content:content||null,
-   media_url:mediaUrl,
-   media_type:mediaType,
-   is_read:false
-  });
-  if(error)throw error;
-  await client.from("conversations").update({last_message:content||(mediaType==="video"?"فيديو":"صورة")}).eq("id",activeConversation);
-  el("chatText").value="";el("chatFile").value="";
-  msg("chatStatus","تم إرسال الرسالة ❤️");
-  await loadMessages();await loadChats();
- }catch(e){msg("chatStatus","تعذر الإرسال: "+e.message)}
- finally{btn.disabled=false}
-};
-
-el("closeChatBtn").onclick=()=>{
- stopRealtime();
- el("chatPanel").classList.add("hidden");
- activeConversation=null;activeReceiver=null;
-};
-el("refreshChats").onclick=loadChats;
-
-/* الإشعارات */
+/* الإشعارات المطورة */
 async function loadAlerts(){
- const list=el("alertsList");list.textContent="جارٍ تحميل الإشعارات...";
- const {data,error}=await client.from("notifications").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
- if(error){list.textContent="تعذر تحميل الإشعارات: "+error.message;return}
- list.replaceChildren();
- if(!data?.length){list.textContent="لا توجد إشعارات حالياً";return}
- data.forEach(n=>{
-  const row=document.createElement("div");row.className="item";
-  const t=document.createElement("strong");
-  const types={follow:"بدأ شخص بمتابعتك",message:"لديك رسالة جديدة",like:"إعجاب جديد",comment:"تعليق جديد"};
-  t.textContent=types[n.type]||"إشعار جديد";
-  row.appendChild(t);
-  const date=document.createElement("div");date.className="small";
-  date.textContent=n.created_at?new Date(n.created_at).toLocaleString("ar-IQ"):"";
-  row.appendChild(date);list.appendChild(row);
- });
+ const list=el("alertsList");
+ list.textContent="جارٍ تحميل الإشعارات...";
+
+ try{
+  const {data,error}=await client.from("notifications")
+   .select("*")
+   .eq("user_id",currentUser.id)
+   .order("created_at",{ascending:false})
+   .limit(50);
+
+  if(error)throw error;
+  list.replaceChildren();
+
+  if(!data?.length){
+   list.textContent="لا توجد إشعارات حالياً";
+   return;
+  }
+
+  const senderIds=[...new Set(data.map(n=>n.sender_id).filter(Boolean))];
+  const profiles={};
+
+  if(senderIds.length){
+   const {data:users,error:userError}=await client.from("profiles")
+    .select("id,username,full_name,avatar_url")
+    .in("id",senderIds);
+   if(userError)throw userError;
+   (users||[]).forEach(p=>profiles[p.id]=p);
+  }
+
+  data.forEach(n=>{
+   const sender=profiles[n.sender_id];
+   const row=document.createElement("div");
+   row.className="item";
+   const line=document.createElement("div");
+   line.className="chat-row";
+   line.appendChild(makeAvatar(sender?.avatar_url,sender?.full_name||sender?.username||"D"));
+
+   const info=document.createElement("div");
+   info.className="chat-row-info";
+   const title=document.createElement("strong");
+
+   if(n.type==="follow"){
+    title.textContent=(sender?.full_name||sender?.username||"مستخدم")+" بدأ بمتابعتك";
+   }else if(n.type==="message"){
+    title.textContent=(sender?.full_name||sender?.username||"مستخدم")+" أرسل إليك رسالة";
+   }else{
+    title.textContent=n.content||"إشعار جديد";
+   }
+
+   const username=document.createElement("div");
+   username.className="small";
+   username.textContent=sender?.username?"@"+sender.username:"";
+
+   const date=document.createElement("div");
+   date.className="small";
+   date.textContent=n.created_at?new Date(n.created_at).toLocaleString("ar-IQ"):"";
+
+   info.append(title,username,date);
+   line.appendChild(info);
+   row.appendChild(line);
+   list.appendChild(row);
+  });
+ }catch(e){
+  list.textContent="تعذر تحميل الإشعارات: "+e.message;
+ }
 }
+
 el("refreshAlerts").onclick=loadAlerts;
+
+/* تحديث الإشعارات مباشرة */
+function startAlertsRealtime(){
+ stopAlertsRealtime();
+ if(!currentUser)return;
+
+ alertsChannel=client.channel("dert-alerts-"+currentUser.id)
+  .on("postgres_changes",{
+   event:"INSERT",
+   schema:"public",
+   table:"notifications",
+   filter:"user_id=eq."+currentUser.id
+  },()=>{
+   if(el("alerts").classList.contains("active"))loadAlerts();
+  })
+  .subscribe();
+}
+
+function stopAlertsRealtime(){
+ if(alertsChannel){
+  client.removeChannel(alertsChannel);
+  alertsChannel=null;
+ }
+}
 
 client.auth.onAuthStateChange((event)=>{
  if(event==="SIGNED_OUT")showLogin();

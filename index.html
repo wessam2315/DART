@@ -5,36 +5,126 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DERT - تواصل مع العالم</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f4f6fb;color:#202536}
-header{background:#17233d;color:white;padding:22px;text-align:center}
-.logo{font-size:38px;font-weight:bold;color:#55d6a0}
-.container{max-width:500px;margin:35px auto;padding:20px}
-.card{background:white;padding:25px;border-radius:18px;box-shadow:0 4px 18px #0001}
+body{margin:0;font-family:Arial;background:#f1f4f8;color:#17233d}
+header{background:#17233d;color:white;text-align:center;padding:25px}
+.logo{font-size:38px;font-weight:bold;color:#55d98a}
+.container{max-width:460px;margin:35px auto;padding:15px}
+.card{background:white;padding:25px;border-radius:16px;box-shadow:0 4px 18px #0001}
 h2{text-align:center}
-input{width:100%;padding:15px;margin:9px 0;border:1px solid #ddd;border-radius:10px;font-size:16px}
-button{width:100%;padding:15px;margin-top:12px;border:0;border-radius:10px;background:#17233d;color:white;font-size:17px}
-.secondary{background:#21a878}
-footer{text-align:center;padding:20px;color:#777}
+input{width:100%;padding:14px;margin:9px 0;border:1px solid #ccc;border-radius:9px;font-size:16px}
+button{width:100%;padding:14px;margin-top:12px;border:0;border-radius:9px;background:#17233d;color:white;font-size:17px}
+.secondary{background:#218878}
+#message{text-align:center;margin-top:16px;line-height:1.7}
+footer{text-align:center;color:#777;padding:20px}
 </style>
 </head>
 <body>
 <header>
-<div class="logo">DERT</div>
-<p>تواصل مع العالم 🌍</p>
+  <div class="logo">DERT</div>
+  <p>تواصل مع العالم 🌍</p>
 </header>
+
 <div class="container">
 <div class="card">
 <h2>مرحباً بك في DERT</h2>
-<p style="text-align:center">عالمك الاجتماعي يبدأ من هنا</p>
-<input type="text" placeholder="اسم المستخدم">
-<input type="email" placeholder="البريد الإلكتروني">
-<input type="password" placeholder="كلمة المرور">
-<button onclick="alert('سيتم تفعيل تسجيل الدخول قريباً')">تسجيل الدخول</button>
-<button class="secondary" onclick="alert('سيتم تفعيل إنشاء الحساب قريباً')">إنشاء حساب جديد</button>
+<p style="text-align:center">أنشئ حسابك أو سجّل الدخول</p>
+
+<input id="username" type="text" placeholder="اسم المستخدم">
+<input id="email" type="email" placeholder="البريد الإلكتروني">
+<input id="password" type="password" placeholder="كلمة المرور">
+
+<button onclick="signUp()">إنشاء حساب جديد</button>
+<button class="secondary" onclick="signIn()">تسجيل الدخول</button>
+<button onclick="signOut()">تسجيل الخروج</button>
+
+<p id="message"></p>
 </div>
 </div>
+
 <footer>DERT © 2026 - تواصل مع العالم</footer>
+
+<script>
+// ضع رابط مشروع Supabase هنا
+const SUPABASE_URL = "https://forwefmjghgcybiccdxz.supabase.co";
+
+// ضع المفتاح العام anon أو publishable هنا فقط
+const SUPABASE_KEY = "ضع_المفتاح_العام_هنا";
+
+const client = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+function showMessage(text){
+  document.getElementById("message").textContent = text;
+}
+
+async function signUp(){
+  const username = document.getElementById("username").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!username || !email || !password){
+    showMessage("يرجى ملء جميع الحقول");
+    return;
+  }
+
+  if(password.length < 6){
+    showMessage("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+    return;
+  }
+
+  const {data,error} = await client.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      data: { username: username }
+    }
+  });
+
+  if(error){
+    showMessage("تعذر إنشاء الحساب: " + error.message);
+    return;
+  }
+
+  showMessage("تم إرسال طلب إنشاء الحساب. افحص بريدك الإلكتروني إذا طُلب منك تأكيده.");
+}
+
+async function signIn(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if(!email || !password){
+    showMessage("أدخل البريد الإلكتروني وكلمة المرور");
+    return;
+  }
+
+  const {data,error} = await client.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if(error){
+    showMessage("تعذر تسجيل الدخول: " + error.message);
+    return;
+  }
+
+  showMessage("أهلاً بك! تم تسجيل الدخول بنجاح.");
+}
+
+async function signOut(){
+  const {error} = await client.auth.signOut();
+
+  if(error){
+    showMessage("تعذر تسجيل الخروج: " + error.message);
+    return;
+  }
+
+  showMessage("تم تسجيل الخروج.");
+}
+</script>
 </body>
 </html>

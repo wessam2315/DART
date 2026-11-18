@@ -78,22 +78,36 @@ nav button.active{background:#132c50;color:#48a6ff}
 .auth-message{font-size:13px;color:#cbd5ff;min-height:20px}
 @media(max-width:380px){.brand-mark{width:155px;height:155px;font-size:85px}.brand-name{font-size:45px}nav button{font-size:10px}}
 
-/* الملف الشخصي - ترتيب واتساب */
-.profile-page{padding:8px 0 25px}
-.profile-heading{text-align:center;padding:22px 10px}
-.profile-photo-wrap{position:relative;width:112px;height:112px;margin:0 auto 13px;cursor:pointer;display:block}
-.profile-photo-wrap .avatar{width:112px;height:112px;border:3px solid #258aff;box-shadow:0 0 22px #1685ff55;font-size:42px}
+/* صفحة الحساب - تصميم مستوحى من تيك توك */
+.profile-page{padding:0 0 25px;overflow:hidden}
+.profile-cover{height:105px;background:linear-gradient(120deg,#102d61,#17204b 55%,#3b1d72);position:relative}
+.profile-heading{text-align:center;padding:0 15px 18px;margin-top:-58px;position:relative}
+.profile-photo-wrap{position:relative;width:116px;height:116px;margin:0 auto 12px;cursor:pointer;display:block}
+.profile-photo-wrap .avatar{width:116px;height:116px;border:4px solid #101a30;outline:2px solid #258aff;box-shadow:0 0 22px #1685ff55;font-size:44px}
 .photo-edit-icon{position:absolute;bottom:2px;right:2px;width:34px;height:34px;border-radius:50%;background:#1685ff;border:3px solid #101a30;display:flex;align-items:center;justify-content:center}
-.profile-heading h2{margin:8px 0 5px;font-size:22px}
-.profile-options{background:#101a30;border:1px solid #263653;border-radius:16px;overflow:hidden;margin:15px 0}
-.profile-option{display:flex;align-items:center;gap:13px;padding:15px 13px;border-bottom:1px solid #263653}
+.profile-heading h2{margin:10px 0 5px;font-size:25px;font-weight:800}
+.profile-username{font-size:14px;color:#91a8d1;margin:0 0 12px;direction:ltr}
+.profile-bio{font-size:13px;color:#d0d8e9;line-height:1.7;max-width:420px;margin:0 auto 16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.profile-edit-btn{min-width:190px;padding:11px 25px;background:#172b4b;border:1px solid #31517e;color:#fff;font-weight:bold}
+.profile-edit-btn:active{background:#214575}
+.profile-stats{display:flex;justify-content:center;gap:0;text-align:center;padding:16px 5px;border-block:1px solid var(--line);margin:0 0 20px}
+.profile-stats>div{flex:1;border-left:1px solid #263653}
+.profile-stats>div:last-child{border-left:0}
+.profile-stats strong{display:block;font-size:21px;color:#71b6ff;margin-bottom:5px}
+.profile-stats span{font-size:12px;color:#aebbd3}
+.profile-settings{margin:0 14px 15px;padding:15px;background:#0b1428;border:1px solid #263653;border-radius:16px}
+.profile-settings h3{margin:0 0 12px;font-size:17px}
+.profile-options{background:#101a30;border:1px solid #263653;border-radius:14px;overflow:hidden;margin:12px 0}
+.profile-option{display:flex;align-items:center;gap:13px;padding:13px;border-bottom:1px solid #263653}
 .profile-option:last-child{border-bottom:0}
-.profile-option-icon{width:42px;height:42px;border-radius:12px;background:#172c4c;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.profile-option-icon{width:40px;height:40px;border-radius:12px;background:#172c4c;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .profile-option-content{flex:1;min-width:0}
 .profile-option-content label{display:block;color:#75b7ff;font-size:12px;margin-bottom:5px}
 .profile-option-content input,.profile-option-content textarea{margin:0;background:#0b1428}
-.profile-save{margin-top:15px;padding:15px;font-weight:bold}
-.profile-logout{margin-top:35px;padding:15px}
+.profile-option-content textarea{min-height:70px}
+.profile-save{margin-top:12px;padding:14px;font-weight:bold}
+.profile-logout{margin:18px 14px 0;width:calc(100% - 28px);padding:14px}
+.profile-message{margin:8px 14px;text-align:center;min-height:18px}
 </style>
 </head>
 <body>
@@ -194,6 +208,7 @@ nav button.active{background:#132c50;color:#48a6ff}
 
 <section id="profile" class="section">
  <div class="card profile-page">
+  <div class="profile-cover"></div>
   <div class="profile-heading">
    <label for="avatarFile" class="profile-photo-wrap">
     <div id="avatarDisplay" class="avatar">D</div>
@@ -201,40 +216,47 @@ nav button.active{background:#132c50;color:#48a6ff}
    </label>
    <input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp">
    <h2 id="displayName">مستخدم DERT</h2>
-   <div id="displayUsername" class="small">@user</div>
-   <p class="small">ملفك الشخصي في DERT 🌍</p>
+   <div id="displayUsername" class="profile-username">@user</div>
+   <p id="displayBio" class="profile-bio">مرحباً بك في ملفي الشخصي على DERT 🌍</p>
+   <button id="editProfileBtn" class="profile-edit-btn">✏️ تعديل الملف الشخصي</button>
   </div>
-  <div class="stats">
-   <div><strong id="postsCount">0</strong><span>منشوراتي</span></div>
-   <div><strong id="followersCount">0</strong><span>متابعوني</span></div>
+
+  <div class="profile-stats">
+   <div><strong id="postsCount">0</strong><span>المنشورات</span></div>
+   <div><strong id="followersCount">0</strong><span>المتابعون</span></div>
    <div><strong id="followingCount">0</strong><span>أتابع</span></div>
   </div>
-  <h3>إعدادات الحساب</h3>
-  <div class="profile-options">
-   <div class="profile-option">
-    <div class="profile-option-icon">👤</div>
-    <div class="profile-option-content">
-     <label>الاسم الكامل</label>
-     <input id="fullName" placeholder="اكتب اسمك الكامل">
+
+  <div id="profileSettings" class="profile-settings hidden">
+   <h3>⚙️ تعديل الملف الشخصي</h3>
+   <div class="profile-options">
+    <div class="profile-option">
+     <div class="profile-option-icon">👤</div>
+     <div class="profile-option-content">
+      <label>الاسم الكامل</label>
+      <input id="fullName" placeholder="اكتب اسمك الكامل">
+     </div>
+    </div>
+    <div class="profile-option">
+     <div class="profile-option-icon">＠</div>
+     <div class="profile-option-content">
+      <label>اسم المستخدم</label>
+      <input id="username" placeholder="اسم المستخدم بالإنجليزية" dir="ltr">
+     </div>
+    </div>
+    <div class="profile-option">
+     <div class="profile-option-icon">📝</div>
+     <div class="profile-option-content">
+      <label>النبذة الشخصية</label>
+      <textarea id="bio" placeholder="اكتب نبذة عن نفسك"></textarea>
+     </div>
     </div>
    </div>
-   <div class="profile-option">
-    <div class="profile-option-icon">＠</div>
-    <div class="profile-option-content">
-     <label>اسم المستخدم</label>
-     <input id="username" placeholder="اسم المستخدم بالإنجليزية" dir="ltr">
-    </div>
-   </div>
-   <div class="profile-option">
-    <div class="profile-option-icon">📝</div>
-    <div class="profile-option-content">
-     <label>النبذة الشخصية</label>
-     <textarea id="bio" placeholder="اكتب نبذة عن نفسك"></textarea>
-    </div>
-   </div>
+   <button class="full profile-save" id="saveProfileBtn">💾 حفظ التعديلات</button>
+   <button class="full gray" id="cancelProfileBtn" style="margin-top:9px">إلغاء</button>
   </div>
-  <button class="full profile-save" id="saveProfileBtn">💾 حفظ التعديلات</button>
-  <p id="profileMessage" class="small"></p>
+
+  <p id="profileMessage" class="small profile-message"></p>
   <button class="full red profile-logout" id="logoutBtn">🚪 تسجيل الخروج</button>
  </div>
 </section>
@@ -299,7 +321,7 @@ function openTab(name,button){
  }
  if(name==="chats")loadChats();
  if(name==="alerts")loadAlerts();
- if(name==="profile")loadStats();
+ if(name==="profile"){loadStats();loadProfile().catch(e=>msg("profileMessage","تعذر تحميل الحساب: "+e.message))}
  if(name==="feed")loadPosts();
 }
 
@@ -327,6 +349,7 @@ async function uploadFile(file,folder){
 }
 
 async function loadProfile(){
+ if(!currentUser)return;
  const {data,error}=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
  if(error)throw error;
  if(!data)throw new Error("لم يتم العثور على الملف الشخصي");
@@ -336,30 +359,63 @@ async function loadProfile(){
  el("bio").value=data.bio||"";
  el("displayName").textContent=data.full_name||"مستخدم DERT";
  el("displayUsername").textContent="@"+(data.username||"user");
+ el("displayBio").textContent=data.bio||"مرحباً بك في ملفي الشخصي على DERT 🌍";
  showAvatar(data.avatar_url,data.full_name||data.username);
 }
+
+function openProfileEditor(){
+ if(!currentProfile){
+  msg("profileMessage","انتظر حتى يتم تحميل بيانات الحساب");
+  return;
+ }
+ el("profileSettings").classList.remove("hidden");
+ el("editProfileBtn").classList.add("hidden");
+ el("profileSettings").scrollIntoView({behavior:"smooth",block:"center"});
+}
+function closeProfileEditor(){
+ el("profileSettings").classList.add("hidden");
+ el("editProfileBtn").classList.remove("hidden");
+ if(currentProfile){
+  el("fullName").value=currentProfile.full_name||"";
+  el("username").value=currentProfile.username||"";
+  el("bio").value=currentProfile.bio||"";
+ }
+ el("avatarFile").value="";
+ showAvatar(currentProfile?.avatar_url,currentProfile?.full_name||currentProfile?.username);
+ msg("profileMessage","");
+}
+el("editProfileBtn").onclick=openProfileEditor;
+el("cancelProfileBtn").onclick=closeProfileEditor;
 
 async function saveProfile(){
  const username=el("username").value.trim().toLowerCase();
  const file=el("avatarFile").files[0];
- if(!/^[a-z0-9_]{3,25}$/.test(username)){msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");return}
+ if(!/^[a-z0-9_]{3,25}$/.test(username)){
+  msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");return;
+ }
  const btn=el("saveProfileBtn");btn.disabled=true;
  try{
   let avatar=currentProfile?.avatar_url||null;
   if(file)avatar=await uploadFile(file,"profile");
   const {data,error}=await client.from("profiles").update({
-   full_name:el("fullName").value.trim(),username,
-   bio:el("bio").value.trim(),avatar_url:avatar
+   full_name:el("fullName").value.trim(),
+   username,
+   bio:el("bio").value.trim(),
+   avatar_url:avatar
   }).eq("id",currentUser.id).select().single();
   if(error)throw error;
   currentProfile=data;
   el("displayName").textContent=data.full_name||"مستخدم DERT";
-  el("displayUsername").textContent="@"+data.username;
+  el("displayUsername").textContent="@"+(data.username||"user");
+  el("displayBio").textContent=data.bio||"مرحباً بك في ملفي الشخصي على DERT 🌍";
   showAvatar(data.avatar_url,data.full_name||data.username);
   el("avatarFile").value="";
+  el("profileSettings").classList.add("hidden");
+  el("editProfileBtn").classList.remove("hidden");
   msg("profileMessage","تم حفظ الملف الشخصي بنجاح ❤️");
- }catch(e){msg("profileMessage","تعذر الحفظ: "+e.message)}
- finally{btn.disabled=false}
+ }catch(e){
+  msg("profileMessage","تعذر الحفظ: "+e.message);
+ }finally{btn.disabled=false}
 }
 
 el("avatarFile").onchange=()=>{
@@ -369,13 +425,19 @@ el("avatarFile").onchange=()=>{
  }
  const url=URL.createObjectURL(file);
  showAvatar(url,el("fullName").value||"D");
- msg("profileMessage","معاينة الصورة الجديدة - اضغط حفظ التعديلات");
+ if(el("profileSettings").classList.contains("hidden"))openProfileEditor();
+ msg("profileMessage","تم اختيار الصورة - اضغط حفظ التعديلات");
 };
 
 async function showHome(user){
  currentUser=user;el("auth").classList.add("hidden");el("home").classList.remove("hidden");
- try{await loadProfile();await loadStats();await loadChats();startAlertsRealtime();openTab("chats")}
- catch(e){msg("profileMessage","ملاحظة: "+e.message)}
+ try{
+  await loadProfile();
+  await loadStats();
+  await loadChats();
+  startAlertsRealtime();
+  openTab("chats");
+ }catch(e){msg("profileMessage","ملاحظة: "+e.message)}
 }
 
 el("signupBtn").onclick=async()=>{
@@ -424,7 +486,10 @@ el("publishBtn").onclick=async()=>{
  const btn=el("publishBtn");btn.disabled=true;
  try{
   let image_url=null;
-  if(file){if(!file.type.startsWith("image/"))throw new Error("اختر صورة فقط للمنشور");image_url=await uploadFile(file,"posts")}
+  if(file){
+   if(!file.type.startsWith("image/"))throw new Error("اختر صورة فقط للمنشور");
+   image_url=await uploadFile(file,"posts");
+  }
   const {error}=await client.from("posts").insert({user_id:currentUser.id,content:content||null,image_url});
   if(error)throw error;
   el("postContent").value="";el("postImage").value="";
@@ -453,10 +518,13 @@ async function loadPosts(){
 }
 
 async function loadStats(){
+ if(!currentUser)return;
  const {count:posts}=await client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id);
  const {count:followers}=await client.from("follows").select("*",{count:"exact",head:true}).eq("following_id",currentUser.id);
  const {count:following}=await client.from("follows").select("*",{count:"exact",head:true}).eq("follower_id",currentUser.id);
- el("postsCount").textContent=posts||0;el("followersCount").textContent=followers||0;el("followingCount").textContent=following||0;
+ el("postsCount").textContent=posts||0;
+ el("followersCount").textContent=followers||0;
+ el("followingCount").textContent=following||0;
 }
 
 el("searchBtn").onclick=async()=>{
@@ -512,7 +580,8 @@ async function startChat(otherId,username){
   const {data:conversation,error}=await client.from("conversations").insert({created_by:currentUser.id,last_message:""}).select("id").single();
   if(error)throw error;
   const {error:memberError}=await client.from("conversation_members").insert([
-   {conversation_id:conversation.id,user_id:currentUser.id},{conversation_id:conversation.id,user_id:otherId}
+   {conversation_id:conversation.id,user_id:currentUser.id},
+   {conversation_id:conversation.id,user_id:otherId}
   ]);
   if(memberError)throw memberError;
   openTab("chats");await openChat(conversation.id,otherId,username);

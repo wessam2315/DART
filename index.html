@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DERT - عالم التواصل</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f1f4f9;color:#172033;font-family:Arial,sans-serif}
@@ -21,8 +22,50 @@ button:disabled{opacity:.5}
 .red{background:#dc2626}
 .small{font-size:12px;color:#64748b}
 .hidden{display:none!important}
-nav{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0}
-nav button{flex:1;min-width:90px}
+
+/* شريط التنقل الجديد */
+nav{
+ display:grid;
+ grid-template-columns:repeat(5,1fr);
+ gap:8px;
+ margin:14px 0;
+ padding:10px;
+ background:white;
+ border-radius:18px;
+ box-shadow:0 3px 12px #0001;
+}
+nav button{
+ min-width:0;
+ margin:0;
+ padding:10px 3px;
+ background:#f4f6fb;
+ color:#475569;
+ border:1px solid #edf0f5;
+ border-radius:14px;
+ font-size:12px;
+ font-weight:bold;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ gap:7px;
+}
+nav button .nav-icon{
+ font-size:23px;
+ line-height:1;
+}
+nav button.active{
+ background:#e9f1ff;
+ color:#175fe5;
+ border-color:#b9d1ff;
+ box-shadow:0 2px 7px #175fe522;
+}
+@media(max-width:380px){
+ nav{gap:4px;padding:6px}
+ nav button{font-size:10px;padding:10px 2px}
+ nav button .nav-icon{font-size:20px}
+}
+
 .section{display:none}
 .section.active{display:block}
 .avatar{width:58px;height:58px;border-radius:50%;object-fit:cover;background:#175fe5;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:24px}
@@ -41,6 +84,7 @@ nav button{flex:1;min-width:90px}
 .choose{display:block;text-align:center;background:#475569}
 </style>
 </head>
+
 <body>
 <header>DERT 🌍</header>
 <div class="container">
@@ -55,12 +99,28 @@ nav button{flex:1;min-width:90px}
 </section>
 
 <section id="home" class="hidden">
+
 <nav>
-<button onclick="openTab('feed')">الرئيسية</button>
-<button onclick="openTab('profile')">ملفي</button>
-<button onclick="openTab('people')">المستخدمون</button>
-<button onclick="openTab('chats')">الرسائل</button>
-<button onclick="openTab('alerts')">الإشعارات</button>
+<button class="active" onclick="openTab('feed',this)">
+ <span class="nav-icon">🏠</span>
+ الرئيسية
+</button>
+<button onclick="openTab('profile',this)">
+ <span class="nav-icon">👤</span>
+ ملفي
+</button>
+<button onclick="openTab('people',this)">
+ <span class="nav-icon">🌐</span>
+ المستخدمون
+</button>
+<button onclick="openTab('chats',this)">
+ <span class="nav-icon">💬</span>
+ الرسائل
+</button>
+<button onclick="openTab('alerts',this)">
+ <span class="nav-icon">🔔</span>
+ الإشعارات
+</button>
 </nav>
 
 <section id="feed" class="section active">
@@ -150,15 +210,16 @@ let activeConversation=null;
 let activeReceiver=null;
 
 const el=id=>document.getElementById(id);
-
 function msg(id,text){el(id).textContent=text}
 
-function openTab(name){
+function openTab(name,button){
  document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
  el(name).classList.add("active");
- if(name==="chats") loadChats();
- if(name==="alerts") loadAlerts();
- if(name==="profile") loadStats();
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+ if(button)button.classList.add("active");
+ if(name==="chats")loadChats();
+ if(name==="alerts")loadAlerts();
+ if(name==="profile")loadStats();
 }
 
 function showLogin(){
@@ -182,13 +243,8 @@ function showAvatar(url,name){
  }
 }
 
-function makeUsername(email,id){
- let base=(email||"user").split("@")[0].toLowerCase().replace(/[^a-z0-9_]/g,"");
- return (base||"user")+"_"+id.replace(/-/g,"").slice(0,6);
-}
-
 async function uploadFile(file,folder){
- if(!file) return null;
+ if(!file)return null;
  if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))
   throw new Error("نوع الملف غير مدعوم");
  if(file.size>50*1024*1024)
@@ -196,14 +252,14 @@ async function uploadFile(file,folder){
  const ext=(file.name.split(".").pop()||"file").toLowerCase().replace(/[^a-z0-9]/g,"");
  const path=currentUser.id+"/"+folder+"/"+crypto.randomUUID()+"."+ext;
  const {error}=await client.storage.from("posts").upload(path,file,{contentType:file.type,upsert:false});
- if(error) throw error;
+ if(error)throw error;
  return client.storage.from("posts").getPublicUrl(path).data.publicUrl;
 }
 
 async function loadProfile(){
  const {data,error}=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
- if(error) throw error;
- if(!data) throw new Error("لم يتم العثور على الملف الشخصي. تأكد من إنشاء الملف عند التسجيل.");
+ if(error)throw error;
+ if(!data)throw new Error("لم يتم العثور على الملف الشخصي. تأكد من إنشاء الملف عند التسجيل.");
  currentProfile=data;
  el("fullName").value=data.full_name||"";
  el("username").value=data.username||"";
@@ -223,14 +279,14 @@ async function saveProfile(){
  const btn=el("saveProfileBtn");btn.disabled=true;
  try{
   let avatar=currentProfile?.avatar_url||null;
-  if(file) avatar=await uploadFile(file,"profile");
+  if(file)avatar=await uploadFile(file,"profile");
   const {data,error}=await client.from("profiles").update({
    full_name:el("fullName").value.trim(),
    username,
    bio:el("bio").value.trim(),
    avatar_url:avatar
   }).eq("id",currentUser.id).select().single();
-  if(error) throw error;
+  if(error)throw error;
   currentProfile=data;
   el("displayName").textContent=data.full_name||"مستخدم DERT";
   el("displayUsername").textContent="@"+data.username;
@@ -258,7 +314,7 @@ el("signupBtn").onclick=async()=>{
  msg("message","جارٍ إنشاء الحساب...");
  const {data,error}=await client.auth.signUp({email,password});
  if(error){msg("message",error.message);return}
- if(data.session) await showHome(data.user);
+ if(data.session)await showHome(data.user);
  else msg("message","تم إنشاء الحساب. افحص بريدك لتأكيد الحساب ثم سجّل الدخول.");
 };
 
@@ -285,13 +341,13 @@ el("publishBtn").onclick=async()=>{
  try{
   let image_url=null;
   if(file){
-   if(!file.type.startsWith("image/")) throw new Error("اختر صورة فقط للمنشور");
+   if(!file.type.startsWith("image/"))throw new Error("اختر صورة فقط للمنشور");
    image_url=await uploadFile(file,"posts");
   }
   const {error}=await client.from("posts").insert({
    user_id:currentUser.id,content:content||null,image_url
   });
-  if(error) throw error;
+  if(error)throw error;
   el("postContent").value="";el("postImage").value="";
   msg("postMessage","تم نشر المنشور بنجاح ❤️");
   await loadPosts();await loadStats();
@@ -356,11 +412,11 @@ async function followUser(id,button){
  try{
   if(button.dataset.following==="yes"){
    const {error}=await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",id);
-   if(error) throw error;
+   if(error)throw error;
    button.textContent="متابعة";button.dataset.following="";
   }else{
    const {error}=await client.from("follows").insert({follower_id:currentUser.id,following_id:id});
-   if(error) throw error;
+   if(error)throw error;
    button.textContent="إلغاء المتابعة";button.dataset.following="yes";
   }
   await loadStats();
@@ -371,11 +427,11 @@ async function followUser(id,button){
 async function startChat(otherId,username){
  try{
   const {data:mine,error:e1}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
-  if(e1) throw e1;
+  if(e1)throw e1;
   const ids=(mine||[]).map(x=>x.conversation_id);
   if(ids.length){
    const {data:theirs,error:e2}=await client.from("conversation_members").select("conversation_id").eq("user_id",otherId).in("conversation_id",ids);
-   if(e2) throw e2;
+   if(e2)throw e2;
    if(theirs?.length){
     await openChat(theirs[0].conversation_id,otherId,username);return;
    }
@@ -383,12 +439,12 @@ async function startChat(otherId,username){
   const {data:conversation,error}=await client.from("conversations").insert({
    created_by:currentUser.id,last_message:""
   }).select("id").single();
-  if(error) throw error;
+  if(error)throw error;
   const {error:memberError}=await client.from("conversation_members").insert([
    {conversation_id:conversation.id,user_id:currentUser.id},
    {conversation_id:conversation.id,user_id:otherId}
   ]);
-  if(memberError) throw memberError;
+  if(memberError)throw memberError;
   await openChat(conversation.id,otherId,username);
  }catch(e){alert("تعذر بدء المحادثة: "+e.message)}
 }
@@ -402,7 +458,7 @@ async function loadChats(){
  for(const m of members){
   const {data:others}=await client.from("conversation_members").select("user_id").eq("conversation_id",m.conversation_id).neq("user_id",currentUser.id);
   const other=others?.[0];
-  if(!other) continue;
+  if(!other)continue;
   const {data:profile}=await client.from("profiles").select("username,full_name").eq("id",other.user_id).maybeSingle();
   const row=document.createElement("div");row.className="item";
   const name=document.createElement("strong");name.textContent=profile?.full_name||profile?.username||"مستخدم";
@@ -476,7 +532,6 @@ el("closeChatBtn").onclick=()=>{
  el("chatPanel").classList.add("hidden");
  activeConversation=null;activeReceiver=null;
 };
-
 el("refreshChats").onclick=loadChats;
 
 /* الإشعارات */

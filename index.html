@@ -12,7 +12,7 @@
 body{margin:0;background:var(--bg);color:#f5f7ff;font-family:Arial,sans-serif}
 .hidden{display:none!important}
 button{border:0;border-radius:12px;padding:12px 15px;background:var(--blue);color:white;font-size:14px;cursor:pointer}
-button:disabled{opacity:.5}
+button:disabled{opacity:.5;cursor:not-allowed}
 input,textarea{width:100%;padding:13px;margin:6px 0;border:1px solid var(--line);border-radius:12px;background:#0b1428;color:white;font-size:16px;outline:none}
 textarea{min-height:75px;resize:vertical}
 .full{width:100%}.gray{background:#273653}.red{background:#bd3150}.green{background:#168b61}
@@ -46,7 +46,7 @@ header{background:#0b1428;border-bottom:1px solid var(--line);padding:15px;displ
 .post-menu button{display:block;width:100%;text-align:right;background:transparent;padding:11px;color:white;border-radius:8px}
 .post-menu button:active{background:#29466e}
 .comment-modal{position:fixed;inset:0;z-index:1000;background:#0009;display:flex;align-items:flex-end;justify-content:center}
-.comment-sheet{width:100%;max-width:720px;height:min(78dvh,720px);background:#101a30;border:1px solid #344968;border-bottom:0;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:sheetUp .2s ease-out}
+.comment-sheet{width:100%;max-width:720px;height:78vh;height:min(78dvh,720px);background:#101a30;border:1px solid #344968;border-bottom:0;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:sheetUp .2s ease-out}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .comment-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:15px;border-bottom:1px solid var(--line);flex-shrink:0}
 .comment-sheet-head strong{font-size:17px}
@@ -77,6 +77,7 @@ nav button.active{background:#132c50;color:#48a6ff}
 /* واجهة الفيديوهات العمودية */
 #videos{margin:-12px -12px 0}
 .videos-feed{
+ height:calc(100vh - 143px);
  height:calc(100dvh - 143px);
  min-height:420px;
  overflow-y:auto;
@@ -159,18 +160,6 @@ nav button.active{background:#132c50;color:#48a6ff}
  font-size:20px;
  padding:0;
 }
-.video-hint{
- position:absolute;
- top:50%;
- left:50%;
- transform:translate(-50%,-50%);
- color:#fff;
- background:#0008;
- padding:12px 18px;
- border-radius:20px;
- font-size:14px;
- pointer-events:none;
-}
 .videos-empty{
  min-height:300px;
  display:flex;
@@ -204,7 +193,7 @@ nav button.active{background:#132c50;color:#48a6ff}
 .auth-message{font-size:13px;color:#cbd5ff;min-height:20px}
 .profile-cover{height:95px;background:linear-gradient(120deg,#102d61,#17204b 55%,#3b1d72)}
 .profile-heading{text-align:center;padding:0 15px 18px;margin-top:-55px;position:relative}
-.profile-photo-wrap{position:relative;width:112px;height:112px;margin:0 auto 12px;display:block}
+.profile-photo-wrap{position:relative;width:112px;height:112px;margin:0 auto 12px;display:block;cursor:pointer}
 .profile-photo-wrap .avatar{width:112px;height:112px;border:4px solid #101a30;outline:2px solid #258aff;font-size:42px}
 .verified-badge{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;min-width:19px;margin-inline-start:5px;border-radius:50%;background:#1685ff;color:#fff;font-size:13px;font-weight:bold}
 .profile-stats{display:flex;justify-content:center;text-align:center;padding:15px 5px;border-block:1px solid var(--line);margin-bottom:15px}
@@ -219,6 +208,51 @@ nav button.active{background:#132c50;color:#48a6ff}
 .admin-actions button{flex:1}
 .support-message{padding:11px;border-radius:12px;background:#1b2a46;margin:8px 0;white-space:pre-wrap}
 .support-message.mine{background:#174b83}
+
+/* زر النشر العائم ونافذة النشر */
+#dertAddPost{
+ position:fixed;
+ z-index:999;
+ right:20px;
+ bottom:100px;
+ width:60px;
+ height:60px;
+ border-radius:50%;
+ font-size:36px;
+ padding:0;
+ background:linear-gradient(135deg,#1685ff,#783cff);
+ box-shadow:0 5px 25px #1685ff88;
+ display:none;
+ align-items:center;
+ justify-content:center;
+}
+#dertCreateModal{
+ position:fixed;
+ inset:0;
+ z-index:2000;
+ background:#000c;
+ display:none;
+ align-items:center;
+ justify-content:center;
+ padding:15px;
+}
+#dertCreateBox{
+ width:100%;
+ max-width:500px;
+ max-height:90vh;
+ max-height:90dvh;
+ overflow-y:auto;
+ background:#101a30;
+ border:1px solid #365078;
+ border-radius:20px;
+ padding:18px;
+}
+#dertCreateBox h3{margin-top:0}
+#dertCreateBox label{display:block;color:#b8c9e8;font-size:13px;margin-top:13px}
+#dertCreateBox input[type=file]{font-size:13px}
+#dertCreateClose{float:left;background:#273653}
+#dertCreateStatus{color:#9db9ef;font-size:13px}
+
 @media(max-width:380px){
  nav button{font-size:8px}
  .nav-icon{font-size:16px}
@@ -275,7 +309,6 @@ nav button.active{background:#132c50;color:#48a6ff}
 <header><span class="header-brand">DERT 🌍</span><span class="header-sub">عالم التواصل</span></header>
 <div class="container">
 
-<!-- قسم الفيديوهات الجديد -->
 <section id="videos" class="section active">
 <div id="videosList" class="videos-feed">
 <div class="video-loading">جارٍ تحميل الفيديوهات...</div>
@@ -304,20 +337,6 @@ nav button.active{background:#132c50;color:#48a6ff}
 </section>
 
 <section id="feed" class="section">
-<div class="card">
-<h3>📝 إنشاء منشور</h3>
-<textarea id="postContent" placeholder="بماذا تفكر؟"></textarea>
-<label class="small">📷 اختر صورة أو فيديو</label>
-<input id="postImage" type="file" accept="image/*,video/*">
-<label class="small">📍 أضف موقع المنشور</label>
-<input id="postLocation" placeholder="اكتب اسم المكان أو المدينة">
-<label class="small">🎵 اختر موسيقى من جهازك</label>
-<input id="postMusic" type="file" accept="audio/*">
-<input id="musicTitle" placeholder="اسم الأغنية">
-<input id="musicArtist" placeholder="اسم الفنان">
-<button class="full" id="publishBtn">نشر المنشور</button>
-<p id="postMessage" class="small"></p>
-</div>
 <h3>🌍 المنشورات</h3>
 <div id="postsList">جارٍ تحميل المنشورات...</div>
 </section>
@@ -412,6 +431,42 @@ nav button.active{background:#132c50;color:#48a6ff}
 </div>
 </div>
 
+<!-- زر النشر العائم -->
+<button id="dertAddPost" type="button" title="إنشاء محتوى جديد">＋</button>
+
+<!-- نافذة إنشاء محتوى -->
+<div id="dertCreateModal">
+ <div id="dertCreateBox">
+  <button id="dertCreateClose" type="button">✕</button>
+  <h3>✨ إنشاء محتوى جديد</h3>
+
+  <label>📷 اختر صورة أو فيديو</label>
+  <input id="dertMediaFile" type="file" accept="image/*,video/*">
+
+  <label>📝 الوصف</label>
+  <textarea id="dertDescription" placeholder="اكتب وصف المحتوى..."></textarea>
+
+  <label>📍 الموقع</label>
+  <input id="dertLocation" placeholder="اكتب اسم المكان أو المدينة">
+
+  <label>🎵 اختر موسيقى من جهازك (اختياري)</label>
+  <input id="dertMusicFile" type="file" accept="audio/*">
+
+  <label>اسم الأغنية</label>
+  <input id="dertMusicTitle" placeholder="اسم الأغنية">
+
+  <label>اسم الفنان</label>
+  <input id="dertMusicArtist" placeholder="اسم الفنان">
+
+  <button id="dertPublishButton" class="full" type="button">
+   🚀 نشر المحتوى
+  </button>
+
+  <p id="dertCreateStatus"></p>
+ </div>
+</div>
+
+<!-- نافذة التعليقات -->
 <div id="commentModal" class="comment-modal hidden" onclick="if(event.target===this)closePostComments()">
  <div class="comment-sheet">
   <div class="comment-sheet-head">
@@ -448,7 +503,7 @@ let videoObserver=null;
 let videoPostsCache=[];
 
 const el=id=>document.getElementById(id);
-function msg(id,text){el(id).textContent=text}
+function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
 
 function addVerifiedName(element,name,verified){
@@ -464,6 +519,13 @@ function makeAvatar(url,name){
 }
 function showAvatar(url,name){el("avatarDisplay").replaceChildren(makeAvatar(url,name))}
 
+/* تحديث ظهور زر النشر العائم */
+function updateFloatingAddButton(){
+ const videosActive=el("videos")?.classList.contains("active");
+ const feedActive=el("feed")?.classList.contains("active");
+ el("dertAddPost").style.display=(currentUser && (videosActive || feedActive)) ? "flex" : "none";
+}
+
 /* إيقاف كل الفيديوهات عند مغادرة قسم الفيديوهات */
 function stopVideoPlayback(){
  if(videoObserver){videoObserver.disconnect();videoObserver=null}
@@ -471,6 +533,7 @@ function stopVideoPlayback(){
   v.pause();
  });
 }
+
 function openTab(name,button){
  if(name==="admin"&&!isAdmin()){alert("غير مصرح لك");return}
 
@@ -486,6 +549,8 @@ function openTab(name,button){
   if(b)b.classList.add("active");
  }
 
+ updateFloatingAddButton();
+
  if(name==="videos")loadVideos();
  if(name==="chats")loadChats();
  if(name==="alerts")loadAlerts();
@@ -493,14 +558,17 @@ function openTab(name,button){
  if(name==="feed")loadPosts();
  if(name==="admin"){loadAdminRequests();loadReports();loadAdminSupport()}
 }
+
 function showLogin(){
  closePostComments();
  stopVideoPlayback();
  el("auth").classList.remove("hidden");el("home").classList.add("hidden");
  el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
+ el("dertAddPost").style.display="none";
  currentUser=null;currentProfile=null;activeConversation=null;activeReceiver=null;
  el("adminNav").classList.add("hidden");stopRealtime();stopAlertsRealtime();
 }
+
 async function uploadFile(file,folder){
  if(!file)return null;
  const ok=file.type.startsWith("image/")||file.type.startsWith("video/")||file.type.startsWith("audio/");
@@ -544,7 +612,6 @@ el("phoneMode").onclick=()=>{
  el("phoneArea").classList.remove("hidden");
 };
 
-/* إنشاء حساب بالبريد مع رابط تأكيد DERT */
 el("signupBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase();
  const password=el("password").value;
@@ -579,7 +646,6 @@ el("signupBtn").onclick=async()=>{
  }finally{b.disabled=false}
 };
 
-/* إعادة إرسال رسالة تأكيد البريد */
 el("resendEmailBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase();
  if(!email||!email.includes("@")){
@@ -598,7 +664,6 @@ el("resendEmailBtn").onclick=async()=>{
  }finally{b.disabled=false}
 };
 
-/* تسجيل الدخول بالبريد */
 el("loginBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase();
  const password=el("password").value;
@@ -614,7 +679,6 @@ el("loginBtn").onclick=async()=>{
  }finally{b.disabled=false}
 };
 
-/* تسجيل الدخول برقم الهاتف */
 el("sendOtpBtn").onclick=async()=>{
  const phone=el("phone").value.trim();
  if(!/^\+[1-9]\d{7,14}$/.test(phone)){
@@ -646,9 +710,21 @@ el("logoutBtn").onclick=async()=>{
 /* الملف الشخصي */
 async function loadProfile(){
  if(!currentUser)return;
- const {data,error}=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
+ let {data,error}=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
  if(error)throw error;
- if(!data)throw new Error("لم يتم العثور على الملف الشخصي");
+ 
+ /* إنشاء ملف شخصي افتراضي إذا لم يكن موجوداً */
+ if(!data){
+  const defaultUsername="user_"+currentUser.id.slice(0,8);
+  const {data:created,error:createErr}=await client.from("profiles").insert({
+   id:currentUser.id,
+   username:defaultUsername,
+   full_name:"مستخدم DERT"
+  }).select().single();
+  if(createErr)throw new Error("لم يتم العثور على الملف الشخصي");
+  data=created;
+ }
+
  currentProfile=data;
  el("fullName").value=data.full_name||"";
  el("username").value=data.username||"";
@@ -660,6 +736,7 @@ async function loadProfile(){
  el("adminNav").classList.toggle("hidden",!isAdmin());
  await loadMyVerificationStatus();
 }
+
 async function loadMyVerificationStatus(){
  const btn=el("requestVerificationBtn");
  if(currentProfile?.is_verified===true){
@@ -730,38 +807,86 @@ el("avatarFile").onchange=()=>{
  el("editProfileBtn").classList.add("hidden");
 };
 
-/* نشر المنشورات */
-el("publishBtn").onclick=async()=>{
- const content=el("postContent").value.trim();
- const file=el("postImage").files[0];
- const musicFile=el("postMusic").files[0];
- const locationName=el("postLocation").value.trim();
- const musicTitle=el("musicTitle").value.trim();
- const musicArtist=el("musicArtist").value.trim();
- if(!content&&!file&&!musicFile&&!locationName){
-  msg("postMessage","اكتب منشوراً أو اختر ملفاً");return;
+/* نافذة النشر الموحدة */
+el("dertAddPost").onclick=()=>{
+ if(!currentUser){alert("سجل الدخول أولاً");return}
+ el("dertCreateModal").style.display="flex";
+};
+el("dertCreateClose").onclick=()=>{el("dertCreateModal").style.display="none"};
+el("dertCreateModal").onclick=(e)=>{if(e.target===el("dertCreateModal"))el("dertCreateModal").style.display="none"};
+
+el("dertPublishButton").onclick=async()=>{
+ if(!currentUser){msg("dertCreateStatus","يرجى تسجيل الدخول أولاً");return}
+
+ const file=el("dertMediaFile").files[0];
+ const musicFile=el("dertMusicFile").files[0];
+ const content=el("dertDescription").value.trim();
+ const locationName=el("dertLocation").value.trim();
+ const musicTitle=el("dertMusicTitle").value.trim();
+ const musicArtist=el("dertMusicArtist").value.trim();
+ const isVideosTab=el("videos").classList.contains("active");
+
+ if(isVideosTab && !file){
+  msg("dertCreateStatus","اختر صورة أو فيديو أولاً");
+  return;
  }
- const b=el("publishBtn");b.disabled=true;
+ if(!file && !content && !musicFile && !locationName){
+  msg("dertCreateStatus","اكتب وصفاً أو اختر ملفاً للنشر");
+  return;
+ }
+
+ const btn=el("dertPublishButton");
+ btn.disabled=true;
+ msg("dertCreateStatus","جارٍ رفع المحتوى...");
+
  try{
   let image_url=null,music_url=null,media_type=null;
+
   if(file){
-   if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))throw new Error("اختر صورة أو فيديو");
+   if(!file.type.startsWith("image/")&&!file.type.startsWith("video/")){
+    throw new Error("نوع الملف غير مدعوم");
+   }
    image_url=await uploadFile(file,"posts");
    media_type=file.type.startsWith("video/")?"video":"image";
   }
-  if(musicFile)music_url=await uploadFile(musicFile,"music");
+
+  if(musicFile){
+   if(!musicFile.type.startsWith("audio/")){
+    throw new Error("اختر ملفاً صوتياً صحيحاً");
+   }
+   music_url=await uploadFile(musicFile,"music");
+  }
+
   const {error}=await client.from("posts").insert({
-   user_id:currentUser.id,content:content||null,image_url,media_type,
-   location_name:locationName||null,music_title:musicTitle||musicFile?.name||null,
-   music_artist:musicArtist||null,music_url
+   user_id:currentUser.id,
+   content:content||null,
+   image_url:image_url,
+   media_type:media_type,
+   location_name:locationName||null,
+   music_title:musicTitle||musicFile?.name||null,
+   music_artist:musicArtist||null,
+   music_url:music_url
   });
+
   if(error)throw error;
-  ["postContent","postImage","postLocation","postMusic","musicTitle","musicArtist"].forEach(id=>el(id).value="");
-  msg("postMessage","تم نشر المنشور بنجاح ❤️");
-  await loadPosts();await loadStats();
-  if(media_type==="video")await loadVideos();
- }catch(e){msg("postMessage","تعذر النشر: "+e.message)}
- finally{b.disabled=false}
+
+  msg("dertCreateStatus","تم النشر بنجاح ❤️");
+  ["dertMediaFile","dertMusicFile","dertDescription","dertLocation","dertMusicTitle","dertMusicArtist"].forEach(id=>el(id).value="");
+
+  await loadVideos();
+  await loadPosts();
+  await loadStats();
+
+  setTimeout(()=>{
+   el("dertCreateModal").style.display="none";
+   msg("dertCreateStatus","");
+  },800);
+
+ }catch(error){
+  msg("dertCreateStatus","تعذر النشر: "+error.message);
+ }finally{
+  btn.disabled=false;
+ }
 };
 
 /* قسم الفيديوهات العمودية */
@@ -793,10 +918,10 @@ async function loadVideos(){
    const title=document.createElement("strong");
    title.textContent="🎬 لا توجد فيديوهات حالياً";
    const description=document.createElement("p");
-   description.textContent="كن أول من يشارك فيديو على DERT. انتقل إلى المنشورات واختر فيديو من جهازك ثم اضغط نشر.";
+   description.textContent="كن أول من يشارك صورة أو فيديو على DERT. اضغط زر + للنشر.";
    const go=document.createElement("button");
-   go.textContent="＋ نشر فيديو";
-   go.onclick=()=>openTab("feed");
+   go.textContent="＋ إنشاء محتوى";
+   go.onclick=()=>el("dertAddPost").click();
    empty.append(title,description,go);
    list.appendChild(empty);
    return;
@@ -920,7 +1045,6 @@ async function loadVideos(){
  }
 }
 
-/* تشغيل الفيديو الظاهر وإيقاف البقية */
 function setupVideoObserver(){
  if(videoObserver)videoObserver.disconnect();
 
@@ -1552,26 +1676,29 @@ async function loadAdminSupport(){
 }
 el("refreshSupportAdmin").onclick=loadAdminSupport;
 
- /* فتح التطبيق بعد تسجيل الدخول */
+/* فتح التطبيق بعد تسجيل الدخول */
 async function showHome(user){
-  currentUser = user;
+ currentUser=user;
 
-  el("auth").classList.add("hidden");
-  el("home").classList.remove("hidden");
+ el("auth").classList.add("hidden");
+ el("home").classList.remove("hidden");
 
-  openTab("videos");
-  startAlertsRealtime();
+ openTab("videos");
+ startAlertsRealtime();
 
-  try {
-    await loadProfile();
-    await loadStats();
-    await loadChats();
-  } catch(e) {
-    console.error("DERT startup error:", e);
-    msg("profileMessage", "تعذر تحميل بعض البيانات: " + e.message);
-  }
+ try{
+  await loadProfile();
+  await loadStats();
+  await loadChats();
+ }catch(e){
+  console.error("DERT startup error:",e);
+  msg("profileMessage","تعذر تحميل بعض البيانات: "+e.message);
+ }
 }
- 
+
+/* فحص الجلسة الحالية وروابط تأكيد البريد */
+async function checkSession(){
+ try{
   const params=new URLSearchParams(window.location.search);
   const hash=new URLSearchParams(window.location.hash.replace(/^#/,""));
 
@@ -1593,9 +1720,18 @@ async function showHome(user){
    const {data:sessionData,error:exchangeError}=await client.auth.exchangeCodeForSession(code);
    if(exchangeError)throw exchangeError;
    if(sessionData?.user){
+    window.history.replaceState({},document.title,window.location.pathname);
     await showHome(sessionData.user);
     return;
    }
+  }
+
+  const {data:{session},error}=await client.auth.getSession();
+  if(error)throw error;
+
+  if(session?.user){
+   await showHome(session.user);
+   return;
   }
 
   showLogin();
@@ -1606,256 +1742,6 @@ async function showHome(user){
 }
 
 checkSession();
-</script>
- <style>
-/* إخفاء نموذج النشر القديم من تبويبة المنشورات */
-#feed > .card:first-child{
- display:none!important;
-}
-
-/* زر النشر العائم */
-#dertAddPost{
- position:fixed;
- z-index:999;
- right:20px;
- bottom:100px;
- width:60px;
- height:60px;
- border-radius:50%;
- font-size:36px;
- padding:0;
- background:linear-gradient(135deg,#1685ff,#783cff);
- box-shadow:0 5px 25px #1685ff88;
- display:none;
- align-items:center;
- justify-content:center;
-}
-
-/* نافذة النشر */
-#dertCreateModal{
- position:fixed;
- inset:0;
- z-index:2000;
- background:#000c;
- display:none;
- align-items:center;
- justify-content:center;
- padding:15px;
-}
-#dertCreateBox{
- width:100%;
- max-width:500px;
- max-height:90dvh;
- overflow-y:auto;
- background:#101a30;
- border:1px solid #365078;
- border-radius:20px;
- padding:18px;
-}
-#dertCreateBox h3{
- margin-top:0;
-}
-#dertCreateBox label{
- display:block;
- color:#b8c9e8;
- font-size:13px;
- margin-top:13px;
-}
-#dertCreateBox input,
-#dertCreateBox textarea{
- width:100%;
- padding:13px;
- margin:7px 0;
- border:1px solid #263653;
- border-radius:12px;
- background:#0b1428;
- color:white;
- font-size:15px;
-}
-#dertCreateBox input[type=file]{
- font-size:13px;
-}
-#dertCreateClose{
- float:left;
- background:#273653;
-}
-#dertCreateStatus{
- color:#9db9ef;
- font-size:13px;
-}
-</style>
-
-<button id="dertAddPost" type="button">＋</button>
-
-<div id="dertCreateModal">
- <div id="dertCreateBox">
-  <button id="dertCreateClose" type="button">✕</button>
-  <h3>✨ إنشاء محتوى جديد</h3>
-
-  <label>📷 اختر صورة أو فيديو</label>
-  <input id="dertMediaFile" type="file" accept="image/*,video/*">
-
-  <label>📝 الوصف</label>
-  <textarea id="dertDescription" placeholder="اكتب وصف المحتوى..."></textarea>
-
-  <label>📍 الموقع</label>
-  <input id="dertLocation" placeholder="اكتب اسم المكان أو المدينة">
-
-  <label>🎵 اختر موسيقى من جهازك (اختياري)</label>
-  <input id="dertMusicFile" type="file" accept="audio/*">
-
-  <label>اسم الأغنية</label>
-  <input id="dertMusicTitle" placeholder="اسم الأغنية">
-
-  <label>اسم الفنان</label>
-  <input id="dertMusicArtist" placeholder="اسم الفنان">
-
-  <button id="dertPublishButton" class="full" type="button">
-   🚀 نشر المحتوى
-  </button>
-
-  <p id="dertCreateStatus"></p>
- </div>
-</div>
-
-<script>
-(function(){
-
- const addButton=document.getElementById("dertAddPost");
- const modal=document.getElementById("dertCreateModal");
- const closeButton=document.getElementById("dertCreateClose");
- const publishButton=document.getElementById("dertPublishButton");
- const status=document.getElementById("dertCreateStatus");
-
- function updateAddButton(){
-  const videos=document.getElementById("videos");
-  addButton.style.display=
-   videos && videos.classList.contains("active")
-   ? "flex":"none";
- }
-
- addButton.onclick=()=>{
-  if(!currentUser){
-   alert("سجل الدخول أولاً");
-   return;
-  }
-  modal.style.display="flex";
- };
-
- closeButton.onclick=()=>modal.style.display="none";
-
- modal.onclick=(e)=>{
-  if(e.target===modal)modal.style.display="none";
- };
-
- const observer=new MutationObserver(updateAddButton);
- observer.observe(document.getElementById("videos"),{
-  attributes:true,
-  attributeFilter:["class"]
- });
-
- /* تعديل رسالة عدم وجود فيديوهات */
- const videoObserver=new MutationObserver(()=>{
-  const empty=document.querySelector("#videosList .videos-empty");
-  if(!empty)return;
-
-  const description=empty.querySelector("p");
-  if(description){
-   description.textContent="كن أول من يشارك صورة أو فيديو على DERT. اضغط زر + للنشر.";
-  }
-
-  const oldButton=empty.querySelector("button");
-  if(oldButton){
-   oldButton.textContent="＋ إنشاء محتوى";
-   oldButton.onclick=()=>addButton.click();
-  }
- });
-
- videoObserver.observe(document.getElementById("videosList"),{
-  childList:true,
-  subtree:true
- });
-
- publishButton.onclick=async()=>{
-  if(!currentUser){
-   status.textContent="يرجى تسجيل الدخول أولاً";
-   return;
-  }
-
-  const file=document.getElementById("dertMediaFile").files[0];
-  const musicFile=document.getElementById("dertMusicFile").files[0];
-  const content=document.getElementById("dertDescription").value.trim();
-  const locationName=document.getElementById("dertLocation").value.trim();
-  const musicTitle=document.getElementById("dertMusicTitle").value.trim();
-  const musicArtist=document.getElementById("dertMusicArtist").value.trim();
-
-  if(!file){
-   status.textContent="اختر صورة أو فيديو أولاً";
-   return;
-  }
-
-  if(!file.type.startsWith("image/")&&!file.type.startsWith("video/")){
-   status.textContent="نوع الملف غير مدعوم";
-   return;
-  }
-
-  publishButton.disabled=true;
-  status.textContent="جارٍ رفع المحتوى...";
-
-  try{
-   const image_url=await uploadFile(file,"posts");
-   let music_url=null;
-
-   if(musicFile){
-    if(!musicFile.type.startsWith("audio/")){
-     throw new Error("اختر ملفاً صوتياً صحيحاً");
-    }
-    music_url=await uploadFile(musicFile,"music");
-   }
-
-   const media_type=file.type.startsWith("video/")?"video":"image";
-
-   const {error}=await client.from("posts").insert({
-    user_id:currentUser.id,
-    content:content||null,
-    image_url:image_url,
-    media_type:media_type,
-    location_name:locationName||null,
-    music_title:musicTitle||musicFile?.name||null,
-    music_artist:musicArtist||null,
-    music_url:music_url
-   });
-
-   if(error)throw error;
-
-   status.textContent="تم النشر بنجاح ❤️";
-
-   document.getElementById("dertMediaFile").value="";
-   document.getElementById("dertMusicFile").value="";
-   document.getElementById("dertDescription").value="";
-   document.getElementById("dertLocation").value="";
-   document.getElementById("dertMusicTitle").value="";
-   document.getElementById("dertMusicArtist").value="";
-
-   await loadVideos();
-   await loadPosts();
-   await loadStats();
-
-   setTimeout(()=>{
-    modal.style.display="none";
-    status.textContent="";
-   },900);
-
-  }catch(error){
-   status.textContent="تعذر النشر: "+error.message;
-  }finally{
-   publishButton.disabled=false;
-  }
- };
-
- updateAddButton();
-
-})();
 </script>
 </body>
 </html>

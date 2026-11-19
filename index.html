@@ -214,11 +214,33 @@ nav button.active{color:#ffffff;background:transparent}
 .auth-switch button.active{background:#fe2c55;color:#fff}
 .auth-message{font-size:13px;color:#ffd0da;min-height:20px}
 
-.profile-cover{height:90px;background:linear-gradient(120deg,#fe2c5533,#181922 50%,#7c3aed44)}
-.profile-heading{text-align:center;padding:0 14px 16px;margin-top:-50px;position:relative}
-.profile-menu-trigger{position:absolute;top:54px;left:10px;width:36px;height:36px;padding:0;border-radius:10px;background:#1b1c24;border:1px solid #2e303e;color:#fff;font-size:18px;display:inline-flex;align-items:center;justify-content:center}
-.profile-photo-wrap{position:relative;width:104px;height:104px;margin:0 auto 10px;display:block;cursor:pointer}
-.profile-photo-wrap .avatar{width:104px;height:104px;border:3px solid #121216;font-size:38px}
+/* ملف شخصي عصري بأسلوب تيك توك / إنستغرام */
+.tt-ig-profile-card{background:#0b0b0e;border:1px solid #1d1e26;border-radius:18px;overflow:hidden;padding-bottom:14px}
+.tt-ig-top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px}
+.tt-ig-handle{font-size:16px;font-weight:800;display:flex;align-items:center;gap:4px}
+.tt-ig-top-btns{display:flex;gap:8px}
+.tt-ig-icon-btn{width:34px;height:34px;padding:0;border-radius:50%;background:#181921;color:#fff;font-size:16px;display:inline-flex;align-items:center;justify-content:center}
+.tt-ig-hero{text-align:center;padding:8px 16px 4px}
+.tt-ig-avatar-ring{width:96px;height:96px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#fe2c55,#7c3aed,#25f4ee);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tt-ig-avatar-ring .avatar{width:100%;height:100%;border:3px solid #0b0b0e;font-size:34px}
+.tt-ig-name{margin:0;font-size:18px;font-weight:800}
+.tt-ig-bio{margin:6px auto 0;max-width:420px;font-size:13px;color:#b4b8c2;line-height:1.5}
+.tt-ig-stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;margin:14px 12px 10px;padding:10px 0;border-top:1px solid #1c1d26;border-bottom:1px solid #1c1d26}
+.tt-ig-stats>div{cursor:pointer;padding:2px 4px}
+.tt-ig-stats strong{display:block;font-size:18px;font-weight:800;color:#fff}
+.tt-ig-stats span{font-size:12px;color:#9da1ab}
+.tt-ig-cta-row{display:flex;gap:8px;padding:4px 14px 10px}
+.tt-ig-cta-btn{flex:1;padding:10px 12px;border-radius:10px;background:#1b1c24;color:#fff;font-size:13px;font-weight:700;border:1px solid #2b2d3a}
+.tt-ig-cta-btn:active{background:#262834}
+.tt-ig-tabs{display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid #1c1d26;margin-top:4px}
+.tt-ig-tab{background:transparent;border-radius:0;padding:11px 6px;color:#8e919c;font-size:13px;font-weight:700;position:relative}
+.tt-ig-tab.active{color:#fff}
+.tt-ig-tab.active::after{content:"";position:absolute;bottom:0;left:22%;right:22%;height:2.5px;background:#fff;border-radius:2px}
+.tt-ig-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:6px 6px 0}
+.tt-ig-tile{aspect-ratio:1/1;background:#15161e;overflow:hidden;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:#c7cbd4;padding:6px;text-align:center}
+.tt-ig-tile img,.tt-ig-tile video{width:100%;height:100%;object-fit:cover;display:block}
+.tt-ig-badge{position:absolute;top:5px;left:5px;background:#000a;color:#fff;font-size:10px;padding:2px 6px;border-radius:6px}
+
 .verified-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;min-width:18px;margin-inline-start:5px;border-radius:50%;background:#20d5ec;color:#000;font-size:12px;font-weight:900}
 .profile-stats{display:flex;justify-content:center;text-align:center;padding:14px 4px;border-block:1px solid var(--line);margin-bottom:14px}
 .profile-stats>div{flex:1;border-left:1px solid var(--line);cursor:pointer;padding:4px}
@@ -228,7 +250,6 @@ nav button.active{color:#ffffff;background:transparent}
 .profile-settings{margin:12px 0;padding:14px;background:#16171e;border:1px solid var(--line);border-radius:14px}
 
 /* قائمة الملف الشخصي بأسلوب تيك توك */
-.tt-menu-section{margin-top:14px}
 .tt-menu-group-title{font-size:12px;font-weight:700;color:#8e9099;padding:8px 4px 6px}
 .tt-menu-card{background:#15161d;border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .tt-menu-item{width:100%;background:transparent;border-radius:0;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff;border-bottom:1px solid #20222b;text-align:right}
@@ -445,111 +466,73 @@ nav button.active{color:#ffffff;background:transparent}
 </section>
 
 <section id="profile" class="section">
-<div class="card">
-<div class="profile-cover"></div>
-<div class="profile-heading">
-<button type="button" class="profile-menu-trigger" title="القائمة" onclick="openProfileMenuModal()">☰</button>
-<label for="avatarFile" class="profile-photo-wrap"><div id="avatarDisplay" class="avatar">D</div></label>
-<input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp">
-<h2 id="displayName">مستخدم DERT</h2>
-<div id="displayUsername" class="small">@user</div>
-<p id="displayBio" class="small">مرحباً بك في DERT 🌍</p>
-<button id="editProfileBtn" class="gray">تعديل الملف الشخصي</button>
-</div>
-<div class="profile-stats">
-<div onclick="openTab('feed')">
- <strong id="postsCount">0</strong>
- <span>المنشورات</span>
-</div>
-<div onclick="openFollowList('followers')">
- <strong id="followersCount">0</strong>
- <span>المتابعون</span>
-</div>
-<div onclick="openFollowList('following')">
- <strong id="followingCount">0</strong>
- <span>أتابع</span>
-</div>
-</div>
-
-<!-- قائمة الخيارات الكاملة داخل الملف الشخصي مثل الصورة[span_3](start_span)[span_3](end_span) -->
-<div class="tt-menu-section">
- <div class="tt-menu-group-title">الأصول</div>
- <div class="tt-menu-card">
-  <button type="button" class="tt-menu-item" onclick="openProfileTool('balance')">
-   <span class="tt-menu-left"><span>💳</span><span>الرصيد</span></span>
-   <span class="tt-menu-arrow">‹</span>
-  </button>
+<div class="tt-ig-profile-card">
+ <div class="tt-ig-top-bar">
+  <div class="tt-ig-handle" id="displayUsernameTop">@user</div>
+  <div class="tt-ig-top-btns">
+   <button type="button" class="tt-ig-icon-btn" title="رمز QR" onclick="openProfileTool('qr')">⊞</button>
+   <button type="button" class="tt-ig-icon-btn" title="القائمة" onclick="openProfileMenuModal()">☰</button>
+  </div>
  </div>
 
- <div class="tt-menu-group-title">الأدوات الشخصية</div>
- <div class="tt-menu-card">
-  <button type="button" class="tt-menu-item" onclick="openProfileTool('activity')">
-   <span class="tt-menu-left"><span>🕒</span><span>مركز الأنشطة</span></span>
-   <span class="tt-menu-arrow">‹</span>
-  </button>
-  <button type="button" class="tt-menu-item" onclick="openProfileTool('offline')">
-   <span class="tt-menu-left"><span>📥</span><span>فيديوهات دون اتصال بالإنترنت</span></span>
-   <span class="tt-menu-arrow">‹</span>
-  </button>
-  <button type="button" class="tt-menu-item" onclick="openProfileTool('qr')">
-   <span class="tt-menu-left"><span>⊞</span><span>رمز QR لديك</span></span>
-   <span class="tt-menu-arrow">‹</span>
-  </button>
-  <button type="button" class="tt-menu-item" onclick="openProfileTool('minis')">
-   <span class="tt-menu-left"><span>⬡</span><span>DERT Minis</span></span>
-   <span class="tt-menu-arrow">‹</span>
-  </button>
+ <div class="tt-ig-hero">
+  <label for="avatarFile" class="tt-ig-avatar-ring" title="تغيير الصورة الشخصية">
+   <div id="avatarDisplay" class="avatar">D</div>
+  </label>
+  <input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp">
+  <h2 id="displayName" class="tt-ig-name">مستخدم DERT</h2>
+  <div id="displayUsername" class="small" style="margin-top:2px">@user</div>
+  <p id="displayBio" class="tt-ig-bio">مرحباً بك في DERT 🌍</p>
  </div>
 
- <div class="tt-menu-group-title">أدوات الإبداع والأعمال</div>
- <div class="tt-menu-card">
-  <button type="button" class="tt-menu-item" onclick="openProfileTool('shop')">
-   <span class="tt-menu-left"><span>🏪</span><span>المجموعة التجارية</span></span>
-   <span class="tt-menu-arrow">‹</span>
-  </button>
-  <button type="button" class="tt-menu-item" onclick="openProfileTool('studio')">
-   <span class="tt-menu-left"><span>🎬</span><span>DERT Studio</span></span>
-   <span class="tt-menu-arrow">‹</span>
-  </button>
-  <button type="button" class="tt-menu-item" onclick="openProfileTool('promote')">
-   <span class="tt-menu-left"><span>🔥</span><span>الترويج</span></span>
-   <span class="tt-menu-arrow">‹</span>
-  </button>
+ <div class="tt-ig-stats">
+  <div onclick="openFollowList('following')">
+   <strong id="followingCount">0</strong>
+   <span>أتابع</span>
+  </div>
+  <div onclick="openFollowList('followers')">
+   <strong id="followersCount">0</strong>
+   <span>المتابعون</span>
+  </div>
+  <div onclick="switchProfileMediaTab('posts')">
+   <strong id="postsCount">0</strong>
+   <span>المنشورات</span>
+  </div>
  </div>
 
- <div class="tt-menu-group-title">الإعدادات والخصوصية</div>
- <div class="tt-menu-card">
-  <button type="button" class="tt-menu-item" onclick="openProfileTool('settings')">
-   <span class="tt-menu-left"><span>⚙️</span><span>الإعدادات والخصوصية</span></span>
-   <span class="tt-menu-arrow">‹</span>
-  </button>
+ <div class="tt-ig-cta-row">
+  <button id="editProfileBtn" type="button" class="tt-ig-cta-btn">تعديل الملف الشخصي</button>
+  <button type="button" class="tt-ig-cta-btn" onclick="openProfileTool('qr')">مشاركة الحساب</button>
+  <button type="button" class="tt-ig-cta-btn" onclick="openProfileTool('settings')">الإعدادات</button>
  </div>
+
+ <div id="profileSettings" class="profile-settings hidden" style="margin:10px 14px">
+  <h3>تعديل الملف الشخصي</h3>
+  <input id="fullName" placeholder="الاسم الكامل">
+  <input id="username" placeholder="اسم المستخدم" dir="ltr">
+  <textarea id="bio" placeholder="نبذة عنك"></textarea>
+  <button class="full" id="saveProfileBtn">حفظ التعديلات</button>
+  <button class="full gray" id="cancelProfileBtn">إلغاء</button>
+ </div>
+
+ <div class="tt-ig-tabs">
+  <button type="button" class="tt-ig-tab active" id="profTabPosts" onclick="switchProfileMediaTab('posts')">المنشورات</button>
+  <button type="button" class="tt-ig-tab" id="profTabVideos" onclick="switchProfileMediaTab('videos')">الفيديوهات</button>
+ </div>
+ <div id="profileMediaGrid" class="tt-ig-grid"></div>
+ <p id="profileMessage" class="small" style="padding:8px 14px 0"></p>
 </div>
 
-<div id="profileSettings" class="profile-settings hidden">
-<h3>تعديل الملف الشخصي</h3>
-<input id="fullName" placeholder="الاسم الكامل">
-<input id="username" placeholder="اسم المستخدم" dir="ltr">
-<textarea id="bio" placeholder="نبذة عنك"></textarea>
-<button class="full" id="saveProfileBtn">حفظ التعديلات</button>
-<button class="full gray" id="cancelProfileBtn">إلغاء</button>
-</div>
-<div class="profile-settings">
-<h3>توثيق الحساب</h3>
-<button class="full" id="requestVerificationBtn">طلب توثيق الحساب</button>
-<p id="verificationMessage" class="small"></p>
-</div>
-<div class="profile-settings">
-<h3>مراسلة الدعم</h3>
-<textarea id="supportText" placeholder="اكتب رسالتك إلى الدعم..."></textarea>
-<button class="full" id="sendSupportBtn">إرسال إلى الدعم</button>
-<p id="supportStatus" class="small"></p>
-<h4>محادثتك مع الدعم</h4>
-<button class="full gray" id="loadMySupport">عرض رسائل الدعم</button>
-<div id="mySupportMessages"></div>
-</div>
-<p id="profileMessage" class="small"></p>
-<button class="full red" id="logoutBtn">تسجيل الخروج</button>
+<!-- عناصر مخفية محفوظة للتوافق البرمجي مع النوافذ والأدوات -->
+<div class="hidden">
+ <button type="button" id="requestVerificationBtn">طلب توثيق الحساب</button>
+ <p id="verificationMessage"></p>
+ <textarea id="supportText"></textarea>
+ <button type="button" id="sendSupportBtn"></button>
+ <p id="supportStatus"></p>
+ <button type="button" id="loadMySupport"></button>
+ <div id="mySupportMessages"></div>
+ <button type="button" id="logoutBtn"></button>
 </div>
 </section>
 
@@ -710,6 +693,7 @@ let selectedSong=null;
 let tabHistory=["videos"];
 let previewAudio=new Audio();
 let playingSongId=null;
+let activeProfileMediaTab="posts";
 
 const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
@@ -938,17 +922,101 @@ async function openProfileTool(tool){
  if(tool==="settings"){
   el("profileToolTitle").textContent="الإعدادات والخصوصية";
   const priv=!!st.privateAccount;
+  const isVer=currentProfile?.is_verified===true;
   body.innerHTML=`
+   <div class="tt-sub-box">
+    <strong>توثيق الحساب</strong>
+    <p class="small" style="margin:6px 0">${isVer?"✓ حسابك موثّق بالفعل":"يمكنك طلب شارة التوثيق الزرقاء لحسابك"}</p>
+    <button type="button" class="full gray" id="modalVerifyBtn" ${isVer?"disabled":""}>${isVer?"✓ حسابك موثّق":"طلب توثيق الحساب"}</button>
+   </div>
    <div class="tt-sub-box">
     <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
      <input type="checkbox" id="privateAccChk" ${priv?"checked":""} style="width:auto;margin:0">
      <span>حساب خاص (تفضيل الخصوصية)</span>
     </label>
     <button type="button" class="full gray" style="margin-top:10px" onclick="closeProfileToolModal();el('editProfileBtn').click()">تعديل بيانات الملف الشخصي</button>
-    <button type="button" class="full red" style="margin-top:8px" onclick="closeProfileToolModal();el('logoutBtn').click()">تسجيل الخروج</button>
    </div>
+   <div class="tt-sub-box">
+    <strong>مراسلة الدعم</strong>
+    <textarea id="modalSupportText" placeholder="اكتب رسالتك إلى الدعم..."></textarea>
+    <button type="button" class="full" id="modalSendSupportBtn">إرسال إلى الدعم</button>
+    <div id="modalSupportMsg" class="small" style="margin-top:6px"></div>
+   </div>
+   <button type="button" class="full red" style="margin-top:10px" onclick="closeProfileToolModal();el('logoutBtn').click()">تسجيل الخروج</button>
   `;
   el("privateAccChk").onchange=(e)=>saveDertState({privateAccount:e.target.checked});
+  if(el("modalVerifyBtn")){
+   el("modalVerifyBtn").onclick=async()=>{
+    el("modalVerifyBtn").disabled=true;
+    const {error}=await client.from("verification_requests").insert({user_id:currentUser.id,status:"pending"});
+    alert(error?error.message:"تم إرسال طلب التوثيق بنجاح");
+   };
+  }
+  el("modalSendSupportBtn").onclick=async()=>{
+   const text=el("modalSupportText").value.trim();
+   if(!text)return;
+   const {error}=await client.from("support_messages").insert({user_id:currentUser.id,sender_id:currentUser.id,message:text,is_admin_reply:false});
+   el("modalSupportMsg").textContent=error?error.message:"تم إرسال رسالتك إلى الدعم ✓";
+   if(!error)el("modalSupportText").value="";
+  };
+ }
+}
+
+async function switchProfileMediaTab(mode){
+ activeProfileMediaTab=mode;
+ el("profTabPosts")?.classList.toggle("active",mode==="posts");
+ el("profTabVideos")?.classList.toggle("active",mode==="videos");
+ await loadProfileMediaGrid();
+}
+
+async function loadProfileMediaGrid(){
+ const grid=el("profileMediaGrid");
+ if(!grid || !currentUser)return;
+ grid.replaceChildren();
+ const loading=document.createElement("div");
+ loading.className="small";
+ loading.style.cssText="grid-column:1/-1;text-align:center;padding:18px";
+ loading.textContent="جارٍ التحميل...";
+ grid.appendChild(loading);
+ try{
+  let q=client.from("posts").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(30);
+  if(activeProfileMediaTab==="videos")q=q.eq("media_type","video");
+  const {data,error}=await q;
+  if(error)throw error;
+  grid.replaceChildren();
+  const rows=data||[];
+  if(!rows.length){
+   const empty=document.createElement("div");
+   empty.className="small";
+   empty.style.cssText="grid-column:1/-1;text-align:center;padding:24px";
+   empty.textContent=activeProfileMediaTab==="videos"?"لا توجد فيديوهات بعد":"لا توجد منشورات بعد";
+   grid.appendChild(empty);
+   return;
+  }
+  rows.forEach(post=>{
+   const tile=document.createElement("div");
+   tile.className="tt-ig-tile";
+   const imgs=getPostImages(post);
+   if(imgs.length){
+    const img=document.createElement("img");img.src=imgs[0];img.loading="lazy";tile.appendChild(img);
+    if(imgs.length>1){const b=document.createElement("span");b.className="tt-ig-badge";b.textContent=imgs.length+" صور";tile.appendChild(b)}
+   }else if(post.media_type==="video" && post.image_url){
+    const v=document.createElement("video");v.src=post.image_url;v.muted=true;v.playsInline=true;tile.appendChild(v);
+    const b=document.createElement("span");b.className="tt-ig-badge";b.textContent="▶ فيديو";tile.appendChild(b);
+   }else{
+    const parsed=parseSongFromPost(post);
+    tile.textContent=(parsed.cleanContent||parsed.song?.title||"منشور").slice(0,48);
+   }
+   tile.onclick=()=>openPostComments(post);
+   grid.appendChild(tile);
+  });
+ }catch(e){
+  grid.replaceChildren();
+  const err=document.createElement("div");
+  err.className="small";
+  err.style.cssText="grid-column:1/-1;text-align:center;padding:16px";
+  err.textContent="تعذر تحميل المحتوى";
+  grid.appendChild(err);
  }
 }
 
@@ -1079,7 +1147,7 @@ function openTab(name,button,fromBack=false){
  if(name==="videos")loadVideos();
  if(name==="chats")loadChats();
  if(name==="alerts")loadAlerts();
- if(name==="profile"){loadStats();loadProfile().catch(e=>msg("profileMessage",e.message))}
+ if(name==="profile"){loadStats();loadProfileMediaGrid();loadProfile().catch(e=>msg("profileMessage",e.message))}
  if(name==="feed")loadPosts();
  if(name==="admin"){loadAdminRequests();loadReports();loadAdminSupport()}
 }
@@ -1202,6 +1270,7 @@ async function loadProfile(){
  el("username").value=data.username||"";
  el("bio").value=data.bio||"";
  addVerifiedName(el("displayName"),data.full_name||"مستخدم DERT",data.is_verified===true);
+ addVerifiedName(el("displayUsernameTop"),"@"+(data.username||"user"),data.is_verified===true);
  el("displayUsername").textContent="@"+(data.username||"user");
  el("displayBio").textContent=data.bio||"مرحباً بك في DERT 🌍";
  showAvatar(data.avatar_url,data.full_name||data.username);
@@ -1250,6 +1319,7 @@ el("saveProfileBtn").onclick=async()=>{
   if(error)throw error;
   currentProfile=data;
   addVerifiedName(el("displayName"),data.full_name,data.is_verified===true);
+  addVerifiedName(el("displayUsernameTop"),"@"+data.username,data.is_verified===true);
   el("displayUsername").textContent="@"+data.username;
   el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
   showAvatar(data.avatar_url,data.full_name);
@@ -1475,7 +1545,7 @@ el("dertPublishButton").onclick=async()=>{
   selectedImages=[];selectedVideo=null;clearSelectedMusic();
   el("dertImagesInput").value="";el("dertVideoInput").value="";el("dertDescription").value="";
   renderMediaPreview();
-  await loadVideos();await loadPosts();await loadStats();
+  await loadVideos();await loadPosts();await loadStats();await loadProfileMediaGrid();
   setTimeout(()=>{el("dertCreateModal").style.display="none";msg("dertCreateStatus","")},700);
  }catch(error){msg("dertCreateStatus","تعذر النشر: "+error.message)}
  finally{btn.disabled=false}
@@ -1736,13 +1806,13 @@ async function editPost(post){
  if(post.user_id!==currentUser.id)return;
  const content=prompt("عدّل النص:",post.content||"");if(content===null)return;
  const {error}=await client.from("posts").update({content:content.trim()||null}).eq("id",post.id).eq("user_id",currentUser.id);
- if(error){alert(error.message);return}await loadPosts();
+ if(error){alert(error.message);return}await loadPosts();await loadProfileMediaGrid();
 }
 async function deletePost(id,button){
  if(!confirm("حذف المنشور؟"))return;button.disabled=true;
  const {error}=await client.from("posts").delete().eq("id",id).eq("user_id",currentUser.id);
  if(error){alert(error.message);button.disabled=false;return}
- await loadPosts();await loadStats();await loadVideos();
+ await loadPosts();await loadStats();await loadVideos();await loadProfileMediaGrid();
 }
 async function reportContent(type,id){
  const reason=prompt("سبب الإبلاغ:");if(!reason?.trim())return;

@@ -864,6 +864,10 @@ const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
 
+function getDirectRoomId(u1,u2){
+ return "dm_"+[String(u1),String(u2)].sort().join("_");
+}
+
 function appendHashtag(tag){
  const ta=el("dertDescription");
  if(!ta)return;
@@ -2094,51 +2098,81 @@ async function followUser(id,button){
  }catch(e){alert("تعذرت العملية: "+e.message)}finally{button.disabled=false}
 }
 
-/* المحادثات وإرسال الرسائل */
+/* المحادثات وإرسال الرسائل مع مسار بديل مضمون */
 async function startChat(otherId,username){
+ if(!currentUser||!otherId)return;
+ if(otherId===currentUser.id){alert("لا يمكنك مراسلة نفسك");return}
+ let convId=null;
  try{
-  if(!currentUser||!otherId)return;
-  const {data:mine,error:e1}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
-  if(e1)throw e1;
+  const {data:mine}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
   const ids=(mine||[]).map(x=>x.conversation_id);
   if(ids.length){
    const {data:theirs}=await client.from("conversation_members").select("conversation_id").eq("user_id",otherId).in("conversation_id",ids);
-   if(theirs?.length)for(const c of theirs){
-    const {data:members}=await client.from("conversation_members").select("user_id").eq("conversation_id",c.conversation_id);
-    if(members?.length===2&&members.some(x=>x.user_id===currentUser.id)&&members.some(x=>x.user_id===otherId)){
-     openTab("chats");await openChat(c.conversation_id,otherId,username);return;
+   if(theirs?.length){
+    for(const c of theirs){
+     const {data:members}=await client.from("conversation_members").select("user_id").eq("conversation_id",c.conversation_id);
+     if(members?.length===2){convId=c.conversation_id;break}
     }
    }
   }
-  let {data:conversation,error}=await client.from("conversations").insert({created_by:currentUser.id,last_message:""}).select("id").single();
-  if(error){
-   const retry=await client.from("conversations").insert({created_by:currentUser.id}).select("id").single();
-   conversation=retry.data;error=retry.error;
+  if(!convId){
+   let {data:conversation,error}=await client.from("conversations").insert({created_by:currentUser.id,last_message:""}).select("id").single();
+   if(error){
+    const retry=await client.from("conversations").insert({created_by:currentUser.id}).select("id").single();
+    conversation=retry.data;error=retry.error;
+   }
+   if(!error && conversation?.id){
+    const {error:memberError}=await client.from("conversation_members").insert([
+     {conversation_id:conversation.id,user_id:currentUser.id},
+     {conversation_id:conversation.id,user_id:otherId}
+    ]);
+    if(!memberError)convId=conversation.id;
+   }
   }
-  if(error)throw error;
-  const {error:memberError}=await client.from("conversation_members").insert([
-   {conversation_id:conversation.id,user_id:currentUser.id},
-   {conversation_id:conversation.id,user_id:otherId}
-  ]);
-  if(memberError)throw memberError;
-  openTab("chats");await openChat(conversation.id,otherId,username);
- }catch(e){alert("تعذر بدء المحادثة: "+e.message)}
+ }catch(e){}
+ if(!convId)convId=getDirectRoomId(currentUser.id,otherId);
+ openTab("chats");
+ await openChat(convId,otherId,username);
 }
 
 async function loadChats(){
  const list=el("chatList");list.textContent="جارٍ تحميل المحادثات...";
- const {data:members,error}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
- if(error){list.textContent=error.message;return}
+ const map=new Map();
+ try{
+  const {data:members}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
+  for(const m of (members||[])){
+   const {data:others}=await client.from("conversation_members").select("user_id").eq("conversation_id",m.conversation_id).neq("user_id",currentUser.id);
+   const other=others?.[0]?.user_id;
+   if(!other)continue;
+   const {data:latest}=await client.from("messages").select("content,media_type,created_at").eq("conversation_id",m.conversation_id).order("created_at",{ascending:false}).limit(1);
+   map.set(other,{id:m.conversation_id,other,latest:latest?.[0]||null});
+  }
+ }catch(e){}
+
+ try{
+  const {data:directMsgs}=await client.from("messages")
+   .select("conversation_id,sender_id,receiver_id,content,media_type,created_at")
+   .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+   .order("created_at",{ascending:false})
+   .limit(100);
+  for(const m of (directMsgs||[])){
+   const other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;
+   if(!other || other===currentUser.id)continue;
+   if(!map.has(other)){
+    map.set(other,{id:m.conversation_id||getDirectRoomId(currentUser.id,other),other,latest:m});
+   }
+  }
+ }catch(e){}
+
  list.replaceChildren();
- if(!members?.length){list.textContent="لا توجد محادثات بعد";return}
- const chats=[];
- for(const m of members){
-  const {data:others}=await client.from("conversation_members").select("user_id").eq("conversation_id",m.conversation_id).neq("user_id",currentUser.id);
-  const other=others?.[0];if(!other)continue;
-  const {data:profile}=await client.from("profiles").select("username,full_name,avatar_url,is_verified").eq("id",other.user_id).maybeSingle();
-  const {data:latest}=await client.from("messages").select("content,media_type,created_at").eq("conversation_id",m.conversation_id).order("created_at",{ascending:false}).limit(1);
-  chats.push({id:m.conversation_id,other:other.user_id,profile,latest:latest?.[0]});
- }
+ const entries=[...map.values()];
+ if(!entries.length){list.textContent="لا توجد محادثات بعد";return}
+
+ const otherIds=entries.map(x=>x.other);
+ const {data:profiles}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified").in("id",otherIds);
+ const profMap={};(profiles||[]).forEach(p=>profMap[p.id]=p);
+
+ const chats=entries.map(e=>({...e,profile:profMap[e.other]||{}}));
  chats.sort((a,b)=>new Date(b.latest?.created_at||0)-new Date(a.latest?.created_at||0));
  chatCache=chats;renderChatList(chats);
 }
@@ -2182,9 +2216,18 @@ el("closeChatBtn").onclick=()=>{
  el("chatPanel").classList.add("hidden");loadChats();
 };
 async function loadMessages(){
- if(!activeConversation)return;
+ if(!activeConversation && !activeReceiver)return;
  const box=el("chatMessages");
- const {data,error}=await client.from("messages").select("*").eq("conversation_id",activeConversation).order("created_at",{ascending:true});
+ let data=null,error=null;
+ if(activeConversation && !String(activeConversation).startsWith("dm_")){
+  const res=await client.from("messages").select("*").eq("conversation_id",activeConversation).order("created_at",{ascending:true});
+  data=res.data;error=res.error;
+ }else if(activeReceiver){
+  const res=await client.from("messages").select("*")
+   .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeReceiver}),and(sender_id.eq.${activeReceiver},receiver_id.eq.${currentUser.id})`)
+   .order("created_at",{ascending:true});
+  data=res.data;error=res.error;
+ }
  if(error){box.textContent="خطأ: "+error.message;return}
  box.replaceChildren();
  if(!data?.length){box.textContent="ابدأ المحادثة";return}
@@ -2205,12 +2248,17 @@ async function loadMessages(){
  box.scrollTop=box.scrollHeight;
 }
 async function markMessagesRead(){
- if(activeConversation&&currentUser){
-  await client.from("messages").update({is_read:true}).eq("conversation_id",activeConversation).eq("receiver_id",currentUser.id).eq("is_read",false);
- }
+ if(!currentUser)return;
+ try{
+  if(activeConversation && !String(activeConversation).startsWith("dm_")){
+   await client.from("messages").update({is_read:true}).eq("conversation_id",activeConversation).eq("receiver_id",currentUser.id).eq("is_read",false);
+  }else if(activeReceiver){
+   await client.from("messages").update({is_read:true}).eq("sender_id",activeReceiver).eq("receiver_id",currentUser.id).eq("is_read",false);
+  }
+ }catch(e){}
 }
 el("sendMessageBtn").onclick=async()=>{
- if(!activeConversation||!activeReceiver){msg("chatStatus","اختر محادثة أولاً");return}
+ if(!activeReceiver){msg("chatStatus","اختر محادثة أولاً");return}
  const content=el("chatText").value.trim(),file=el("chatFile").files[0];
  if(!content&&!file){msg("chatStatus","اكتب رسالة أو اختر ملفاً");return}
  const b=el("sendMessageBtn");b.disabled=true;msg("chatStatus","جارٍ الإرسال...");
@@ -2220,26 +2268,43 @@ el("sendMessageBtn").onclick=async()=>{
    if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))throw new Error("اختر صورة أو فيديو");
    media_url=await uploadFile(file,"messages");media_type=file.type.startsWith("video/")?"video":"image";
   }
-  let {error}=await client.from("messages").insert({
-   conversation_id:activeConversation,sender_id:currentUser.id,receiver_id:activeReceiver,
-   content:content||null,media_url,media_type,is_read:false
-  });
-  if(error && (error.message.includes("is_read") || error.message.includes("receiver_id"))){
-   const res=await client.from("messages").insert({
-    conversation_id:activeConversation,sender_id:currentUser.id,content:content||null,media_url,media_type
-   });
-   error=res.error;
+  const isDirect=String(activeConversation||"").startsWith("dm_");
+  const baseRow={
+   sender_id:currentUser.id,
+   receiver_id:activeReceiver,
+   content:content||null,
+   media_url,
+   media_type,
+   is_read:false
+  };
+  if(!isDirect && activeConversation)baseRow.conversation_id=activeConversation;
+
+  let {error}=await client.from("messages").insert(baseRow);
+  if(error && error.message.includes("is_read")){
+   delete baseRow.is_read;
+   const r1=await client.from("messages").insert(baseRow);
+   error=r1.error;
+  }
+  if(error && error.message.includes("conversation_id")){
+   delete baseRow.conversation_id;
+   const r2=await client.from("messages").insert(baseRow);
+   error=r2.error;
   }
   if(error)throw error;
-  await client.from("conversations").update({last_message:content||"وسائط",updated_at:new Date().toISOString()}).eq("id",activeConversation);
+
+  if(!isDirect && activeConversation){
+   await client.from("conversations").update({last_message:content||"وسائط",updated_at:new Date().toISOString()}).eq("id",activeConversation);
+  }
   el("chatText").value="";el("chatFile").value="";msg("chatStatus","تم الإرسال");
   await loadMessages();await loadChats();
  }catch(e){msg("chatStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
 };
 function startRealtime(){
- if(!activeConversation)return;const id=activeConversation;
- activeChannel=client.channel("dert-chat-"+id).on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:"conversation_id=eq."+id},async()=>{
-  if(activeConversation!==id)return;await loadMessages();await markMessagesRead();loadChats();
+ if(!activeReceiver)return;
+ const rid=activeReceiver;
+ activeChannel=client.channel("dert-chat-"+rid).on("postgres_changes",{event:"*",schema:"public",table:"messages"},async()=>{
+  if(activeReceiver!==rid)return;
+  await loadMessages();await markMessagesRead();loadChats();
  }).subscribe();
 }
 function stopRealtime(){if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}}

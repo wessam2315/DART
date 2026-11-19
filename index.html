@@ -1617,5 +1617,261 @@ async function checkSession(){
 
 checkSession();
 </script>
+ <style>
+/* إخفاء نموذج النشر القديم من تبويبة المنشورات */
+#feed > .card:first-child{
+ display:none!important;
+}
+
+/* زر النشر العائم */
+#dertAddPost{
+ position:fixed;
+ z-index:999;
+ right:20px;
+ bottom:100px;
+ width:60px;
+ height:60px;
+ border-radius:50%;
+ font-size:36px;
+ padding:0;
+ background:linear-gradient(135deg,#1685ff,#783cff);
+ box-shadow:0 5px 25px #1685ff88;
+ display:none;
+ align-items:center;
+ justify-content:center;
+}
+
+/* نافذة النشر */
+#dertCreateModal{
+ position:fixed;
+ inset:0;
+ z-index:2000;
+ background:#000c;
+ display:none;
+ align-items:center;
+ justify-content:center;
+ padding:15px;
+}
+#dertCreateBox{
+ width:100%;
+ max-width:500px;
+ max-height:90dvh;
+ overflow-y:auto;
+ background:#101a30;
+ border:1px solid #365078;
+ border-radius:20px;
+ padding:18px;
+}
+#dertCreateBox h3{
+ margin-top:0;
+}
+#dertCreateBox label{
+ display:block;
+ color:#b8c9e8;
+ font-size:13px;
+ margin-top:13px;
+}
+#dertCreateBox input,
+#dertCreateBox textarea{
+ width:100%;
+ padding:13px;
+ margin:7px 0;
+ border:1px solid #263653;
+ border-radius:12px;
+ background:#0b1428;
+ color:white;
+ font-size:15px;
+}
+#dertCreateBox input[type=file]{
+ font-size:13px;
+}
+#dertCreateClose{
+ float:left;
+ background:#273653;
+}
+#dertCreateStatus{
+ color:#9db9ef;
+ font-size:13px;
+}
+</style>
+
+<button id="dertAddPost" type="button">＋</button>
+
+<div id="dertCreateModal">
+ <div id="dertCreateBox">
+  <button id="dertCreateClose" type="button">✕</button>
+  <h3>✨ إنشاء محتوى جديد</h3>
+
+  <label>📷 اختر صورة أو فيديو</label>
+  <input id="dertMediaFile" type="file" accept="image/*,video/*">
+
+  <label>📝 الوصف</label>
+  <textarea id="dertDescription" placeholder="اكتب وصف المحتوى..."></textarea>
+
+  <label>📍 الموقع</label>
+  <input id="dertLocation" placeholder="اكتب اسم المكان أو المدينة">
+
+  <label>🎵 اختر موسيقى من جهازك (اختياري)</label>
+  <input id="dertMusicFile" type="file" accept="audio/*">
+
+  <label>اسم الأغنية</label>
+  <input id="dertMusicTitle" placeholder="اسم الأغنية">
+
+  <label>اسم الفنان</label>
+  <input id="dertMusicArtist" placeholder="اسم الفنان">
+
+  <button id="dertPublishButton" class="full" type="button">
+   🚀 نشر المحتوى
+  </button>
+
+  <p id="dertCreateStatus"></p>
+ </div>
+</div>
+
+<script>
+(function(){
+
+ const addButton=document.getElementById("dertAddPost");
+ const modal=document.getElementById("dertCreateModal");
+ const closeButton=document.getElementById("dertCreateClose");
+ const publishButton=document.getElementById("dertPublishButton");
+ const status=document.getElementById("dertCreateStatus");
+
+ function updateAddButton(){
+  const videos=document.getElementById("videos");
+  addButton.style.display=
+   videos && videos.classList.contains("active")
+   ? "flex":"none";
+ }
+
+ addButton.onclick=()=>{
+  if(!currentUser){
+   alert("سجل الدخول أولاً");
+   return;
+  }
+  modal.style.display="flex";
+ };
+
+ closeButton.onclick=()=>modal.style.display="none";
+
+ modal.onclick=(e)=>{
+  if(e.target===modal)modal.style.display="none";
+ };
+
+ const oldOpenTab=window.openTab;
+ window.openTab=function(name,button){
+  oldOpenTab(name,button);
+  updateAddButton();
+ };
+
+ const observer=new MutationObserver(updateAddButton);
+ observer.observe(document.getElementById("videos"),{
+  attributes:true,
+  attributeFilter:["class"]
+ });
+
+ /* تعديل رسالة عدم وجود فيديوهات */
+ const videoObserver=new MutationObserver(()=>{
+  const empty=document.querySelector("#videosList .videos-empty");
+  if(!empty)return;
+
+  const description=empty.querySelector("p");
+  if(description){
+   description.textContent="كن أول من يشارك صورة أو فيديو على DERT. اضغط زر + للنشر.";
+  }
+
+  const oldButton=empty.querySelector("button");
+  if(oldButton){
+   oldButton.textContent="＋ إنشاء محتوى";
+   oldButton.onclick=()=>addButton.click();
+  }
+ });
+
+ videoObserver.observe(document.getElementById("videosList"),{
+  childList:true,
+  subtree:true
+ });
+
+ publishButton.onclick=async()=>{
+  if(!currentUser){
+   status.textContent="يرجى تسجيل الدخول أولاً";
+   return;
+  }
+
+  const file=document.getElementById("dertMediaFile").files[0];
+  const musicFile=document.getElementById("dertMusicFile").files[0];
+  const content=document.getElementById("dertDescription").value.trim();
+  const locationName=document.getElementById("dertLocation").value.trim();
+  const musicTitle=document.getElementById("dertMusicTitle").value.trim();
+  const musicArtist=document.getElementById("dertMusicArtist").value.trim();
+
+  if(!file){
+   status.textContent="اختر صورة أو فيديو أولاً";
+   return;
+  }
+
+  if(!file.type.startsWith("image/")&&!file.type.startsWith("video/")){
+   status.textContent="نوع الملف غير مدعوم";
+   return;
+  }
+
+  publishButton.disabled=true;
+  status.textContent="جارٍ رفع المحتوى...";
+
+  try{
+   const image_url=await uploadFile(file,"posts");
+   let music_url=null;
+
+   if(musicFile){
+    if(!musicFile.type.startsWith("audio/")){
+     throw new Error("اختر ملفاً صوتياً صحيحاً");
+    }
+    music_url=await uploadFile(musicFile,"music");
+   }
+
+   const media_type=file.type.startsWith("video/")?"video":"image";
+
+   const {error}=await client.from("posts").insert({
+    user_id:currentUser.id,
+    content:content||null,
+    image_url:image_url,
+    media_type:media_type,
+    location_name:locationName||null,
+    music_title:musicTitle||musicFile?.name||null,
+    music_artist:musicArtist||null,
+    music_url:music_url
+   });
+
+   if(error)throw error;
+
+   status.textContent="تم النشر بنجاح ❤️";
+
+   document.getElementById("dertMediaFile").value="";
+   document.getElementById("dertMusicFile").value="";
+   document.getElementById("dertDescription").value="";
+   document.getElementById("dertLocation").value="";
+   document.getElementById("dertMusicTitle").value="";
+   document.getElementById("dertMusicArtist").value="";
+
+   await loadVideos();
+   await loadPosts();
+   await loadStats();
+
+   setTimeout(()=>{
+    modal.style.display="none";
+    status.textContent="";
+   },900);
+
+  }catch(error){
+   status.textContent="تعذر النشر: "+error.message;
+  }finally{
+   publishButton.disabled=false;
+  }
+ };
+
+ updateAddButton();
+
+})();
+</script>
 </body>
 </html>

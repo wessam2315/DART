@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DERT 🌍</title>
 
-<!-- أيقونة التطبيق والمشاركة -->
 <link rel="icon" type="image/png" href="app-icon.png">
 <link rel="apple-touch-icon" href="app-icon.png">
 <meta property="og:title" content="DERT 🌍">
@@ -29,24 +28,10 @@ textarea{min-height:72px;resize:vertical}
 .small{font-size:12px;color:var(--muted)}
 .card,.post{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
 
-/* نافذة المتابعة الإجبارية عند الدخول */
-.mandatory-follow-backdrop{
- position:fixed;inset:0;z-index:3000;
- background:#000000e6;backdrop-filter:blur(10px);
- display:flex;align-items:center;justify-content:center;padding:18px;
-}
-.mandatory-follow-card{
- width:100%;max-width:400px;
- background:#12131a;border:1px solid #2d2f3e;border-radius:22px;
- padding:22px 18px;text-align:center;
- box-shadow:0 20px 50px #000c;
-}
-.mandatory-follow-card .avatar{
- width:84px;height:84px;font-size:32px;margin:0 auto 12px;
- border:2px solid #fe2c55;
-}
+.mandatory-follow-backdrop{position:fixed;inset:0;z-index:3000;background:#000000e6;backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:18px}
+.mandatory-follow-card{width:100%;max-width:400px;background:#12131a;border:1px solid #2d2f3e;border-radius:22px;padding:22px 18px;text-align:center;box-shadow:0 20px 50px #000c}
+.mandatory-follow-card .avatar{width:84px;height:84px;font-size:32px;margin:0 auto 12px;border:2px solid #fe2c55}
 
-/* شريط علوي شفاف بأسلوب تيك توك */
 .tt-topbar{position:fixed;top:0;left:0;right:0;z-index:20;max-width:720px;margin:auto;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(to bottom,#000c,#0000);pointer-events:none}
 .tt-topbar>*{pointer-events:auto}
 .tt-top-right{display:flex;align-items:center;gap:8px}
@@ -59,7 +44,6 @@ textarea{min-height:72px;resize:vertical}
 .tt-top-tab.active::after{content:"";position:absolute;bottom:-4px;left:15%;right:15%;height:3px;border-radius:3px;background:#ffffff}
 .tt-search-btn{width:36px;height:36px;padding:0;border-radius:10px;background:transparent;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 
-/* شريط البحث الموحد */
 .search-box{position:relative;display:flex;align-items:center;margin:8px 0}
 .search-box input{padding-inline-start:38px;border-radius:22px;background:#181920;border-color:#2b2c36;font-size:14px;padding-top:10px;padding-bottom:10px}
 .search-icon{position:absolute;right:13px;font-size:15px;color:#9ea2ad;pointer-events:none}
@@ -73,7 +57,6 @@ textarea{min-height:72px;resize:vertical}
 .post-text{white-space:pre-wrap;line-height:1.65}
 .post-date{font-size:12px;color:var(--muted);margin-top:10px}
 
-/* شريط الموسيقى */
 .sound-line{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 10px;border-radius:16px;background:#ffffff1a;color:#fff;font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 .music-picker-btn{width:100%;margin-top:12px;padding:13px 14px;border-radius:14px;background:#1a1b24;border:1px solid #2d2f3e;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:14px}
 .music-selected-bar{margin-top:8px;padding:9px 12px;border-radius:12px;background:#191a22;border:1px solid #2e303d;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
@@ -82,7 +65,6 @@ textarea{min-height:72px;resize:vertical}
 .music-row-actions{display:flex;gap:6px}
 .music-row-actions button{padding:7px 11px;font-size:12px}
 
-/* تمرير الصور */
 .carousel-wrap{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;background:#000;border:1px solid var(--line)}
 .carousel-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
 .carousel-track::-webkit-scrollbar{display:none}
@@ -92,7 +74,6 @@ textarea{min-height:72px;resize:vertical}
 .carousel-dot{width:7px;height:7px;border-radius:50%;background:#3a3c48}
 .carousel-dot.active{background:#fff}
 
-/* معاينة الوسائط */
 .preview-box{margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:10px;background:#14151a}
 .preview-grid{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
 .preview-item{position:relative;flex:0 0 105px;height:105px;border-radius:10px;overflow:hidden;border:1px solid #2e303d}
@@ -100,7 +81,6 @@ textarea{min-height:72px;resize:vertical}
 .preview-remove{position:absolute;top:4px;left:4px;width:22px;height:22px;padding:0;border-radius:50%;background:#fe2c55;font-size:12px;line-height:22px;text-align:center}
 .preview-video{width:100%;max-height:220px;border-radius:10px;background:#000;display:block}
 
-/* خيارات النشر المتقدمة مثل تيك توك */
 .tt-extra-options{margin-top:10px;background:#14151d;border:1px solid #252736;border-radius:14px;padding:10px 12px;display:grid;gap:8px}
 .tt-opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
 .tt-opt-row select{width:auto;min-width:130px;margin:0;padding:7px 10px;font-size:12px}
@@ -142,77 +122,32 @@ textarea{min-height:72px;resize:vertical}
 .chat-time{font-size:11px;color:var(--muted)}
 #avatarFile{display:none}
 
-/* أسلوب الأيقونات المربعة البنفسجية المضيئة */
-.violet-icon{
- width:28px;height:28px;border-radius:9px;
- background:radial-gradient(circle at 50% 88%,#6d28d988,#161522 72%);
- border:1px solid #4c2d8280;
- box-shadow:0 3px 10px #5b21b655,inset 0 -3px 6px #7c3aed66;
- display:inline-flex;align-items:center;justify-content:center;
- flex-shrink:0;transition:transform .15s,box-shadow .15s;
-}
+.violet-icon{width:28px;height:28px;border-radius:9px;background:radial-gradient(circle at 50% 88%,#6d28d988,#161522 72%);border:1px solid #4c2d8280;box-shadow:0 3px 10px #5b21b655,inset 0 -3px 6px #7c3aed66;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,box-shadow .15s}
 .violet-icon svg{width:19px;height:19px;display:block}
-nav button.active .violet-icon{
- box-shadow:0 4px 14px #8b5cf6aa,inset 0 -3px 7px #a78bfa99;
- border-color:#8b5cf6;transform:translateY(-1px);
-}
+nav button.active .violet-icon{box-shadow:0 4px 14px #8b5cf6aa,inset 0 -3px 7px #a78bfa99;border-color:#8b5cf6;transform:translateY(-1px)}
 .violet-icon-sm{width:26px;height:26px;border-radius:8px}
 .violet-icon-sm svg{width:17px;height:17px}
 .violet-icon-lg{width:40px;height:40px;border-radius:12px}
 .violet-icon-lg svg{width:27px;height:27px}
 
-/* شريط التنقل السفلي الأسود مثل تيك توك */
 nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;padding:6px 4px calc(8px + env(safe-area-inset-bottom));background:#000000;border-top:1px solid #1c1d24;max-width:720px;margin:auto}
 nav.has-admin{grid-template-columns:repeat(6,minmax(0,1fr))}
 nav button{margin:0;padding:4px 2px;background:transparent;color:#9da0ad;border-radius:8px;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
 nav button.active{color:#ffffff;background:transparent}
 .tt-plus-btn{width:44px;height:28px;border-radius:8px;padding:0;background:#ffffff;color:#000000;display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;line-height:1;box-shadow:-3px 0 0 #25f4ee,3px 0 0 #fe2c55;margin:2px auto}
 
-/* واجهة الفيديوهات العمودية مثل تيك توك */
 #videos{margin:-58px -12px -96px}
-.videos-feed{
- height:100vh;
- height:100dvh;
- width:100%;
- overflow-y:auto;
- scroll-snap-type:y mandatory;
- overscroll-behavior-y:contain;
- scrollbar-width:none;
- background:#000;
-}
+.videos-feed{height:100vh;height:100dvh;width:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;scrollbar-width:none;background:#000}
 .videos-feed::-webkit-scrollbar{display:none}
-.video-card{
- height:100%;
- width:100%;
- position:relative;
- overflow:hidden;
- scroll-snap-align:start;
- scroll-snap-stop:always;
- background:#000;
-}
+.video-card{height:100%;width:100%;position:relative;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;background:#000}
 .video-card video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
-.video-overlay{
- position:absolute;inset:0;pointer-events:none;
- display:flex;flex-direction:column;justify-content:flex-end;
- padding:16px 14px 90px;
- background:linear-gradient(transparent 50%,#0004 72%,#000d 100%);
-}
+.video-overlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:flex-end;padding:16px 14px 90px;background:linear-gradient(transparent 50%,#0004 72%,#000d 100%)}
 .video-details{max-width:82%;text-shadow:0 1px 4px #000;pointer-events:auto}
 .video-author{font-weight:800;font-size:16px;margin-bottom:6px;cursor:pointer}
 .video-description{font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
 .video-date{font-size:11px;color:#c7cbd4;margin-top:6px}
 
-/* الأزرار الجانبية على الفيديو */
-.video-side-actions{
- position:absolute;
- left:10px;
- bottom:96px;
- display:flex;
- flex-direction:column;
- gap:12px;
- align-items:center;
- pointer-events:auto;
-}
+.video-side-actions{position:absolute;left:10px;bottom:96px;display:flex;flex-direction:column;gap:12px;align-items:center;pointer-events:auto}
 .tt-avatar-wrap{position:relative;width:48px;height:48px;margin-bottom:4px;cursor:pointer}
 .tt-avatar-wrap .avatar{width:48px;height:48px;border:2px solid #fff}
 .tt-plus-badge{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;line-height:1}
@@ -224,14 +159,10 @@ nav button.active{color:#ffffff;background:transparent}
 .tt-disc{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,#1e1f26 30%,#7c3aed 33%,#141418 38%,#8b5cf6 41%,#111 45%);border:5px solid #24252d;display:flex;align-items:center;justify-content:center;font-size:14px;animation:spinDisc 6s linear infinite}
 @keyframes spinDisc{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
-.video-sound{
- position:absolute;top:64px;left:12px;width:36px;height:36px;border-radius:50%;
- background:#0008;border:1px solid #ffffff38;color:#fff;font-size:16px;padding:0;display:flex;align-items:center;justify-content:center
-}
+.video-sound{position:absolute;top:64px;left:12px;width:36px;height:36px;border-radius:50%;background:#0008;border:1px solid #ffffff38;color:#fff;font-size:16px;padding:0;display:flex;align-items:center;justify-content:center}
 .videos-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:#0a0a0d}
 .video-loading{height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted)}
 
-/* شاشة الدخول */
 .auth-screen{min-height:100vh;min-height:100dvh;background:radial-gradient(circle at 50% 25%,#1b1c26,#000 72%);display:flex;align-items:center;justify-content:center;padding:22px}
 .auth-inner{width:100%;max-width:390px;text-align:center}
 .brand-mark{width:150px;height:150px;margin:0 auto 14px;border-radius:36px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid #8b5cf6;background:#111218;box-shadow:0 12px 32px #6d28d955}
@@ -249,7 +180,6 @@ nav button.active{color:#ffffff;background:transparent}
 .auth-switch button.active{background:#fe2c55;color:#fff}
 .auth-message{font-size:13px;color:#ffd0da;min-height:20px}
 
-/* ملف شخصي نظيف مثل تيك توك */
 .tt-ig-profile-card{background:#0b0b0e;border:1px solid #1d1e26;border-radius:18px;overflow:hidden;padding-bottom:14px}
 .tt-ig-top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px}
 .tt-ig-handle{font-size:16px;font-weight:800;display:flex;align-items:center;gap:4px}
@@ -284,20 +214,8 @@ nav button.active{color:#ffffff;background:transparent}
 .profile-stats span{font-size:12px;color:var(--muted)}
 .profile-settings{margin:12px 0;padding:14px;background:#16171e;border:1px solid var(--line);border-radius:14px}
 
-/* شاشات منفصلة مستقلة للقائمة والإعدادات والأدوات */
-.standalone-page{
- position:fixed;inset:0;z-index:45;
- background:#000000;
- max-width:720px;margin:auto;
- overflow-y:auto;
- padding:calc(14px + env(safe-area-inset-top)) 14px calc(32px + env(safe-area-inset-bottom));
-}
-.standalone-header{
- display:flex;align-items:center;justify-content:space-between;gap:10px;
- padding-bottom:12px;margin-bottom:12px;
- border-bottom:1px solid #1f2029;
- position:sticky;top:0;background:#000000ee;backdrop-filter:blur(8px);z-index:5;padding-top:4px;
-}
+.standalone-page{position:fixed;inset:0;z-index:45;background:#000000;max-width:720px;margin:auto;overflow-y:auto;padding:calc(14px + env(safe-area-inset-top)) 14px calc(32px + env(safe-area-inset-bottom))}
+.standalone-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid #1f2029;position:sticky;top:0;background:#000000ee;backdrop-filter:blur(8px);z-index:5;padding-top:4px}
 .standalone-header h2{margin:0;font-size:17px;font-weight:800}
 .tt-menu-group-title{font-size:12px;font-weight:700;color:#8e9099;padding:10px 4px 6px}
 .tt-menu-card{background:#15161d;border:1px solid var(--line);border-radius:14px;overflow:hidden}
@@ -313,7 +231,6 @@ nav button.active{color:#ffffff;background:transparent}
 .tt-stat-tile span{font-size:11px;color:var(--muted)}
 .tt-qr-box{background:#ffffff;color:#000;border-radius:14px;padding:16px;text-align:center;margin:10px 0}
 
-/* باقات طرق الدفع العراقية */
 .pay-methods-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
 .pay-method-btn{background:#1a1b25;border:1px solid #2d3042;color:#fff;padding:10px;border-radius:10px;font-size:12px;font-weight:700}
 .pay-method-btn.active{background:#fe2c55;border-color:#fe2c55}
@@ -321,7 +238,6 @@ nav button.active{color:#ffffff;background:transparent}
 .pkg-btn{background:#1a1b25;border:1px solid #2d3042;color:#fff;padding:10px 6px;border-radius:10px;font-size:12px}
 .pkg-btn.active{background:#18a968;border-color:#18a968}
 
-/* غرفة البث المباشر LIVE وتوزيع النسب 60% / 40% */
 .tt-live-stage{background:#0b0c12;border:1px solid #282a3a;border-radius:16px;padding:12px}
 .tt-live-screen{position:relative;height:210px;border-radius:12px;background:radial-gradient(circle at 50% 30%,#3b1d7a,#09090d 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;padding:12px}
 .tt-live-screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -335,7 +251,7 @@ nav button.active{color:#ffffff;background:transparent}
 .tt-live-gifts button{padding:7px 11px;font-size:12px;background:#1d1f2b;border:1px solid #2e3142}
 
 .request-card{background:#16171e;border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
-.status-pending{color:#ffc65c}.status-approved{color:#29d389}.status-rejected{color:#ff5c77}
+.status-pending{color:#ffc65c}.status-paid,.status-approved{color:#29d389}.status-rejected,.status-failed,.status-expired{color:#ff5c77}
 .admin-actions{display:flex;gap:8px;margin-top:10px}
 .admin-actions button{flex:1}
 .support-message{padding:10px 12px;border-radius:12px;background:#1d1f28;margin:8px 0;white-space:pre-wrap}
@@ -346,7 +262,6 @@ nav button.active{color:#ffffff;background:transparent}
 .modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px}
 .modal-top button{background:#25262e;padding:7px 11px}
 
-/* شاشة إنشاء محتوى بأسلوب تيك توك */
 #dertCreateModal{position:fixed;inset:0;z-index:2000;background:#000000cc;backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center}
 #dertCreateBox{width:100%;max-width:720px;max-height:94vh;max-height:94dvh;overflow-y:auto;background:#0d0e12;border:1px solid #242633;border-bottom:0;border-radius:22px 22px 0 0;padding:14px 16px calc(24px + env(safe-area-inset-bottom));animation:sheetUp .22s ease-out}
 .tt-create-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid #1e202b;position:sticky;top:0;background:#0d0e12;z-index:4}
@@ -370,7 +285,6 @@ nav button.active{color:#ffffff;background:transparent}
 </head>
 <body>
 
-<!-- نافذة المتابعة الإجبارية لحسابك عند تسجيل الدخول -->
 <div id="mandatoryFollowModal" class="mandatory-follow-backdrop hidden">
  <div class="mandatory-follow-card">
   <div class="small" style="color:#fe2c55;font-weight:700;margin-bottom:8px">مطلوب للمتابعة</div>
@@ -383,7 +297,6 @@ nav button.active{color:#ffffff;background:transparent}
  </div>
 </div>
 
-<!-- تعريف الأيقونات المربعة البنفسجية المضيئة مرة واحدة لاستخدامها في كل الواجهة -->
 <svg width="0" height="0" style="position:absolute;visibility:hidden" aria-hidden="true">
  <defs>
   <linearGradient id="vGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -395,37 +308,12 @@ nav button.active{color:#ffffff;background:transparent}
    <stop offset="0%" stop-color="#a78bfa"/>
    <stop offset="100%" stop-color="#6d28d9"/>
   </linearGradient>
-
-  <g id="ico-home">
-   <path d="M3 10.5L12 3l9 7.5" fill="none" stroke="url(#vAccent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-   <path d="M5.5 9.5V19a1.5 1.5 0 0 0 1.5 1.5h3V15h4v5.5h3A1.5 1.5 0 0 0 18.5 19V9.5L12 4.2 5.5 9.5z" fill="url(#vGrad)"/>
-  </g>
-  <g id="ico-user">
-   <circle cx="12" cy="6.5" r="3.4" fill="url(#vGrad)"/>
-   <path d="M5 19.5c0-3.5 3.1-6 7-6s7 2.5 7 6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" fill="url(#vGrad)"/>
-   <polygon points="12,14.2 10.4,17 12,20.2 13.6,17" fill="url(#vAccent)"/>
-  </g>
-  <g id="ico-search">
-   <circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="url(#vGrad)" stroke-width="2.6"/>
-   <line x1="15.2" y1="15.2" x2="20" y2="20" stroke="url(#vAccent)" stroke-width="3.2" stroke-linecap="round"/>
-  </g>
-  <g id="ico-chat">
-   <path d="M4.5 5.5h15A2.5 2.5 0 0 1 22 8v7.5a2.5 2.5 0 0 1-2.5 2.5H9.5L5 21.5v-3.5A2.5 2.5 0 0 1 2.5 15.5V8A2.5 2.5 0 0 1 4.5 5.5z" fill="url(#vGrad)"/>
-   <circle cx="8.5" cy="11.8" r="1.4" fill="#3b1d7a"/>
-   <circle cx="12.2" cy="11.8" r="1.4" fill="#3b1d7a"/>
-   <circle cx="15.9" cy="11.8" r="1.4" fill="#3b1d7a"/>
-  </g>
-  <g id="ico-admin">
-   <path d="M12 3.5l1.4 2.1 2.5-.5.5 2.5 2.1 1.4-1.2 2.2 1.2 2.2-2.1 1.4-.5 2.5-2.5-.5L12 20.5l-1.4-2.1-2.5.5-.5-2.5-2.1-1.4 1.2-2.2-1.2-2.2 2.1-1.4.5-2.5 2.5.5L12 3.5z" fill="url(#vGrad)"/>
-   <circle cx="12" cy="12" r="3.4" fill="url(#vAccent)"/>
-  </g>
-  <g id="ico-share">
-   <line x1="8.2" y1="10.8" x2="15.8" y2="6.8" stroke="url(#vGrad)" stroke-width="2.2"/>
-   <line x1="8.2" y1="13.2" x2="15.8" y2="17.2" stroke="url(#vGrad)" stroke-width="2.2"/>
-   <circle cx="6.5" cy="12" r="2.8" fill="url(#vGrad)"/>
-   <circle cx="17.5" cy="5.8" r="2.8" fill="url(#vAccent)"/>
-   <circle cx="17.5" cy="18.2" r="2.8" fill="url(#vAccent)"/>
-  </g>
+  <g id="ico-home"><path d="M3 10.5L12 3l9 7.5" fill="none" stroke="url(#vAccent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 9.5V19a1.5 1.5 0 0 0 1.5 1.5h3V15h4v5.5h3A1.5 1.5 0 0 0 18.5 19V9.5L12 4.2 5.5 9.5z" fill="url(#vGrad)"/></g>
+  <g id="ico-user"><circle cx="12" cy="6.5" r="3.4" fill="url(#vGrad)"/><path d="M5 19.5c0-3.5 3.1-6 7-6s7 2.5 7 6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" fill="url(#vGrad)"/><polygon points="12,14.2 10.4,17 12,20.2 13.6,17" fill="url(#vAccent)"/></g>
+  <g id="ico-search"><circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="url(#vGrad)" stroke-width="2.6"/><line x1="15.2" y1="15.2" x2="20" y2="20" stroke="url(#vAccent)" stroke-width="3.2" stroke-linecap="round"/></g>
+  <g id="ico-chat"><path d="M4.5 5.5h15A2.5 2.5 0 0 1 22 8v7.5a2.5 2.5 0 0 1-2.5 2.5H9.5L5 21.5v-3.5A2.5 2.5 0 0 1 2.5 15.5V8A2.5 2.5 0 0 1 4.5 5.5z" fill="url(#vGrad)"/><circle cx="8.5" cy="11.8" r="1.4" fill="#3b1d7a"/><circle cx="12.2" cy="11.8" r="1.4" fill="#3b1d7a"/><circle cx="15.9" cy="11.8" r="1.4" fill="#3b1d7a"/></g>
+  <g id="ico-admin"><path d="M12 3.5l1.4 2.1 2.5-.5.5 2.5 2.1 1.4-1.2 2.2 1.2 2.2-2.1 1.4-.5 2.5-2.5-.5L12 20.5l-1.4-2.1-2.5.5-.5-2.5-2.1-1.4 1.2-2.2-1.2-2.2 2.1-1.4.5-2.5 2.5.5L12 3.5z" fill="url(#vGrad)"/><circle cx="12" cy="12" r="3.4" fill="url(#vAccent)"/></g>
+  <g id="ico-share"><line x1="8.2" y1="10.8" x2="15.8" y2="6.8" stroke="url(#vGrad)" stroke-width="2.2"/><line x1="8.2" y1="13.2" x2="15.8" y2="17.2" stroke="url(#vGrad)" stroke-width="2.2"/><circle cx="6.5" cy="12" r="2.8" fill="url(#vGrad)"/><circle cx="17.5" cy="5.8" r="2.8" fill="url(#vAccent)"/><circle cx="17.5" cy="18.2" r="2.8" fill="url(#vAccent)"/></g>
  </defs>
 </svg>
 
@@ -471,7 +359,6 @@ nav button.active{color:#ffffff;background:transparent}
 </section>
 
 <div id="home" class="hidden">
-<!-- شريط علوي مثل تيك توك -->
 <div class="tt-topbar">
  <div class="tt-top-right">
   <button type="button" class="tt-back-mini" title="رجوع" onclick="goBackSmart()">‹</button>
@@ -550,8 +437,8 @@ nav button.active{color:#ffffff;background:transparent}
 <div class="card">
 <h2>لوحة إدارة DERT</h2>
 
-<h3>طلبات شحن العملات (زين كاش / سوبر كي / زين / آسياسيل)</h3>
-<button class="full green" id="refreshTopups">تحديث طلبات الشحن</button>
+<h3>سجل عمليات الدفع والشحن</h3>
+<button class="full green" id="refreshTopups">تحديث سجل الشحن</button>
 <div id="adminTopups"></div>
 <hr style="border-color:var(--line)">
 
@@ -577,7 +464,6 @@ nav button.active{color:#ffffff;background:transparent}
 </div>
 </section>
 
-<!-- صفحة الملف الشخصي النظيفة مثل تيك توك فقط -->
 <section id="profile" class="section">
 <div class="tt-ig-profile-card">
  <div class="tt-ig-top-bar">
@@ -637,7 +523,6 @@ nav button.active{color:#ffffff;background:transparent}
 </div>
 </section>
 
-<!-- شاشة مستقلة 1: قائمة الحساب -->
 <div id="menuScreen" class="standalone-page hidden">
  <div class="standalone-header">
   <button type="button" class="tt-back-mini" onclick="closeMenuScreen()">←</button>
@@ -706,7 +591,6 @@ nav button.active{color:#ffffff;background:transparent}
  </div>
 </div>
 
-<!-- شاشة مستقلة 2: الإعدادات والخصوصية -->
 <div id="settingsScreen" class="standalone-page hidden">
  <div class="standalone-header">
   <button type="button" class="tt-back-mini" onclick="closeSettingsScreen()">←</button>
@@ -734,7 +618,6 @@ nav button.active{color:#ffffff;background:transparent}
  <button class="full red" id="logoutBtn" style="margin-top:12px">تسجيل الخروج</button>
 </div>
 
-<!-- شاشة مستقلة 3: تفاصيل الأداة المختارة -->
 <div id="toolScreen" class="standalone-page hidden">
  <div class="standalone-header">
   <button type="button" class="tt-back-mini" onclick="closeToolScreen()">←</button>
@@ -744,7 +627,6 @@ nav button.active{color:#ffffff;background:transparent}
  <div id="toolScreenBody"></div>
 </div>
 
-<!-- شريط التنقل السفلي مثل تيك توك بالأيقونات الجديدة -->
 <nav id="mainNav">
 <button class="active" onclick="openTab('videos',this)">
  <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-home"></use></svg></span>
@@ -773,7 +655,6 @@ nav button.active{color:#ffffff;background:transparent}
 </div>
 </div>
 
-<!-- نافذة المتابعين / أتابع -->
 <div id="followModal" class="overlay-modal hidden" onclick="if(event.target===this)closeFollowModal()">
  <div class="modal-card">
   <div class="modal-top">
@@ -784,7 +665,6 @@ nav button.active{color:#ffffff;background:transparent}
  </div>
 </div>
 
-<!-- نافذة ملف شخص آخر -->
 <div id="userProfileModal" class="overlay-modal hidden" onclick="if(event.target===this)closeUserProfileModal()">
  <div class="modal-card">
   <div class="modal-top">
@@ -795,7 +675,6 @@ nav button.active{color:#ffffff;background:transparent}
  </div>
 </div>
 
-<!-- نافذة اختيار الأغاني -->
 <div id="musicPickerModal" class="overlay-modal hidden" onclick="if(event.target===this)closeMusicPicker()">
  <div class="modal-card">
   <div class="modal-top">
@@ -810,7 +689,6 @@ nav button.active{color:#ffffff;background:transparent}
  </div>
 </div>
 
-<!-- شاشة إنشاء محتوى بأسلوب تيك توك -->
 <div id="dertCreateModal">
  <div id="dertCreateBox">
   <div class="tt-create-top">
@@ -881,7 +759,6 @@ nav button.active{color:#ffffff;background:transparent}
  </div>
 </div>
 
-<!-- نافذة التعليقات -->
 <div id="commentModal" class="comment-modal hidden" onclick="if(event.target===this)closePostComments()">
  <div class="comment-sheet">
   <div class="comment-sheet-head">
@@ -900,21 +777,14 @@ nav button.active{color:#ffffff;background:transparent}
 const SUPABASE_URL="https://forwefmjghgcybiccdxz.supabase.co";
 const SUPABASE_KEY="sb_publishable_xsXMr3yr2yJXOgRn9ZjMtQ_sfoS0OIR";
 const DERT_SITE_URL="https://wessam2315.github.io/DART/";
-const APP_ICON_URL="https://wessam2315.github.io/DART/app-icon.png";
 
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
- auth:{
-  persistSession:true,
-  autoRefreshToken:true,
-  detectSessionInUrl:true,
-  flowType:"pkce"
- }
+ auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
 });
 
 const ADMIN_ID="221ecf80-7f89-4172-b61a-304369cbe870";
 const MANDATORY_FOLLOW_USER_ID="221ecf80-7f89-4172-b61a-304369cbe870";
 
-/* نسب توزيع الدعم: 60% لصاحب البث و 40% لك */
 const STREAMER_SHARE_RATE=0.60;
 const OWNER_SHARE_RATE=0.40;
 
@@ -927,60 +797,37 @@ const DERT_SONGS=[
 
 let currentUser=null,currentProfile=null,activeConversation=null,activeReceiver=null;
 let activeChannel=null,alertsChannel=null,pendingPhone=null,chatCache=[];
-let activeCommentPost=null;
-let videoObserver=null;
-let videoPostsCache=[];
-let videoFeedMode="foryou";
-let followedIdsSet=new Set();
-let selectedImages=[];
-let selectedVideo=null;
-let selectedSong=null;
-let tabHistory=["videos"];
-let previewAudio=new Audio();
-let playingSongId=null;
-let activeProfileMediaTab="posts";
-let liveStream=null;
+let activeCommentPost=null,videoObserver=null,videoPostsCache=[],videoFeedMode="foryou";
+let followedIdsSet=new Set(),selectedImages=[],selectedVideo=null,selectedSong=null;
+let tabHistory=["videos"],previewAudio=new Audio(),playingSongId=null;
+let activeProfileMediaTab="posts",liveStream=null;
 let liveChatMessages=["أهلاً بالجميع في بث DERT المباشر! 🎉 (توزيع الدعم: 60% لصاحب البث • 40% أرباحك)"];
 let selectedPayMethod="zaincash";
 let selectedPackage={amount:5000,coins:100};
+let intentPollTimer=null;
 
 const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
-
-function getDirectRoomId(u1,u2){
- return "dm_"+[String(u1),String(u2)].sort().join("_");
-}
+function getDirectRoomId(u1,u2){return "dm_"+[String(u1),String(u2)].sort().join("_")}
+function stopIntentPolling(){if(intentPollTimer){clearInterval(intentPollTimer);intentPollTimer=null}}
 
 function updateDescCounter(){
  const ta=el("dertDescription");
  if(ta && el("dertDescCounter"))el("dertDescCounter").textContent=`${ta.value.length} / 400`;
 }
-
 function appendHashtag(tag){
- const ta=el("dertDescription");
- if(!ta)return;
- const cur=ta.value.trim();
- if(cur.includes(tag))return;
- const next=cur?`${cur} ${tag}`:tag;
- ta.value=next.slice(0,400);
- updateDescCounter();
- ta.focus();
+ const ta=el("dertDescription");if(!ta)return;
+ const cur=ta.value.trim();if(cur.includes(tag))return;
+ ta.value=(cur?`${cur} ${tag}`:tag).slice(0,400);updateDescCounter();ta.focus();
 }
-
 function updateMediaPickLabels(){
- if(el("imagesPickSub")){
-  el("imagesPickSub").textContent=selectedImages.length?`تم اختيار ${selectedImages.length} صورة`:"صورة أو عدة صور";
- }
- if(el("videoPickSub")){
-  el("videoPickSub").textContent=selectedVideo?(selectedVideo.name||"فيديو مختار"):"مقطع فيديو قصير";
- }
+ if(el("imagesPickSub"))el("imagesPickSub").textContent=selectedImages.length?`تم اختيار ${selectedImages.length} صورة`:"صورة أو عدة صور";
+ if(el("videoPickSub"))el("videoPickSub").textContent=selectedVideo?(selectedVideo.name||"فيديو مختار"):"مقطع فيديو قصير";
 }
 
 function getDertState(){
- try{
-  return JSON.parse(localStorage.getItem("dert_user_state_"+(currentUser?.id||"guest"))||"{}");
- }catch(e){return {}}
+ try{return JSON.parse(localStorage.getItem("dert_user_state_"+(currentUser?.id||"guest"))||"{}")}catch(e){return {}}
 }
 function saveDertState(patch){
  const next={...getDertState(),...patch};
@@ -988,96 +835,55 @@ function saveDertState(patch){
  return next;
 }
 
-/* جلب الرصيد الحقيقي من Supabase wallets */
 async function fetchWalletBalance(userId=currentUser?.id){
  if(!userId)return 0;
  try{
   const {data,error}=await client.from("wallets").select("balance").eq("user_id",userId).maybeSingle();
   if(error)throw error;
   return Number(data?.balance||0);
- }catch(e){
-  return Number(getDertState().streamerBalance||0);
- }
+ }catch(e){return Number(getDertState().streamerBalance||0)}
 }
 
-/* تنفيذ توزيع الدعم (60% لصاحب البث / 40% لك) عبر RPC في Supabase مع fallback محلي */
 async function processSupportSplit(totalAmount,giftLabel="دعم",targetStreamerId=null){
  const amt=Number(totalAmount);
  if(!Number.isFinite(amt) || amt<=0)return null;
  const streamerCut=Number((amt*STREAMER_SHARE_RATE).toFixed(2));
  const ownerCut=Number((amt*OWNER_SHARE_RATE).toFixed(2));
  const recipientId=targetStreamerId || ADMIN_ID;
-
  let rpcDone=false;
  try{
-  const {error}=await client.rpc("send_support_split",{
-   p_streamer_id:recipientId,
-   p_amount:amt,
-   p_gift_label:giftLabel
-  });
+  const {error}=await client.rpc("send_support_split",{p_streamer_id:recipientId,p_amount:amt,p_gift_label:giftLabel});
   if(!error)rpcDone=true;
  }catch(e){}
-
  const st=getDertState();
  const history=Array.isArray(st.supportSplitLog)?st.supportSplitLog:[];
- const entry={
-  giftLabel,
-  total:amt,
-  streamerCut,
-  ownerCut,
-  synced:rpcDone,
-  time:new Date().toLocaleTimeString("ar-IQ")
- };
  saveDertState({
   streamerBalance:Number((Number(st.streamerBalance||0)+streamerCut).toFixed(2)),
   ownerProfit:Number((Number(st.ownerProfit||0)+ownerCut).toFixed(2)),
-  supportSplitLog:[entry,...history].slice(0,30)
+  supportSplitLog:[{giftLabel,total:amt,streamerCut,ownerCut,synced:rpcDone,time:new Date().toLocaleTimeString("ar-IQ")},...history].slice(0,30)
  });
  return {total:amt,streamerCut,ownerCut,synced:rpcDone};
 }
 
-function isPostLiked(postId){
- const st=getDertState();
- return Array.isArray(st.likedPosts) && st.likedPosts.includes(String(postId));
-}
-function isPostSaved(postId){
- const st=getDertState();
- return Array.isArray(st.savedPosts) && st.savedPosts.some(x=>String(x.id)===String(postId));
-}
+function isPostLiked(postId){const st=getDertState();return Array.isArray(st.likedPosts) && st.likedPosts.includes(String(postId))}
+function isPostSaved(postId){const st=getDertState();return Array.isArray(st.savedPosts) && st.savedPosts.some(x=>String(x.id)===String(postId))}
 function toggleLikePost(postId,btn,lbl){
- const st=getDertState();
- const liked=new Set((st.likedPosts||[]).map(String));
- const idStr=String(postId);
- let nowLiked=false;
- if(liked.has(idStr)){liked.delete(idStr);nowLiked=false}
- else{liked.add(idStr);nowLiked=true}
+ const st=getDertState();const liked=new Set((st.likedPosts||[]).map(String));const idStr=String(postId);
+ let nowLiked=false;if(liked.has(idStr)){liked.delete(idStr);nowLiked=false}else{liked.add(idStr);nowLiked=true}
  saveDertState({likedPosts:[...liked]});
- if(btn)btn.classList.toggle("active",nowLiked);
- if(lbl)lbl.textContent=nowLiked?"أعجبني":"إعجاب";
+ if(btn)btn.classList.toggle("active",nowLiked);if(lbl)lbl.textContent=nowLiked?"أعجبني":"إعجاب";
 }
 function toggleSavePost(post,btn,lbl){
- const st=getDertState();
- const saved=Array.isArray(st.savedPosts)?[...st.savedPosts]:[];
- const idStr=String(post.id);
- const idx=saved.findIndex(x=>String(x.id)===idStr);
- let nowSaved=false;
- if(idx>=0){saved.splice(idx,1);nowSaved=false}
- else{saved.unshift(post);nowSaved=true}
+ const st=getDertState();const saved=Array.isArray(st.savedPosts)?[...st.savedPosts]:[];const idStr=String(post.id);
+ const idx=saved.findIndex(x=>String(x.id)===idStr);let nowSaved=false;
+ if(idx>=0){saved.splice(idx,1);nowSaved=false}else{saved.unshift(post);nowSaved=true}
  saveDertState({savedPosts:saved.slice(0,50)});
- if(btn)btn.classList.toggle("active",nowSaved);
- if(lbl)lbl.textContent=nowSaved?"محفوظ":"حفظ";
+ if(btn)btn.classList.toggle("active",nowSaved);if(lbl)lbl.textContent=nowSaved?"محفوظ":"حفظ";
 }
 
-function stopLiveCamera(){
- if(liveStream){
-  liveStream.getTracks().forEach(t=>t.stop());
-  liveStream=null;
- }
-}
-
+function stopLiveCamera(){if(liveStream){liveStream.getTracks().forEach(t=>t.stop());liveStream=null}}
 async function refreshLiveSplitCards(){
- const dbBal=await fetchWalletBalance(currentUser?.id);
- const st=getDertState();
+ const dbBal=await fetchWalletBalance(currentUser?.id);const st=getDertState();
  if(el("liveStreamerEarned"))el("liveStreamerEarned").textContent=dbBal || Number(st.streamerBalance||0);
  if(el("liveOwnerEarned"))el("liveOwnerEarned").textContent=Number(st.ownerProfit||0);
 }
@@ -1085,10 +891,8 @@ async function refreshLiveSplitCards(){
 async function openLiveRoom(){
  closeAllStandaloneScreens();
  el("toolScreenTitle").textContent="غرفة البث المباشر LIVE";
- const body=el("toolScreenBody");
- el("toolScreen").classList.remove("hidden");
- const st=getDertState();
- const dbBal=await fetchWalletBalance(currentUser?.id);
+ const body=el("toolScreenBody");el("toolScreen").classList.remove("hidden");
+ const st=getDertState();const dbBal=await fetchWalletBalance(currentUser?.id);
  body.innerHTML=`
   <div class="tt-live-stage">
    <div class="tt-live-screen" id="liveScreenBox">
@@ -1097,14 +901,8 @@ async function openLiveRoom(){
     <div class="small" id="liveViewersCount" style="margin-top:4px">👁️ 128 مشاهد • 60% صاحب البث / 40% أرباحك</div>
    </div>
    <div class="tt-split-summary">
-    <div class="tt-split-box">
-     <strong id="liveStreamerEarned">${dbBal || Number(st.streamerBalance||0)}</strong>
-     <span>رصيدك / حصة البث (60%)</span>
-    </div>
-    <div class="tt-split-box">
-     <strong id="liveOwnerEarned">${Number(st.ownerProfit||0)}</strong>
-     <span>أرباحك أنت (40%)</span>
-    </div>
+    <div class="tt-split-box"><strong id="liveStreamerEarned">${dbBal || Number(st.streamerBalance||0)}</strong><span>رصيدك / حصة البث (60%)</span></div>
+    <div class="tt-split-box"><strong id="liveOwnerEarned">${Number(st.ownerProfit||0)}</strong><span>أرباحك أنت (40%)</span></div>
    </div>
    <div class="user-row-actions" style="justify-content:center;margin-top:10px">
     <button type="button" class="green" id="startCamLiveBtn">تشغيل الكاميرا</button>
@@ -1131,29 +929,21 @@ async function openLiveRoom(){
  renderLiveChat();
  el("startCamLiveBtn").onclick=async()=>{
   try{
-   stopLiveCamera();
-   liveStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
-   const box=el("liveScreenBox");
-   const oldVid=box.querySelector("video");if(oldVid)oldVid.remove();
-   const v=document.createElement("video");v.srcObject=liveStream;v.autoplay=true;v.playsInline=true;v.muted=true;
-   box.prepend(v);
+   stopLiveCamera();liveStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+   const box=el("liveScreenBox");const oldVid=box.querySelector("video");if(oldVid)oldVid.remove();
+   const v=document.createElement("video");v.srcObject=liveStream;v.autoplay=true;v.playsInline=true;v.muted=true;box.prepend(v);
   }catch(e){alert("تعذر تشغيل الكاميرا: "+e.message)}
  };
- el("stopCamLiveBtn").onclick=()=>{
-  stopLiveCamera();
-  const box=el("liveScreenBox");
-  const oldVid=box?.querySelector("video");if(oldVid)oldVid.remove();
- };
+ el("stopCamLiveBtn").onclick=()=>{stopLiveCamera();const oldVid=el("liveScreenBox")?.querySelector("video");if(oldVid)oldVid.remove()};
  el("sendCustomSupportBtn").onclick=async()=>{
   const val=Number(el("customSupportAmount").value);
   if(!Number.isFinite(val) || val<=0){alert("أدخل مبلغ دعم صحيح");return}
-  await sendLiveGift("🎁 دعم مباشر",val);
-  el("customSupportAmount").value="";
+  await sendLiveGift("🎁 دعم مباشر",val);el("customSupportAmount").value="";
  };
  el("sendLiveMsgBtn").onclick=()=>{
   const inp=el("liveMsgInput");const t=inp.value.trim();if(!t)return;
-  const sender=currentProfile?.full_name||currentProfile?.username||"أنت";
-  liveChatMessages.push(`${sender}: ${t}`);inp.value="";renderLiveChat();
+  liveChatMessages.push(`${currentProfile?.full_name||currentProfile?.username||"أنت"}: ${t}`);
+  inp.value="";renderLiveChat();
  };
 }
 
@@ -1162,8 +952,7 @@ async function sendLiveGift(gift,amount=10){
  if(!split)return;
  const sender=currentProfile?.full_name||currentProfile?.username||"أنت";
  liveChatMessages.push(`🎁 دعم ${gift} (${split.total}) من ${sender} ⬅️ صاحب البث: ${split.streamerCut} (60%) | أرباحك: ${split.ownerCut} (40%)`);
- await refreshLiveSplitCards();
- renderLiveChat();
+ await refreshLiveSplitCards();renderLiveChat();
 }
 
 function renderLiveChat(){
@@ -1174,107 +963,75 @@ function renderLiveChat(){
 
 async function enforceMandatoryFollow(){
  if(!currentUser || !MANDATORY_FOLLOW_USER_ID || currentUser.id===MANDATORY_FOLLOW_USER_ID){
-  el("mandatoryFollowModal")?.classList.add("hidden");
-  return true;
+  el("mandatoryFollowModal")?.classList.add("hidden");return true;
  }
  try{
-  const {data:existing,error:fErr}=await client
-   .from("follows")
-   .select("follower_id")
-   .eq("follower_id",currentUser.id)
-   .eq("following_id",MANDATORY_FOLLOW_USER_ID)
-   .maybeSingle();
+  const {data:existing,error:fErr}=await client.from("follows").select("follower_id").eq("follower_id",currentUser.id).eq("following_id",MANDATORY_FOLLOW_USER_ID).maybeSingle();
   if(fErr)throw fErr;
-  if(existing){
-   el("mandatoryFollowModal")?.classList.add("hidden");
-   return true;
-  }
-
-  const {data:targetProfile}=await client
-   .from("profiles")
-   .select("id,username,full_name,avatar_url,bio,is_verified")
-   .eq("id",MANDATORY_FOLLOW_USER_ID)
-   .maybeSingle();
-
+  if(existing){el("mandatoryFollowModal")?.classList.add("hidden");return true}
+  const {data:targetProfile}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified").eq("id",MANDATORY_FOLLOW_USER_ID).maybeSingle();
   const avContainer=el("mandatoryTargetAvatar");
   const newAv=makeAvatar(targetProfile?.avatar_url,targetProfile?.full_name||targetProfile?.username||"D");
-  newAv.id="mandatoryTargetAvatar";
-  newAv.className="avatar";
+  newAv.id="mandatoryTargetAvatar";newAv.className="avatar";
   newAv.style.cssText="width:84px;height:84px;font-size:32px;margin:0 auto 12px;border:2px solid #fe2c55";
   avContainer.replaceWith(newAv);
-
   addVerifiedName(el("mandatoryTargetName"),targetProfile?.full_name||"مستخدم DERT",targetProfile?.is_verified===true);
   el("mandatoryTargetUsername").textContent="@"+(targetProfile?.username||"user");
   el("mandatoryTargetBio").textContent=targetProfile?.bio||"تابع هذا الحساب للمتابعة واستخدام المنصة.";
   msg("mandatoryFollowStatus","");
-
-  const btn=el("mandatoryFollowBtn");
-  btn.disabled=false;
-  btn.textContent="متابعة";
+  const btn=el("mandatoryFollowBtn");btn.disabled=false;btn.textContent="متابعة";
   el("mandatoryFollowModal").classList.remove("hidden");
-
   return await new Promise(resolve=>{
    btn.onclick=async()=>{
-    btn.disabled=true;
-    msg("mandatoryFollowStatus","جارٍ المتابعة...");
+    btn.disabled=true;msg("mandatoryFollowStatus","جارٍ المتابعة...");
     try{
-     const {error:insErr}=await client
-      .from("follows")
-      .insert({follower_id:currentUser.id,following_id:MANDATORY_FOLLOW_USER_ID});
+     const {error:insErr}=await client.from("follows").insert({follower_id:currentUser.id,following_id:MANDATORY_FOLLOW_USER_ID});
      if(insErr && !String(insErr.message||"").toLowerCase().includes("duplicate"))throw insErr;
-     el("mandatoryFollowModal").classList.add("hidden");
-     await loadStats();
-     resolve(true);
-    }catch(e){
-     msg("mandatoryFollowStatus","تعذر المتابعة: "+e.message);
-     btn.disabled=false;
-    }
+     el("mandatoryFollowModal").classList.add("hidden");await loadStats();resolve(true);
+    }catch(e){msg("mandatoryFollowStatus","تعذر المتابعة: "+e.message);btn.disabled=false}
    };
   });
- }catch(e){
-  el("mandatoryFollowModal")?.classList.add("hidden");
-  return true;
- }
+ }catch(e){el("mandatoryFollowModal")?.classList.add("hidden");return true}
 }
 
 function closeAllStandaloneScreens(){
- stopLiveCamera();
+ stopLiveCamera();stopIntentPolling();
  el("menuScreen")?.classList.add("hidden");
  el("settingsScreen")?.classList.add("hidden");
  el("toolScreen")?.classList.add("hidden");
 }
-function openMenuScreen(){
- closeAllStandaloneScreens();
- el("menuScreen").classList.remove("hidden");
-}
-function closeMenuScreen(){
- el("menuScreen").classList.add("hidden");
-}
+function openMenuScreen(){closeAllStandaloneScreens();el("menuScreen").classList.remove("hidden")}
+function closeMenuScreen(){el("menuScreen").classList.add("hidden")}
 async function openSettingsScreen(){
- el("menuScreen").classList.add("hidden");
- el("settingsScreen").classList.remove("hidden");
- await loadMyVerificationStatus();
+ el("menuScreen").classList.add("hidden");el("settingsScreen").classList.remove("hidden");await loadMyVerificationStatus();
 }
-function closeSettingsScreen(){
- el("settingsScreen").classList.add("hidden");
- el("menuScreen").classList.remove("hidden");
-}
-function closeToolScreen(){
- stopLiveCamera();
- el("toolScreen").classList.add("hidden");
- el("menuScreen").classList.remove("hidden");
-}
-
-function getMethodInstructions(method){
- if(method==="zaincash")return "حوّل المبلغ إلى محفظة زين كاش (ZainCash) المعتمدة، ثم أدخل رقم العملية / المرجع هنا للمراجعة والإضافة.";
- if(method==="superqi")return "ادفع عبر سوبر كي (SuperQi)، ثم أدخل رقم العملية أو المرجع لتأكيد الطلب وإضافة العملات.";
- if(method==="zain_iq")return "اتبع تعليمات الدفع عبر رصيد زين العراق ثم أدخل رمز الشحن أو رقم العملية.";
- return "اتبع تعليمات الدفع عبر رصيد آسياسيل ثم أدخل رمز الشحن أو رقم العملية.";
-}
+function closeSettingsScreen(){el("settingsScreen").classList.add("hidden");el("menuScreen").classList.remove("hidden")}
+function closeToolScreen(){stopLiveCamera();stopIntentPolling();el("toolScreen").classList.add("hidden");el("menuScreen").classList.remove("hidden")}
 
 function getMethodArabicName(method){
  const map={zaincash:"زين كاش",superqi:"سوبر كي",zain_iq:"زين العراق",asiacell:"آسياسيل"};
  return map[method]||method;
+}
+
+/* متابعة حالة طلب الدفع حتى يتم تأكيده من السيرفر */
+function watchPaymentIntent(intentId){
+ stopIntentPolling();
+ let checks=0;
+ intentPollTimer=setInterval(async()=>{
+  checks++;
+  if(checks>40){stopIntentPolling();return}
+  try{
+   const {data}=await client.from("payment_intents").select("status,coins_amount").eq("id",intentId).maybeSingle();
+   if(data?.status==="paid"){
+    stopIntentPolling();
+    msg("topupStatusMsg",`تم تأكيد الدفع وإضافة ${data.coins_amount} عملة إلى رصيدك تلقائياً ✓`);
+    openStandaloneTool("topup");
+   }else if(data?.status==="failed" || data?.status==="expired"){
+    stopIntentPolling();
+    msg("topupStatusMsg","لم تكتمل عملية الدفع أو انتهت صلاحيتها.");
+   }
+  }catch(e){}
+ },3000);
 }
 
 async function openStandaloneTool(tool){
@@ -1288,41 +1045,48 @@ async function openStandaloneTool(tool){
 
  if(tool==="topup"){
   el("toolScreenTitle").textContent="شراء العملات";
+  const currentBal=await fetchWalletBalance(currentUser.id);
   const pkgs=[
    {amount:5000,coins:100,label:"5,000 د.ع = 100 عملة"},
    {amount:10000,coins:220,label:"10,000 د.ع = 220 عملة"},
    {amount:25000,coins:600,label:"25,000 د.ع = 600 عملة"}
   ];
-  let myTopups=[];
+  let intents=[];
   try{
-   const {data}=await client.from("coin_topup_requests").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(10);
-   myTopups=data||[];
+   const {data}=await client.from("payment_intents").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(10);
+   intents=data||[];
   }catch(e){}
 
   body.innerHTML=`
+   <div class="tt-split-summary" style="margin-bottom:10px">
+    <div class="tt-split-box" style="grid-column:1/-1">
+     <strong>${currentBal}</strong>
+     <span>رصيد العملات الحالي المؤكد في حسابك</span>
+    </div>
+   </div>
+
    <div class="tt-sub-box">
-    <strong>اختر طريقة الدفع في العراق</strong>
+    <strong>اختر طريقة الدفع الآمنة</strong>
     <div class="pay-methods-grid">
      <button type="button" class="pay-method-btn ${selectedPayMethod==='zaincash'?'active':''}" data-m="zaincash">زين كاش</button>
      <button type="button" class="pay-method-btn ${selectedPayMethod==='superqi'?'active':''}" data-m="superqi">سوبر كي</button>
      <button type="button" class="pay-method-btn ${selectedPayMethod==='zain_iq'?'active':''}" data-m="zain_iq">زين العراق</button>
      <button type="button" class="pay-method-btn ${selectedPayMethod==='asiacell'?'active':''}" data-m="asiacell">آسياسيل</button>
     </div>
-    <p id="topupInstructions" class="small">${getMethodInstructions(selectedPayMethod)}</p>
 
-    <strong>اختر باقة العملات</strong>
+    <strong>اختر الباقة</strong>
     <div class="packages-grid">
      ${pkgs.map((p,idx)=>`<button type="button" class="pkg-btn ${selectedPackage.coins===p.coins?'active':''}" data-idx="${idx}">${p.label}</button>`).join("")}
     </div>
 
-    <input id="topupRefCode" placeholder="رقم العملية / رمز الشحن أو مرجع الدفع">
-    <button type="button" class="green full" id="submitTopupBtn">إرسال طلب شحن العملات</button>
+    <p class="small">يتم إنشاء عملية دفع رسمية وموثقة من الخادم؛ تُضاف العملات تلقائياً فور إتمام الدفع وتأكيد المزود.</p>
+    <button type="button" class="green full" id="startSecureTopupBtn">متابعة إلى الدفع الآمن</button>
     <p id="topupStatusMsg" class="small" style="margin-top:8px"></p>
    </div>
 
    <div class="tt-sub-box">
-    <strong>طلباتي السابقة</strong>
-    <div id="myTopupsList">${myTopups.length?myTopups.map(t=>`<div class="item small"><strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع) — الحالة: <span class="status-${t.status}">${t.status}</span></div>`).join(""):`<div class="small">لا توجد طلبات شحن بعد</div>`}</div>
+    <strong>سجل عمليات الدفع</strong>
+    <div>${intents.length?intents.map(t=>`<div class="item small"><strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع) — الحالة: <span class="status-${t.status}">${t.status}</span>${t.checkout_url && t.status==='pending'?` • <a href="${t.checkout_url}" target="_blank" style="color:#25f4ee">فتح رابط الدفع</a>`:""}</div>`).join(""):`<div class="small">لا توجد عمليات دفع بعد</div>`}</div>
    </div>
   `;
 
@@ -1330,7 +1094,6 @@ async function openStandaloneTool(tool){
    btn.onclick=()=>{
     selectedPayMethod=btn.dataset.m;
     body.querySelectorAll(".pay-method-btn").forEach(b=>b.classList.toggle("active",b===btn));
-    el("topupInstructions").textContent=getMethodInstructions(selectedPayMethod);
    };
   });
 
@@ -1343,24 +1106,23 @@ async function openStandaloneTool(tool){
    };
   });
 
-  el("submitTopupBtn").onclick=async()=>{
-   const ref=el("topupRefCode").value.trim();
-   if(!ref){msg("topupStatusMsg","اكتب رقم العملية أو رمز الشحن أولاً");return}
-   const b=el("submitTopupBtn");b.disabled=true;msg("topupStatusMsg","جارٍ إرسال الطلب...");
+  el("startSecureTopupBtn").onclick=async()=>{
+   const b=el("startSecureTopupBtn");b.disabled=true;
+   msg("topupStatusMsg","جارٍ إنشاء طلب الدفع الآمن...");
    try{
-    const {error}=await client.from("coin_topup_requests").insert({
-     user_id:currentUser.id,
-     payment_method:selectedPayMethod,
-     package_amount:selectedPackage.amount,
-     coins_amount:selectedPackage.coins,
-     reference_code:ref,
-     status:"pending"
+    const {data,error}=await client.functions.invoke("create-payment-intent",{
+     body:{payment_method:selectedPayMethod,package_amount:selectedPackage.amount}
     });
     if(error)throw error;
-    msg("topupStatusMsg","تم إرسال طلب الشحن بنجاح وسيُضاف الرصيد بعد التأكيد ✓");
-    openStandaloneTool("topup");
+    if(!data?.ok || !data?.intent_id)throw new Error(data?.error || "تعذر إنشاء طلب الدفع");
+
+    if(data.checkout_url){
+     window.open(data.checkout_url,"_blank","noopener,noreferrer");
+    }
+    msg("topupStatusMsg","تم فتح صفحة الدفع. ننتظر تأكيد الدفع تلقائياً لإضافة العملات...");
+    watchPaymentIntent(data.intent_id);
    }catch(e){
-    msg("topupStatusMsg","تعذر إرسال الطلب: "+e.message);
+    msg("topupStatusMsg","تعذر بدء الدفع: "+(e.message||e));
     b.disabled=false;
    }
   };
@@ -1375,14 +1137,8 @@ async function openStandaloneTool(tool){
   const log=Array.isArray(st.supportSplitLog)?st.supportSplitLog:[];
   body.innerHTML=`
    <div class="tt-split-summary">
-    <div class="tt-split-box">
-     <strong>${streamerBal}</strong>
-     <span>رصيدك الحالي / حصة البث (60%)</span>
-    </div>
-    <div class="tt-split-box">
-     <strong>${ownerProfit}</strong>
-     <span>أرباحك أنت (40%)</span>
-    </div>
+    <div class="tt-split-box"><strong>${streamerBal}</strong><span>رصيدك الحالي / حصة البث (60%)</span></div>
+    <div class="tt-split-box"><strong>${ownerProfit}</strong><span>أرباحك أنت (40%)</span></div>
    </div>
 
    <div class="user-row-actions" style="margin-top:10px">
@@ -1409,8 +1165,7 @@ async function openStandaloneTool(tool){
   el("addSupportSplitBtn").onclick=async()=>{
    const amt=Number(el("supportAmountInput").value);
    if(!Number.isFinite(amt) || amt<=0){alert("أدخل مبلغاً صحيحاً أكبر من 0");return}
-   await processSupportSplit(amt,"🎁 دعم",currentUser.id);
-   openStandaloneTool("balance");
+   await processSupportSplit(amt,"🎁 دعم",currentUser.id);openStandaloneTool("balance");
   };
 
   el("submitWithdrawBtn").onclick=async()=>{
@@ -1420,43 +1175,31 @@ async function openStandaloneTool(tool){
    if(!wMethod){msg("withdrawStatusMsg","اكتب طريقة السحب أو رقم المحفظة");return}
    const b=el("submitWithdrawBtn");b.disabled=true;msg("withdrawStatusMsg","جارٍ إرسال طلب السحب...");
    try{
-    const {error}=await client.from("withdrawal_requests").insert({
-     user_id:currentUser.id,
-     amount:wAmt,
-     method_details:wMethod,
-     status:"pending"
-    });
+    const {error}=await client.from("withdrawal_requests").insert({user_id:currentUser.id,amount:wAmt,method_details:wMethod,status:"pending"});
     if(error)throw error;
     msg("withdrawStatusMsg","تم إرسال طلب السحب بنجاح إلى الإدارة ✓");
-    el("withdrawAmountInput").value="";
-    el("withdrawMethodInput").value="";
-   }catch(e){
-    msg("withdrawStatusMsg","تعذر إرسال طلب السحب: "+e.message);
-   }finally{b.disabled=false}
+    el("withdrawAmountInput").value="";el("withdrawMethodInput").value="";
+   }catch(e){msg("withdrawStatusMsg","تعذر إرسال طلب السحب: "+e.message)}finally{b.disabled=false}
   };
   return;
  }
 
  if(tool==="activity"){
-  el("toolScreenTitle").textContent="مركز الأنشطة";
-  body.textContent="جارٍ تحميل نشاطاتك...";
+  el("toolScreenTitle").textContent="مركز الأنشطة";body.textContent="جارٍ تحميل نشاطاتك...";
   const [{count:pCnt},{count:cCnt},{count:fCnt}]=await Promise.all([
    client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),
    client.from("post_comments").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),
    client.from("follows").select("*",{count:"exact",head:true}).eq("follower_id",currentUser.id)
   ]);
-  const likedCnt=(st.likedPosts||[]).length;
-  const savedCnt=(st.savedPosts||[]).length;
   body.innerHTML=`
    <div class="tt-stat-grid">
     <div class="tt-stat-tile"><strong>${pCnt||0}</strong><span>منشوراتك</span></div>
     <div class="tt-stat-tile"><strong>${cCnt||0}</strong><span>تعليقاتك</span></div>
-    <div class="tt-stat-tile"><strong>${likedCnt}</strong><span>إعجاباتك</span></div>
-    <div class="tt-stat-tile"><strong>${savedCnt}</strong><span>محفوظاتك</span></div>
+    <div class="tt-stat-tile"><strong>${(st.likedPosts||[]).length}</strong><span>إعجاباتك</span></div>
+    <div class="tt-stat-tile"><strong>${(st.savedPosts||[]).length}</strong><span>محفوظاتك</span></div>
    </div>
    <button type="button" class="full gray" onclick="closeAllStandaloneScreens();openTab('feed')">الانتقال إلى منشوراتي</button>
-  `;
-  return;
+  `;return;
  }
 
  if(tool==="offline"){
@@ -1474,15 +1217,12 @@ async function openStandaloneTool(tool){
    const btn=document.createElement("button");btn.type="button";btn.className=isSaved?"gray":"green";
    btn.style.marginTop="8px";btn.textContent=isSaved?"محفوظ ✓":"حفظ للقائمة السريعة";
    btn.onclick=()=>{
-    const current=getDertState().offlineVideos||[];
-    const exists=current.some(item=>item.id===v.id);
-    const updated=exists?current.filter(item=>item.id!==v.id):[v,...current].slice(0,12);
-    saveDertState({offlineVideos:updated});
+    const current=getDertState().offlineVideos||[];const exists=current.some(item=>item.id===v.id);
+    saveDertState({offlineVideos:exists?current.filter(item=>item.id!==v.id):[v,...current].slice(0,12)});
     openStandaloneTool("offline");
    };
    row.append(title,document.createElement("br"),btn);box.appendChild(row);
-  });
-  return;
+  });return;
  }
 
  if(tool==="qr"){
@@ -1497,10 +1237,7 @@ async function openStandaloneTool(tool){
    </div>
    <button type="button" class="full" id="copyQrLinkBtn">نسخ رابط الحساب</button>
   `;
-  el("copyQrLinkBtn").onclick=async()=>{
-   try{await navigator.clipboard.writeText(shareUrl)}catch(e){}
-   alert("تم نسخ رابط الحساب: "+shareUrl);
-  };
+  el("copyQrLinkBtn").onclick=async()=>{try{await navigator.clipboard.writeText(shareUrl)}catch(e){}alert("تم نسخ رابط الحساب: "+shareUrl)};
   return;
  }
 
@@ -1515,41 +1252,30 @@ async function openStandaloneTool(tool){
    </div>
    <div class="tt-sub-box">
     <strong>🎵 مستعرض الأغاني</strong>
-    <p class="small">افتح مكتبة الأغاني لإضافة صوت لمنشورك.</p>
     <button type="button" class="full gray" onclick="closeAllStandaloneScreens();openMusicPicker()">فتح مكتبة الأغاني</button>
    </div>
   `;
   el("genTagsBtn").onclick=()=>{
    const t=(el("miniTopicInput").value||"DERT").trim().replace(/\s+/g,"_");
    el("miniTagsOut").textContent=`#${t} #DERT #ترند #محتوى_عربي #اكسبلور`;
-  };
-  return;
+  };return;
  }
 
  if(tool==="shop"){
   el("toolScreenTitle").textContent="المجموعة التجارية";
-  const items=Array.isArray(st.shopItems)?st.shopItems:[
-   {name:"باقة تصميم احترافية",price:"$15"},
-   {name:"قالب واجهة مخصص",price:"$25"}
-  ];
+  const items=Array.isArray(st.shopItems)?st.shopItems:[{name:"باقة تصميم احترافية",price:"$15"},{name:"قالب واجهة مخصص",price:"$25"}];
   body.innerHTML=`
    <div id="shopItemsList">${items.map(i=>`<div class="item"><strong>${i.name}</strong><div class="small">السعر: ${i.price}</div></div>`).join("")}</div>
    <div class="tt-sub-box">
     <strong>إضافة عنصر جديد</strong>
-    <input id="shopItemName" placeholder="اسم المنتج أو الخدمة">
-    <input id="shopItemPrice" placeholder="السعر مثال: $10">
+    <input id="shopItemName" placeholder="اسم المنتج أو الخدمة"><input id="shopItemPrice" placeholder="السعر مثال: $10">
     <button type="button" class="full green" id="addShopItemBtn">إضافة للمجموعة</button>
    </div>
   `;
   el("addShopItemBtn").onclick=()=>{
-   const name=el("shopItemName").value.trim();
-   const price=el("shopItemPrice").value.trim()||"مجاناً";
-   if(!name)return;
-   const next=[...items,{name,price}];
-   saveDertState({shopItems:next});
-   openStandaloneTool("shop");
-  };
-  return;
+   const name=el("shopItemName").value.trim();const price=el("shopItemPrice").value.trim()||"مجاناً";if(!name)return;
+   saveDertState({shopItems:[...items,{name,price}]});openStandaloneTool("shop");
+  };return;
  }
 
  if(tool==="studio"){
@@ -1564,8 +1290,7 @@ async function openStandaloneTool(tool){
     <div class="tt-stat-tile"><strong>${followersC||0}</strong><span>المتابعون</span></div>
    </div>
    <button type="button" class="full" onclick="closeAllStandaloneScreens();openCreateModal()">+ نشر محتوى جديد الآن</button>
-  `;
-  return;
+  `;return;
  }
 
  if(tool==="promote"){
@@ -1582,10 +1307,7 @@ async function openStandaloneTool(tool){
     <div id="promoStatus" class="small" style="margin-top:8px"></div>
    </div>
   `;
-  el("startPromoBtn").onclick=()=>{
-   const days=el("promoDaysSelect").value;
-   el("promoStatus").textContent=`تم جدولة الترويج لمدة ${days} يوم بنجاح ✓`;
-  };
+  el("startPromoBtn").onclick=()=>{el("promoStatus").textContent=`تم جدولة الترويج لمدة ${el("promoDaysSelect").value} يوم بنجاح ✓`};
  }
 }
 
@@ -1598,39 +1320,26 @@ async function switchProfileMediaTab(mode){
 }
 
 async function loadProfileMediaGrid(){
- const grid=el("profileMediaGrid");
- if(!grid || !currentUser)return;
- grid.replaceChildren();
- const loading=document.createElement("div");
- loading.className="small";
- loading.style.cssText="grid-column:1/-1;text-align:center;padding:18px";
- loading.textContent="جارٍ التحميل...";
- grid.appendChild(loading);
+ const grid=el("profileMediaGrid");if(!grid || !currentUser)return;grid.replaceChildren();
+ const loading=document.createElement("div");loading.className="small";
+ loading.style.cssText="grid-column:1/-1;text-align:center;padding:18px";loading.textContent="جارٍ التحميل...";grid.appendChild(loading);
  try{
   let rows=[];
-  if(activeProfileMediaTab==="saved"){
-   const st=getDertState();
-   rows=Array.isArray(st.savedPosts)?st.savedPosts:[];
-  }else{
+  if(activeProfileMediaTab==="saved"){rows=Array.isArray(getDertState().savedPosts)?getDertState().savedPosts:[]}
+  else{
    let q=client.from("posts").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(30);
    if(activeProfileMediaTab==="videos")q=q.eq("media_type","video");
-   const {data,error}=await q;
-   if(error)throw error;
-   rows=data||[];
+   const {data,error}=await q;if(error)throw error;rows=data||[];
   }
   grid.replaceChildren();
   if(!rows.length){
-   const empty=document.createElement("div");
-   empty.className="small";
+   const empty=document.createElement("div");empty.className="small";
    empty.style.cssText="grid-column:1/-1;text-align:center;padding:24px";
    empty.textContent=activeProfileMediaTab==="saved"?"لا توجد محفوظات بعد":(activeProfileMediaTab==="videos"?"لا توجد فيديوهات بعد":"لا توجد منشورات بعد");
-   grid.appendChild(empty);
-   return;
+   grid.appendChild(empty);return;
   }
   rows.forEach(post=>{
-   const tile=document.createElement("div");
-   tile.className="tt-ig-tile";
-   const imgs=getPostImages(post);
+   const tile=document.createElement("div");tile.className="tt-ig-tile";const imgs=getPostImages(post);
    if(imgs.length){
     const img=document.createElement("img");img.src=imgs[0];img.loading="lazy";tile.appendChild(img);
     if(imgs.length>1){const b=document.createElement("span");b.className="tt-ig-badge";b.textContent=imgs.length+" صور";tile.appendChild(b)}
@@ -1638,50 +1347,34 @@ async function loadProfileMediaGrid(){
     const v=document.createElement("video");v.src=post.image_url;v.muted=true;v.playsInline=true;tile.appendChild(v);
     const b=document.createElement("span");b.className="tt-ig-badge";b.textContent="▶ فيديو";tile.appendChild(b);
    }else{
-    const parsed=parseSongFromPost(post);
-    tile.textContent=(parsed.cleanContent||parsed.song?.title||"منشور").slice(0,48);
+    const parsed=parseSongFromPost(post);tile.textContent=(parsed.cleanContent||parsed.song?.title||"منشور").slice(0,48);
    }
-   tile.onclick=()=>openPostComments(post);
-   grid.appendChild(tile);
+   tile.onclick=()=>openPostComments(post);grid.appendChild(tile);
   });
  }catch(e){
-  grid.replaceChildren();
-  const err=document.createElement("div");
-  err.className="small";
-  err.style.cssText="grid-column:1/-1;text-align:center;padding:16px";
-  err.textContent="تعذر تحميل المحتوى";
-  grid.appendChild(err);
+  grid.replaceChildren();const err=document.createElement("div");err.className="small";
+  err.style.cssText="grid-column:1/-1;text-align:center;padding:16px";err.textContent="تعذر تحميل المحتوى";grid.appendChild(err);
  }
 }
 
 function parseSongFromPost(post){
- const raw=post?.content||"";
- const match=raw.match(/\[🎵\s*([^\]]+)\]/);
- if(match){
-  const cleanContent=raw.replace(/\n?\[🎵\s*[^\]]+\]/g,"").trim();
-  return {song:{title:match[1].trim(),url:DERT_SONGS[0].url},cleanContent};
- }
- return {song:null,cleanContent:raw};
+ const raw=post?.content||"";const match=raw.match(/\[🎵\s*([^\]]+)\]/);
+ if(match)return{song:{title:match[1].trim(),url:DERT_SONGS[0].url},cleanContent:raw.replace(/\n?\[🎵\s*[^\]]+\]/g,"").trim()};
+ return{song:null,cleanContent:raw};
 }
 
 function togglePreviewSong(song){
  if(!song?.url)return;
- if(playingSongId===song.id && !previewAudio.paused){
-  previewAudio.pause();playingSongId=null;
-  renderMusicList(el("musicSearchInput")?.value||"");return;
- }
- previewAudio.pause();previewAudio.src=song.url;previewAudio.currentTime=0;
- playingSongId=song.id;previewAudio.play().catch(()=>{});
+ if(playingSongId===song.id && !previewAudio.paused){previewAudio.pause();playingSongId=null;renderMusicList(el("musicSearchInput")?.value||"");return}
+ previewAudio.pause();previewAudio.src=song.url;previewAudio.currentTime=0;playingSongId=song.id;previewAudio.play().catch(()=>{});
  previewAudio.onended=()=>{playingSongId=null;renderMusicList(el("musicSearchInput")?.value||"")};
  renderMusicList(el("musicSearchInput")?.value||"");
 }
 
 function renderMusicList(query=""){
- const box=el("musicListBox");if(!box)return;
- const q=query.trim().toLowerCase();
+ const box=el("musicListBox");if(!box)return;const q=query.trim().toLowerCase();
  const list=DERT_SONGS.filter(s=>!q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q));
- box.replaceChildren();
- if(!list.length){box.textContent="لا توجد أغاني مطابقة";return}
+ box.replaceChildren();if(!list.length){box.textContent="لا توجد أغاني مطابقة";return}
  list.forEach(song=>{
   const row=document.createElement("div");row.className="music-row";
   const info=document.createElement("div");info.className="music-row-info";
@@ -1690,43 +1383,21 @@ function renderMusicList(query=""){
   info.append(t,sub);
   const actions=document.createElement("div");actions.className="music-row-actions";
   const playBtn=document.createElement("button");playBtn.type="button";playBtn.className="gray";
-  playBtn.textContent=(playingSongId===song.id && !previewAudio.paused)?"⏸":"▶";
-  playBtn.onclick=()=>togglePreviewSong(song);
-  const pickBtn=document.createElement("button");pickBtn.type="button";pickBtn.className="green";pickBtn.textContent="اختيار";
-  pickBtn.onclick=()=>selectSong(song);
+  playBtn.textContent=(playingSongId===song.id && !previewAudio.paused)?"⏸":"▶";playBtn.onclick=()=>togglePreviewSong(song);
+  const pickBtn=document.createElement("button");pickBtn.type="button";pickBtn.className="green";pickBtn.textContent="اختيار";pickBtn.onclick=()=>selectSong(song);
   actions.append(playBtn,pickBtn);row.append(info,actions);box.appendChild(row);
  });
 }
 
-function openMusicPicker(){
- el("musicPickerModal").classList.remove("hidden");
- el("musicSearchInput").value="";
- renderMusicList("");
-}
-function closeMusicPicker(){
- previewAudio.pause();playingSongId=null;
- el("musicPickerModal").classList.add("hidden");
-}
-function selectSong(song){
- selectedSong=song;
- el("selectedMusicLabel").textContent="♫ "+song.title;
- el("selectedMusicBar").classList.remove("hidden");
- closeMusicPicker();
-}
-function clearSelectedMusic(){
- selectedSong=null;
- el("selectedMusicBar").classList.add("hidden");
-}
+function openMusicPicker(){el("musicPickerModal").classList.remove("hidden");el("musicSearchInput").value="";renderMusicList("")}
+function closeMusicPicker(){previewAudio.pause();playingSongId=null;el("musicPickerModal").classList.add("hidden")}
+function selectSong(song){selectedSong=song;el("selectedMusicLabel").textContent="♫ "+song.title;el("selectedMusicBar").classList.remove("hidden");closeMusicPicker()}
+function clearSelectedMusic(){selectedSong=null;el("selectedMusicBar").classList.add("hidden")}
 
 el("openMusicPickerBtn").onclick=openMusicPicker;
 el("musicSearchInput").oninput=()=>renderMusicList(el("musicSearchInput").value);
 
-function openCreateModal(){
- if(!currentUser){alert("سجل الدخول أولاً");return}
- updateMediaPickLabels();
- updateDescCounter();
- el("dertCreateModal").style.display="flex";
-}
+function openCreateModal(){if(!currentUser){alert("سجل الدخول أولاً");return}updateMediaPickLabels();updateDescCounter();el("dertCreateModal").style.display="flex"}
 
 function goBackSmart(){
  if(!el("toolScreen").classList.contains("hidden")){closeToolScreen();return}
@@ -1738,20 +1409,12 @@ function goBackSmart(){
  if(!el("musicPickerModal").classList.contains("hidden")){closeMusicPicker();return}
  if(el("dertCreateModal").style.display==="flex"){el("dertCreateModal").style.display="none";return}
  if(activeConversation){el("closeChatBtn").click();return}
- if(tabHistory.length>1){
-  tabHistory.pop();
-  openTab(tabHistory[tabHistory.length-1]||"videos",null,true);
- }else{
-  openTab("videos",null,true);
- }
+ if(tabHistory.length>1){tabHistory.pop();openTab(tabHistory[tabHistory.length-1]||"videos",null,true)}else openTab("videos",null,true);
 }
 
 function addVerifiedName(element,name,verified){
- element.replaceChildren();
- element.appendChild(document.createTextNode(name||"مستخدم DERT"));
- if(verified===true){
-  const b=document.createElement("span");b.className="verified-badge";b.textContent="✓";element.appendChild(b);
- }
+ element.replaceChildren();element.appendChild(document.createTextNode(name||"مستخدم DERT"));
+ if(verified===true){const b=document.createElement("span");b.className="verified-badge";b.textContent="✓";element.appendChild(b)}
 }
 function makeAvatar(url,name){
  if(url){const i=document.createElement("img");i.className="avatar";i.src=url;i.alt="صورة الحساب";return i}
@@ -1759,14 +1422,10 @@ function makeAvatar(url,name){
 }
 function showAvatar(url,name){el("avatarDisplay").replaceChildren(makeAvatar(url,name))}
 
-function stopVideoPlayback(){
- if(videoObserver){videoObserver.disconnect();videoObserver=null}
- document.querySelectorAll("#videosList video").forEach(v=>v.pause());
-}
+function stopVideoPlayback(){if(videoObserver){videoObserver.disconnect();videoObserver=null}document.querySelectorAll("#videosList video").forEach(v=>v.pause())}
 
 function switchVideoFeedMode(mode){
- videoFeedMode=mode;
- openTab("videos",null);
+ videoFeedMode=mode;openTab("videos",null);
  el("topTabVideos")?.classList.toggle("active",mode==="foryou");
  el("topTabFollowing")?.classList.toggle("active",mode==="following");
  loadVideos();
@@ -1776,25 +1435,14 @@ function openTab(name,button,fromBack=false){
  closeAllStandaloneScreens();
  if(name==="admin"&&!isAdmin()){alert("غير مصرح لك");return}
  if(name!=="videos")stopVideoPlayback();
-
  document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
  el(name).classList.add("active");
-
  if(!fromBack && tabHistory[tabHistory.length-1]!==name)tabHistory.push(name);
-
  document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
  if(button)button.classList.add("active");
- else{
-  const b=[...document.querySelectorAll("nav button")].find(x=>x.getAttribute("onclick")?.includes("'"+name+"'"));
-  if(b)b.classList.add("active");
- }
-
+ else{const b=[...document.querySelectorAll("nav button")].find(x=>x.getAttribute("onclick")?.includes("'"+name+"'"));if(b)b.classList.add("active")}
  document.querySelectorAll(".tt-top-tab").forEach(t=>t.classList.remove("active"));
- if(name==="videos"){
-  if(videoFeedMode==="following")el("topTabFollowing")?.classList.add("active");
-  else el("topTabVideos")?.classList.add("active");
- }
-
+ if(name==="videos"){if(videoFeedMode==="following")el("topTabFollowing")?.classList.add("active");else el("topTabVideos")?.classList.add("active")}
  if(name==="videos")loadVideos();
  if(name==="chats")loadChats();
  if(name==="alerts")loadAlerts();
@@ -1804,8 +1452,7 @@ function openTab(name,button,fromBack=false){
 }
 
 function showLogin(){
- el("mandatoryFollowModal")?.classList.add("hidden");
- closeAllStandaloneScreens();
+ el("mandatoryFollowModal")?.classList.add("hidden");closeAllStandaloneScreens();
  closePostComments();closeFollowModal();closeUserProfileModal();closeMusicPicker();stopVideoPlayback();
  el("auth").classList.remove("hidden");el("home").classList.add("hidden");
  el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
@@ -1827,27 +1474,15 @@ async function uploadFile(file,folder){
 }
 
 function showAuthForm(mode){
- el("welcomeScreen").classList.add("hidden");
- el("authForm").classList.remove("hidden");
- el("loginBtn").classList.toggle("hidden",mode==="signup");
- el("signupBtn").classList.toggle("hidden",mode!=="signup");
- el("resendEmailBtn").classList.add("hidden");
- msg("message","");
+ el("welcomeScreen").classList.add("hidden");el("authForm").classList.remove("hidden");
+ el("loginBtn").classList.toggle("hidden",mode==="signup");el("signupBtn").classList.toggle("hidden",mode!=="signup");
+ el("resendEmailBtn").classList.add("hidden");msg("message","");
 }
 el("openSignup").onclick=()=>showAuthForm("signup");
 el("openLogin").onclick=()=>showAuthForm("login");
-el("backWelcome").onclick=()=>{
- el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
- msg("message","");el("resendEmailBtn").classList.add("hidden");
-};
-el("emailMode").onclick=()=>{
- el("emailMode").classList.add("active");el("phoneMode").classList.remove("active");
- el("emailArea").classList.remove("hidden");el("phoneArea").classList.add("hidden");
-};
-el("phoneMode").onclick=()=>{
- el("phoneMode").classList.add("active");el("emailMode").classList.remove("active");
- el("emailArea").classList.add("hidden");el("phoneArea").classList.remove("hidden");
-};
+el("backWelcome").onclick=()=>{el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");msg("message","");el("resendEmailBtn").classList.add("hidden")};
+el("emailMode").onclick=()=>{el("emailMode").classList.add("active");el("phoneMode").classList.remove("active");el("emailArea").classList.remove("hidden");el("phoneArea").classList.add("hidden")};
+el("phoneMode").onclick=()=>{el("phoneMode").classList.add("active");el("emailMode").classList.remove("active");el("emailArea").classList.add("hidden");el("phoneArea").classList.remove("hidden")};
 
 el("signupBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase(),password=el("password").value;
@@ -1858,103 +1493,69 @@ el("signupBtn").onclick=async()=>{
   if(error)throw error;
   if(data.session&&data.user)await showHome(data.user);
   else{el("resendEmailBtn").classList.remove("hidden");msg("message","تم إنشاء الحساب. افتح بريدك لتأكيد الحساب.")}
- }catch(e){el("resendEmailBtn").classList.remove("hidden");msg("message","تعذر إنشاء الحساب: "+e.message)}
- finally{b.disabled=false}
+ }catch(e){el("resendEmailBtn").classList.remove("hidden");msg("message","تعذر إنشاء الحساب: "+e.message)}finally{b.disabled=false}
 };
 
 el("resendEmailBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase();
  if(!email||!email.includes("@")){msg("message","اكتب البريد الإلكتروني أولاً");return}
  const b=el("resendEmailBtn");b.disabled=true;
- try{
-  const {error}=await client.auth.resend({type:"signup",email,options:{emailRedirectTo:DERT_SITE_URL}});
-  if(error)throw error;msg("message","تم إعادة إرسال رسالة التأكيد.");
- }catch(e){msg("message","تعذر إعادة الإرسال: "+e.message)}
- finally{b.disabled=false}
+ try{const {error}=await client.auth.resend({type:"signup",email,options:{emailRedirectTo:DERT_SITE_URL}});if(error)throw error;msg("message","تم إعادة إرسال رسالة التأكيد.")}
+ catch(e){msg("message","تعذر إعادة الإرسال: "+e.message)}finally{b.disabled=false}
 };
 
 el("loginBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase(),password=el("password").value;
  if(!email||!password){msg("message","أدخل البريد وكلمة المرور");return}
  const b=el("loginBtn");b.disabled=true;msg("message","جارٍ تسجيل الدخول...");
- try{
-  const {data,error}=await client.auth.signInWithPassword({email,password});
-  if(error)throw error;await showHome(data.user);
- }catch(e){msg("message","تعذر تسجيل الدخول: "+e.message)}
- finally{b.disabled=false}
+ try{const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;await showHome(data.user)}
+ catch(e){msg("message","تعذر تسجيل الدخول: "+e.message)}finally{b.disabled=false}
 };
 
 el("sendOtpBtn").onclick=async()=>{
  const phone=el("phone").value.trim();
  if(!/^\+[1-9]\d{7,14}$/.test(phone)){msg("message","اكتب الرقم بالصيغة الدولية مثل +9647XXXXXXXXX");return}
  pendingPhone=phone;msg("message","جارٍ إرسال الرمز...");
- try{
-  const {error}=await client.auth.signInWithOtp({phone});
-  if(error)throw error;el("otpArea").classList.remove("hidden");msg("message","تم إرسال الرمز.");
- }catch(e){msg("message","تعذر إرسال الرمز: "+e.message)}
+ try{const {error}=await client.auth.signInWithOtp({phone});if(error)throw error;el("otpArea").classList.remove("hidden");msg("message","تم إرسال الرمز.")}
+ catch(e){msg("message","تعذر إرسال الرمز: "+e.message)}
 };
 el("verifyOtpBtn").onclick=async()=>{
- const token=el("otp").value.trim();
- if(!pendingPhone||!token){msg("message","أدخل رمز التحقق");return}
- try{
-  const {data,error}=await client.auth.verifyOtp({phone:pendingPhone,token,type:"sms"});
-  if(error)throw error;if(data.user)await showHome(data.user);
- }catch(e){msg("message","تعذر تأكيد الرمز: "+e.message)}
+ const token=el("otp").value.trim();if(!pendingPhone||!token){msg("message","أدخل رمز التحقق");return}
+ try{const {data,error}=await client.auth.verifyOtp({phone:pendingPhone,token,type:"sms"});if(error)throw error;if(data.user)await showHome(data.user)}
+ catch(e){msg("message","تعذر تأكيد الرمز: "+e.message)}
 };
-el("logoutBtn").onclick=async()=>{
- const {error}=await client.auth.signOut();
- if(error){msg("profileMessage",error.message);return}showLogin();
-};
+el("logoutBtn").onclick=async()=>{const {error}=await client.auth.signOut();if(error){msg("profileMessage",error.message);return}showLogin()};
 
 async function loadProfile(){
  if(!currentUser)return;
  let {data,error}=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
  if(error)throw error;
  if(!data){
-  const defaultUsername="user_"+currentUser.id.slice(0,8);
-  const {data:created,error:createErr}=await client.from("profiles").insert({
-   id:currentUser.id,username:defaultUsername,full_name:"مستخدم DERT"
-  }).select().single();
-  if(createErr)throw new Error("لم يتم العثور على الملف الشخصي");
-  data=created;
+  const {data:created,error:createErr}=await client.from("profiles").insert({id:currentUser.id,username:"user_"+currentUser.id.slice(0,8),full_name:"مستخدم DERT"}).select().single();
+  if(createErr)throw new Error("لم يتم العثور على الملف الشخصي");data=created;
  }
- currentProfile=data;
- el("fullName").value=data.full_name||"";
- el("username").value=data.username||"";
- el("bio").value=data.bio||"";
+ currentProfile=data;el("fullName").value=data.full_name||"";el("username").value=data.username||"";el("bio").value=data.bio||"";
  addVerifiedName(el("displayName"),data.full_name||"مستخدم DERT",data.is_verified===true);
  addVerifiedName(el("displayUsernameTop"),"@"+(data.username||"user"),data.is_verified===true);
- el("displayUsername").textContent="@"+(data.username||"user");
- el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
+ el("displayUsername").textContent="@"+(data.username||"user");el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
  showAvatar(data.avatar_url,data.full_name||data.username);
- el("adminNav").classList.toggle("hidden",!isAdmin());
- el("mainNav").classList.toggle("has-admin",isAdmin());
+ el("adminNav").classList.toggle("hidden",!isAdmin());el("mainNav").classList.toggle("has-admin",isAdmin());
  await loadMyVerificationStatus();
 }
 
 async function loadMyVerificationStatus(){
  const btn=el("requestVerificationBtn");
- if(currentProfile?.is_verified===true){
-  btn.disabled=true;btn.textContent="✓ حسابك موثّق";
-  msg("verificationMessage","حسابك موثّق بالفعل.");return;
- }
+ if(currentProfile?.is_verified===true){btn.disabled=true;btn.textContent="✓ حسابك موثّق";msg("verificationMessage","حسابك موثّق بالفعل.");return}
  const {data,error}=await client.from("verification_requests").select("status").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1);
  if(error){msg("verificationMessage","تعذر فحص الطلب: "+error.message);return}
  const latest=data?.[0];
- if(latest?.status==="pending"){
-  btn.disabled=true;btn.textContent="⏳ طلبك قيد المراجعة";msg("verificationMessage","طلبك قيد المراجعة.");
- }else{
-  btn.disabled=false;
-  btn.textContent=latest?.status==="rejected"?"إعادة طلب التوثيق":"طلب توثيق الحساب";
-  msg("verificationMessage",latest?.status==="rejected"?"تم رفض الطلب السابق.":"");
- }
+ if(latest?.status==="pending"){btn.disabled=true;btn.textContent="⏳ طلبك قيد المراجعة";msg("verificationMessage","طلبك قيد المراجعة.")}
+ else{btn.disabled=false;btn.textContent=latest?.status==="rejected"?"إعادة طلب التوثيق":"طلب توثيق الحساب";msg("verificationMessage",latest?.status==="rejected"?"تم رفض الطلب السابق.":"")}
 }
 el("requestVerificationBtn").onclick=async()=>{
  const b=el("requestVerificationBtn");b.disabled=true;msg("verificationMessage","جارٍ إرسال الطلب...");
- try{
-  const {error}=await client.from("verification_requests").insert({user_id:currentUser.id,status:"pending"});
-  if(error)throw error;b.textContent="⏳ طلبك قيد المراجعة";msg("verificationMessage","تم إرسال الطلب.");
- }catch(e){msg("verificationMessage","تعذر إرسال الطلب: "+e.message);b.disabled=false}
+ try{const {error}=await client.from("verification_requests").insert({user_id:currentUser.id,status:"pending"});if(error)throw error;b.textContent="⏳ طلبك قيد المراجعة";msg("verificationMessage","تم إرسال الطلب.")}
+ catch(e){msg("verificationMessage","تعذر إرسال الطلب: "+e.message);b.disabled=false}
 };
 el("editProfileBtn").onclick=()=>{el("profileSettings").classList.remove("hidden");el("editProfileBtn").classList.add("hidden")};
 el("cancelProfileBtn").onclick=()=>{el("profileSettings").classList.add("hidden");el("editProfileBtn").classList.remove("hidden")};
@@ -1963,61 +1564,40 @@ el("saveProfileBtn").onclick=async()=>{
  if(!/^[a-z0-9_]{3,25}$/.test(username)){msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");return}
  const b=el("saveProfileBtn");b.disabled=true;
  try{
-  let avatar=currentProfile?.avatar_url||null;
-  const f=el("avatarFile").files[0];
-  if(f)avatar=await uploadFile(f,"profile");
-  const {data,error}=await client.from("profiles").update({
-   full_name:el("fullName").value.trim(),username,bio:el("bio").value.trim(),avatar_url:avatar
-  }).eq("id",currentUser.id).select().single();
-  if(error)throw error;
-  currentProfile=data;
+  let avatar=currentProfile?.avatar_url||null;const f=el("avatarFile").files[0];if(f)avatar=await uploadFile(f,"profile");
+  const {data,error}=await client.from("profiles").update({full_name:el("fullName").value.trim(),username,bio:el("bio").value.trim(),avatar_url:avatar}).eq("id",currentUser.id).select().single();
+  if(error)throw error;currentProfile=data;
   addVerifiedName(el("displayName"),data.full_name,data.is_verified===true);
   addVerifiedName(el("displayUsernameTop"),"@"+data.username,data.is_verified===true);
-  el("displayUsername").textContent="@"+data.username;
-  el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
-  showAvatar(data.avatar_url,data.full_name);
-  el("profileSettings").classList.add("hidden");el("editProfileBtn").classList.remove("hidden");
+  el("displayUsername").textContent="@"+data.username;el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
+  showAvatar(data.avatar_url,data.full_name);el("profileSettings").classList.add("hidden");el("editProfileBtn").classList.remove("hidden");
   msg("profileMessage","تم حفظ الملف الشخصي");
- }catch(e){msg("profileMessage","تعذر الحفظ: "+e.message)}
- finally{b.disabled=false}
+ }catch(e){msg("profileMessage","تعذر الحفظ: "+e.message)}finally{b.disabled=false}
 };
 el("avatarFile").onchange=()=>{
  const f=el("avatarFile").files[0];if(!f)return;
- showAvatar(URL.createObjectURL(f),"D");
- el("profileSettings").classList.remove("hidden");el("editProfileBtn").classList.add("hidden");
+ showAvatar(URL.createObjectURL(f),"D");el("profileSettings").classList.remove("hidden");el("editProfileBtn").classList.add("hidden");
 };
 
 async function openFollowList(mode){
- if(!currentUser)return;
- el("followModal").classList.remove("hidden");
- el("followModalTitle").textContent=mode==="followers"?"المتابعون":"أتابع";
+ if(!currentUser)return;el("followModal").classList.remove("hidden");el("followModalTitle").textContent=mode==="followers"?"المتابعون":"أتابع";
  const box=el("followModalList");box.textContent="جارٍ التحميل...";
  try{
-  const {data:rows,error}=mode==="followers"
-   ? await client.from("follows").select("follower_id").eq("following_id",currentUser.id)
-   : await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
-  if(error)throw error;
-  const targetIds=[...new Set((rows||[]).map(r=>mode==="followers"?r.follower_id:r.following_id))];
-  box.replaceChildren();
-  if(!targetIds.length){box.textContent="القائمة فارغة";return}
+  const {data:rows,error}=mode==="followers"?await client.from("follows").select("follower_id").eq("following_id",currentUser.id):await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
+  if(error)throw error;const targetIds=[...new Set((rows||[]).map(r=>mode==="followers"?r.follower_id:r.following_id))];
+  box.replaceChildren();if(!targetIds.length){box.textContent="القائمة فارغة";return}
   const {data:profiles,error:pErr}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified").in("id",targetIds);
   if(pErr)throw pErr;
   (profiles||[]).forEach(p=>{
    const row=document.createElement("div");row.className="item";
-   const line=document.createElement("div");line.className="chat-row clickable-user";
-   line.onclick=()=>{closeFollowModal();openUserProfile(p.id)};
+   const line=document.createElement("div");line.className="chat-row clickable-user";line.onclick=()=>{closeFollowModal();openUserProfile(p.id)};
    line.appendChild(makeAvatar(p.avatar_url,p.full_name||p.username));
    const info=document.createElement("div");info.className="chat-row-info";
-   const title=document.createElement("strong");
-   addVerifiedName(title,(p.full_name||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
-   const bio=document.createElement("div");bio.className="small";bio.textContent=p.bio||"";
-   info.append(title,bio);line.appendChild(info);row.appendChild(line);
-
+   const title=document.createElement("strong");addVerifiedName(title,(p.full_name||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
+   const bio=document.createElement("div");bio.className="small";bio.textContent=p.bio||"";info.append(title,bio);line.appendChild(info);row.appendChild(line);
    const actions=document.createElement("div");actions.className="user-row-actions";
-   const viewBtn=document.createElement("button");viewBtn.className="gray";viewBtn.textContent="الملف";
-   viewBtn.onclick=()=>{closeFollowModal();openUserProfile(p.id)};
-   const dmBtn=document.createElement("button");dmBtn.textContent="مراسلة";
-   dmBtn.onclick=()=>{closeFollowModal();startChat(p.id,p.username)};
+   const viewBtn=document.createElement("button");viewBtn.className="gray";viewBtn.textContent="الملف";viewBtn.onclick=()=>{closeFollowModal();openUserProfile(p.id)};
+   const dmBtn=document.createElement("button");dmBtn.textContent="مراسلة";dmBtn.onclick=()=>{closeFollowModal();startChat(p.id,p.username)};
    actions.append(viewBtn,dmBtn);row.appendChild(actions);box.appendChild(row);
   });
  }catch(e){box.textContent="تعذر تحميل القائمة: "+e.message}
@@ -2025,12 +1605,8 @@ async function openFollowList(mode){
 function closeFollowModal(){el("followModal").classList.add("hidden")}
 
 async function openUserProfile(targetUserId){
- if(!currentUser||!targetUserId)return;
- if(targetUserId===currentUser.id){openTab("profile");return}
- const body=el("userProfileModalBody");
- el("userProfileModal").classList.remove("hidden");
- el("userProfileModalTitle").textContent="الملف الشخصي";
- body.textContent="جارٍ التحميل...";
+ if(!currentUser||!targetUserId)return;if(targetUserId===currentUser.id){openTab("profile");return}
+ const body=el("userProfileModalBody");el("userProfileModal").classList.remove("hidden");el("userProfileModalTitle").textContent="الملف الشخصي";body.textContent="جارٍ التحميل...";
  try{
   const {data:p,error}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified").eq("id",targetUserId).maybeSingle();
   if(error)throw error;if(!p){body.textContent="المستخدم غير موجود";return}
@@ -2043,16 +1619,12 @@ async function openUserProfile(targetUserId){
   ]);
   body.replaceChildren();
   const header=document.createElement("div");header.style.textAlign="center";
-  const av=makeAvatar(p.avatar_url,p.full_name||p.username);
-  av.style.cssText="width:82px;height:82px;font-size:30px;margin:0 auto 10px";
-  const name=document.createElement("h2");name.style.margin="6px 0 2px";
-  addVerifiedName(name,p.full_name||"مستخدم DERT",p.is_verified===true);
+  const av=makeAvatar(p.avatar_url,p.full_name||p.username);av.style.cssText="width:82px;height:82px;font-size:30px;margin:0 auto 10px";
+  const name=document.createElement("h2");name.style.margin="6px 0 2px";addVerifiedName(name,p.full_name||"مستخدم DERT",p.is_verified===true);
   const user=document.createElement("div");user.className="small";user.textContent="@"+(p.username||"user");
-  const bio=document.createElement("p");bio.className="small";bio.textContent=p.bio||"";
-  header.append(av,name,user,bio);
+  const bio=document.createElement("p");bio.className="small";bio.textContent=p.bio||"";header.append(av,name,user,bio);
 
-  let followers=followersCount||0;
-  const stats=document.createElement("div");stats.className="profile-stats";
+  let followers=followersCount||0;const stats=document.createElement("div");stats.className="profile-stats";
   const fNum=document.createElement("strong");fNum.textContent=followers;
   const fBox=document.createElement("div");fBox.append(fNum,Object.assign(document.createElement("span"),{textContent:"المتابعون"}));
   stats.innerHTML=`<div><strong>${postsCount||0}</strong><span>المنشورات</span></div>`;
@@ -2060,25 +1632,18 @@ async function openUserProfile(targetUserId){
 
   const btns=document.createElement("div");btns.className="user-row-actions";btns.style.justifyContent="center";
   let isFollowing=!!followRow;
-  const followBtn=document.createElement("button");followBtn.type="button";
-  followBtn.textContent=isFollowing?"يتابع":"متابعة";
+  const followBtn=document.createElement("button");followBtn.type="button";followBtn.textContent=isFollowing?"يتابع":"متابعة";
   followBtn.onclick=async(e)=>{
    e.stopPropagation();followBtn.disabled=true;
    try{
-    if(isFollowing){
-     const {error:err}=await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",p.id);
-     if(err)throw err;isFollowing=false;followBtn.textContent="متابعة";followers=Math.max(0,followers-1);
-    }else{
-     const {error:err}=await client.from("follows").insert({follower_id:currentUser.id,following_id:p.id});
-     if(err)throw err;isFollowing=true;followBtn.textContent="يتابع";followers+=1;
-    }
+    if(isFollowing){await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",p.id);isFollowing=false;followBtn.textContent="متابعة";followers=Math.max(0,followers-1)}
+    else{await client.from("follows").insert({follower_id:currentUser.id,following_id:p.id});isFollowing=true;followBtn.textContent="يتابع";followers+=1}
     fNum.textContent=followers;await loadStats();
    }catch(err){alert(err.message)}finally{followBtn.disabled=false}
   };
   const supBtn=document.createElement("button");supBtn.type="button";supBtn.className="green";supBtn.textContent="🎁 دعم (60%/40%)";
   supBtn.onclick=async(e)=>{
-   e.stopPropagation();
-   const sp=await processSupportSplit(20,"🎁 دعم حساب",p.id);
+   e.stopPropagation();const sp=await processSupportSplit(20,"🎁 دعم حساب",p.id);
    if(sp)alert(`تم إرسال الدعم (20): حصة ${p.username||'المستخدم'} = ${sp.streamerCut} (60%) • أرباحك = ${sp.ownerCut} (40%)`);
   };
   const dmBtn=document.createElement("button");dmBtn.type="button";dmBtn.className="gray";dmBtn.textContent="مراسلة";
@@ -2088,15 +1653,12 @@ async function openUserProfile(targetUserId){
   btns.append(followBtn,supBtn,dmBtn,repBtn);body.append(header,stats,btns);
 
   (userPosts||[]).forEach(post=>{
-   const card=document.createElement("div");card.className="post";
-   const parsed=parseSongFromPost(post);
+   const card=document.createElement("div");card.className="post";const parsed=parseSongFromPost(post);
    if(parsed.cleanContent){const t=document.createElement("p");t.className="post-text";t.textContent=parsed.cleanContent;card.appendChild(t)}
    if(parsed.song){const b=document.createElement("div");b.className="sound-line";b.textContent="♫ "+parsed.song.title;card.appendChild(b)}
    const imgs=getPostImages(post);
    if(imgs.length)card.appendChild(createImageCarousel(imgs));
-   else if(post.image_url && post.media_type==="video"){
-    const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v);
-   }
+   else if(post.image_url && post.media_type==="video"){const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v)}
    body.appendChild(card);
   });
  }catch(e){body.textContent="خطأ: "+e.message}
@@ -2105,38 +1667,29 @@ function closeUserProfileModal(){el("userProfileModal").classList.add("hidden")}
 
 function getPostImages(post){
  if(Array.isArray(post.image_urls) && post.image_urls.length)return post.image_urls.filter(Boolean);
- if(post.image_url && post.media_type!=="video")return [post.image_url];
- return [];
+ if(post.image_url && post.media_type!=="video")return [post.image_url];return [];
 }
 
 function createImageCarousel(images){
  const wrap=document.createElement("div");wrap.className="carousel-wrap";
  const track=document.createElement("div");track.className="carousel-track";
- images.forEach((src,i)=>{
-  const img=document.createElement("img");img.src=src;img.alt="صورة "+(i+1);img.loading="lazy";track.appendChild(img);
- });
+ images.forEach((src,i)=>{const img=document.createElement("img");img.src=src;img.alt="صورة "+(i+1);img.loading="lazy";track.appendChild(img)});
  wrap.appendChild(track);
  if(images.length>1){
-  const counter=document.createElement("div");counter.className="carousel-counter";counter.textContent="1 / "+images.length;
-  wrap.appendChild(counter);
+  const counter=document.createElement("div");counter.className="carousel-counter";counter.textContent="1 / "+images.length;wrap.appendChild(counter);
   const dots=document.createElement("div");dots.className="carousel-dots";
-  const dotEls=images.map((_,i)=>{
-   const d=document.createElement("span");d.className="carousel-dot"+(i===0?" active":"");dots.appendChild(d);return d;
-  });
+  const dotEls=images.map((_,i)=>{const d=document.createElement("span");d.className="carousel-dot"+(i===0?" active":"");dots.appendChild(d);return d});
   wrap.appendChild(dots);
   track.addEventListener("scroll",()=>{
-   const w=track.clientWidth||1;
-   const idx=Math.min(images.length-1,Math.max(0,Math.round(track.scrollLeft/w)));
-   counter.textContent=(idx+1)+" / "+images.length;
-   dotEls.forEach((d,i)=>d.classList.toggle("active",i===idx));
+   const w=track.clientWidth||1;const idx=Math.min(images.length-1,Math.max(0,Math.round(track.scrollLeft/w)));
+   counter.textContent=(idx+1)+" / "+images.length;dotEls.forEach((d,i)=>d.classList.toggle("active",i===idx));
   },{passive:true});
  }
  return wrap;
 }
 
 function renderMediaPreview(){
- const box=el("dertPreviewBox");box.replaceChildren();
- updateMediaPickLabels();
+ const box=el("dertPreviewBox");box.replaceChildren();updateMediaPickLabels();
  if(selectedVideo){
   box.classList.remove("hidden");
   const vid=document.createElement("video");vid.className="preview-video";vid.src=URL.createObjectURL(selectedVideo);vid.controls=true;vid.playsInline=true;
@@ -2145,8 +1698,7 @@ function renderMediaPreview(){
   box.append(vid,rem);return;
  }
  if(selectedImages.length){
-  box.classList.remove("hidden");
-  const grid=document.createElement("div");grid.className="preview-grid";
+  box.classList.remove("hidden");const grid=document.createElement("div");grid.className="preview-grid";
   selectedImages.forEach((file,idx)=>{
    const item=document.createElement("div");item.className="preview-item";
    const img=document.createElement("img");img.src=URL.createObjectURL(file);img.alt="معاينة";
@@ -2159,30 +1711,16 @@ function renderMediaPreview(){
  box.classList.add("hidden");
 }
 
-el("dertImagesInput").onchange=(e)=>{
- const files=[...(e.target.files||[])].filter(f=>f.type.startsWith("image/"));
- if(files.length){selectedVideo=null;el("dertVideoInput").value="";selectedImages=files}else selectedImages=[];
- renderMediaPreview();
-};
-el("dertVideoInput").onchange=(e)=>{
- const file=(e.target.files||[])[0];
- if(file && file.type.startsWith("video/")){selectedImages=[];el("dertImagesInput").value="";selectedVideo=file}else selectedVideo=null;
- renderMediaPreview();
-};
-
+el("dertImagesInput").onchange=(e)=>{const files=[...(e.target.files||[])].filter(f=>f.type.startsWith("image/"));if(files.length){selectedVideo=null;el("dertVideoInput").value="";selectedImages=files}else selectedImages=[];renderMediaPreview()};
+el("dertVideoInput").onchange=(e)=>{const file=(e.target.files||[])[0];if(file && file.type.startsWith("video/")){selectedImages=[];el("dertImagesInput").value="";selectedVideo=file}else selectedVideo=null;renderMediaPreview()};
 el("dertCreateClose").onclick=()=>{el("dertCreateModal").style.display="none"};
 el("dertCreateModal").onclick=(e)=>{if(e.target===el("dertCreateModal"))el("dertCreateModal").style.display="none"};
 
 async function publishNewContent(){
  if(!currentUser){msg("dertCreateStatus","يرجى تسجيل الدخول أولاً");return}
  let content=el("dertDescription").value.trim();
- if(!selectedVideo && !selectedImages.length && !content && !selectedSong){
-  msg("dertCreateStatus","اختر صوراً أو فيديو أو أغنية أو اكتب وصفاً");return;
- }
- if(selectedSong){
-  const tag=`[🎵 ${selectedSong.title}]`;
-  content=content ? `${content}\n${tag}` : tag;
- }
+ if(!selectedVideo && !selectedImages.length && !content && !selectedSong){msg("dertCreateStatus","اختر صوراً أو فيديو أو أغنية أو اكتب وصفاً");return}
+ if(selectedSong){const tag=`[🎵 ${selectedSong.title}]`;content=content?`${content}\n${tag}`:tag}
  const privacy=el("dertPrivacySelect")?.value||"public";
  const allowComments=el("dertAllowComments")?.checked!==false;
  const metaNote=[];
@@ -2190,187 +1728,104 @@ async function publishNewContent(){
  if(privacy==="private")metaNote.push("[🔐 خاص]");
  if(!allowComments)metaNote.push("[🔇 بدون تعليقات]");
  if(metaNote.length)content=(content?content+"\n":"")+metaNote.join(" ");
-
- const btn=el("dertPublishButton");
- const topBtn=el("dertTopPublishBtn");
- btn.disabled=true;
- if(topBtn)topBtn.disabled=true;
- msg("dertCreateStatus","جارٍ النشر...");
+ const btn=el("dertPublishButton");const topBtn=el("dertTopPublishBtn");btn.disabled=true;if(topBtn)topBtn.disabled=true;msg("dertCreateStatus","جارٍ النشر...");
  try{
-  let image_url=null,image_urls=null,media_type=selectedSong && !selectedVideo && !selectedImages.length ? "audio" : null;
-  if(selectedVideo){
-   image_url=await uploadFile(selectedVideo,"posts");media_type="video";
-  }else if(selectedImages.length){
-   const uploaded=[];
-   for(const f of selectedImages)uploaded.push(await uploadFile(f,"posts"));
-   image_url=uploaded[0];image_urls=uploaded;media_type="image";
-  }
-  const payload={user_id:currentUser.id,content:content||null,image_url,media_type};
-  if(image_urls)payload.image_urls=image_urls;
+  let image_url=null,image_urls=null,media_type=selectedSong && !selectedVideo && !selectedImages.length?"audio":null;
+  if(selectedVideo){image_url=await uploadFile(selectedVideo,"posts");media_type="video"}
+  else if(selectedImages.length){const uploaded=[];for(const f of selectedImages)uploaded.push(await uploadFile(f,"posts"));image_url=uploaded[0];image_urls=uploaded;media_type="image"}
+  const payload={user_id:currentUser.id,content:content||null,image_url,media_type};if(image_urls)payload.image_urls=image_urls;
   let {error}=await client.from("posts").insert(payload);
-  if(error && image_urls){
-   const fb=await client.from("posts").insert({user_id:currentUser.id,content:content||null,image_url,media_type});
-   error=fb.error;
-  }
+  if(error && image_urls){const fb=await client.from("posts").insert({user_id:currentUser.id,content:content||null,image_url,media_type});error=fb.error}
   if(error)throw error;
-  msg("dertCreateStatus","تم النشر بنجاح");
-  selectedImages=[];selectedVideo=null;clearSelectedMusic();
-  el("dertImagesInput").value="";el("dertVideoInput").value="";el("dertDescription").value="";
-  updateDescCounter();
-  renderMediaPreview();
+  msg("dertCreateStatus","تم النشر بنجاح");selectedImages=[];selectedVideo=null;clearSelectedMusic();
+  el("dertImagesInput").value="";el("dertVideoInput").value="";el("dertDescription").value="";updateDescCounter();renderMediaPreview();
   await loadVideos();await loadPosts();await loadStats();await loadProfileMediaGrid();
   setTimeout(()=>{el("dertCreateModal").style.display="none";msg("dertCreateStatus","")},700);
- }catch(error){msg("dertCreateStatus","تعذر النشر: "+error.message)}
- finally{
-  btn.disabled=false;
-  if(topBtn)topBtn.disabled=false;
- }
+ }catch(error){msg("dertCreateStatus","تعذر النشر: "+error.message)}finally{btn.disabled=false;if(topBtn)topBtn.disabled=false}
 }
-
 el("dertPublishButton").onclick=publishNewContent;
 el("dertTopPublishBtn").onclick=publishNewContent;
 
-/* فيديوهات بأسلوب تيك توك */
 async function loadVideos(){
- if(!currentUser)return;
- const list=el("videosList");stopVideoPlayback();list.replaceChildren();
- const loading=document.createElement("div");loading.className="video-loading";loading.textContent="جارٍ التحميل...";
- list.appendChild(loading);
+ if(!currentUser)return;const list=el("videosList");stopVideoPlayback();list.replaceChildren();
+ const loading=document.createElement("div");loading.className="video-loading";loading.textContent="جارٍ التحميل...";list.appendChild(loading);
  try{
   const {data,error}=await client.from("posts").select("*").eq("media_type","video").not("image_url","is",null).order("created_at",{ascending:false}).limit(100);
-  if(error)throw error;
-  list.replaceChildren();
+  if(error)throw error;list.replaceChildren();
   const {data:myFollows,error:followError}=await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
-  if(followError)throw followError;
-  followedIdsSet=new Set((myFollows||[]).map(x=>x.following_id));
-
+  if(followError)throw followError;followedIdsSet=new Set((myFollows||[]).map(x=>x.following_id));
   let allVids=data||[];
-  if(videoFeedMode==="following"){
-   allVids=allVids.filter(p=>p.user_id===currentUser.id || followedIdsSet.has(p.user_id));
-  }
+  if(videoFeedMode==="following")allVids=allVids.filter(p=>p.user_id===currentUser.id || followedIdsSet.has(p.user_id));
   videoPostsCache=allVids;
-
   if(!videoPostsCache.length){
    const empty=document.createElement("div");empty.className="videos-empty";
-   empty.innerHTML=videoFeedMode==="following"
-    ? `<strong>لا توجد فيديوهات من الحسابات التي تتابعها</strong><p class="small">تابع حسابات أو انتقل إلى تبويب «لك».</p>`
-    : `<strong>لا توجد فيديوهات حالياً</strong><p class="small">اضغط زر + في الأسفل لرفع أول فيديو.</p>`;
-   const go=document.createElement("button");
-   go.textContent=videoFeedMode==="following"?"العودة إلى «لك»":"+ إنشاء فيديو";
-   go.onclick=videoFeedMode==="following"?()=>switchVideoFeedMode("foryou"):openCreateModal;
-   empty.appendChild(go);list.appendChild(empty);return;
+   empty.innerHTML=videoFeedMode==="following"?`<strong>لا توجد فيديوهات من الحسابات التي تتابعها</strong><p class="small">تابع حسابات أو انتقل إلى تبويب «لك».</p>`:`<strong>لا توجد فيديوهات حالياً</strong><p class="small">اضغط زر + في الأسفل لرفع أول فيديو.</p>`;
+   const go=document.createElement("button");go.textContent=videoFeedMode==="following"?"العودة إلى «لك»":"+ إنشاء فيديو";
+   go.onclick=videoFeedMode==="following"?()=>switchVideoFeedMode("foryou"):openCreateModal;empty.appendChild(go);list.appendChild(empty);return;
   }
-
   const userIds=[...new Set(videoPostsCache.map(p=>p.user_id))];
   const {data:profiles,error:profileError}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified").in("id",userIds);
-  if(profileError)throw profileError;
-  const names={};(profiles||[]).forEach(p=>names[p.id]=p);
-
+  if(profileError)throw profileError;const names={};(profiles||[]).forEach(p=>names[p.id]=p);
   videoPostsCache.forEach(post=>{
-   const profile=names[post.user_id]||{};
-   const parsed=parseSongFromPost(post);
+   const profile=names[post.user_id]||{};const parsed=parseSongFromPost(post);
    const card=document.createElement("article");card.className="video-card";card.dataset.postId=post.id;
-
-   const video=document.createElement("video");
-   video.src=post.image_url;video.autoplay=true;video.muted=true;video.loop=true;video.playsInline=true;video.preload="metadata";
+   const video=document.createElement("video");video.src=post.image_url;video.autoplay=true;video.muted=true;video.loop=true;video.playsInline=true;video.preload="metadata";
    video.setAttribute("playsinline","");video.setAttribute("webkit-playsinline","");
    video.addEventListener("click",()=>{if(video.paused)video.play().catch(()=>{});else video.pause()});
-
-   const overlay=document.createElement("div");overlay.className="video-overlay";
-   const details=document.createElement("div");details.className="video-details";
-
-   const author=document.createElement("div");author.className="video-author";
-   addVerifiedName(author,"@"+(profile.username||profile.full_name||"user"),profile.is_verified===true);
+   const overlay=document.createElement("div");overlay.className="video-overlay";const details=document.createElement("div");details.className="video-details";
+   const author=document.createElement("div");author.className="video-author";addVerifiedName(author,"@"+(profile.username||profile.full_name||"user"),profile.is_verified===true);
    author.onclick=()=>openUserProfile(post.user_id);
-
-   const description=document.createElement("div");description.className="video-description";
-   description.textContent=parsed.cleanContent||"";
-
-   const songEl=document.createElement("div");songEl.className="sound-line";
-   songEl.textContent="♫ "+(parsed.song?.title||"الصوت الأصلي - "+(profile.username||"DERT"));
-   songEl.onclick=openMusicPicker;
-
-   const date=document.createElement("div");date.className="video-date";
-   date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");
-
-   details.append(author);
-   if(parsed.cleanContent)details.appendChild(description);
-   details.append(songEl,date);overlay.appendChild(details);
-
+   const description=document.createElement("div");description.className="video-description";description.textContent=parsed.cleanContent||"";
+   const songEl=document.createElement("div");songEl.className="sound-line";songEl.textContent="♫ "+(parsed.song?.title||"الصوت الأصلي - "+(profile.username||"DERT"));songEl.onclick=openMusicPicker;
+   const date=document.createElement("div");date.className="video-date";date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");
+   details.append(author);if(parsed.cleanContent)details.appendChild(description);details.append(songEl,date);overlay.appendChild(details);
    const sound=document.createElement("button");sound.className="video-sound";sound.textContent="🔇";
    sound.onclick=()=>{video.muted=!video.muted;sound.textContent=video.muted?"🔇":"🔊";if(!video.paused)video.play().catch(()=>{})};
-
    const actions=document.createElement("div");actions.className="video-side-actions";
-
-   const avWrap=document.createElement("div");avWrap.className="tt-avatar-wrap";
-   avWrap.appendChild(makeAvatar(profile.avatar_url,profile.full_name||profile.username));
+   const avWrap=document.createElement("div");avWrap.className="tt-avatar-wrap";avWrap.appendChild(makeAvatar(profile.avatar_url,profile.full_name||profile.username));
    if(post.user_id!==currentUser.id){
-    const badge=document.createElement("span");badge.className="tt-plus-badge";
-    badge.textContent=followedIdsSet.has(post.user_id)?"✓":"+";
-    badge.onclick=(e)=>{e.stopPropagation();followUser(post.user_id,badge)};
-    avWrap.appendChild(badge);
+    const badge=document.createElement("span");badge.className="tt-plus-badge";badge.textContent=followedIdsSet.has(post.user_id)?"✓":"+";
+    badge.onclick=(e)=>{e.stopPropagation();followUser(post.user_id,badge)};avWrap.appendChild(badge);
    }
    avWrap.onclick=()=>openUserProfile(post.user_id);
-
-   const likedNow=isPostLiked(post.id);
-   const likeItem=document.createElement("div");likeItem.className="tt-side-item";
+   const likedNow=isPostLiked(post.id);const likeItem=document.createElement("div");likeItem.className="tt-side-item";
    const likeBtn=document.createElement("button");likeBtn.className="tt-side-btn";likeBtn.type="button";
    const likeCircle=document.createElement("span");likeCircle.className="tt-action-circle"+(likedNow?" active":"");likeCircle.textContent="❤️";
-   likeBtn.appendChild(likeCircle);
-   const likeLbl=document.createElement("span");likeLbl.className="tt-side-label";likeLbl.textContent=likedNow?"أعجبني":"إعجاب";
-   likeBtn.onclick=()=>toggleLikePost(post.id,likeCircle,likeLbl);
-   likeItem.append(likeBtn,likeLbl);
-
+   likeBtn.appendChild(likeCircle);const likeLbl=document.createElement("span");likeLbl.className="tt-side-label";likeLbl.textContent=likedNow?"أعجبني":"إعجاب";
+   likeBtn.onclick=()=>toggleLikePost(post.id,likeCircle,likeLbl);likeItem.append(likeBtn,likeLbl);
    const commentItem=document.createElement("div");commentItem.className="tt-side-item";
    const commentBtn=document.createElement("button");commentBtn.className="tt-side-btn";commentBtn.type="button";
    commentBtn.innerHTML=`<span class="violet-icon violet-icon-lg"><svg viewBox="0 0 24 24"><use href="#ico-chat"></use></svg></span>`;
-   commentBtn.onclick=()=>openPostComments(post);
-   const cLbl=document.createElement("span");cLbl.className="tt-side-label";cLbl.textContent="تعليق";
+   commentBtn.onclick=()=>openPostComments(post);const cLbl=document.createElement("span");cLbl.className="tt-side-label";cLbl.textContent="تعليق";
    commentItem.append(commentBtn,cLbl);
-
-   const savedNow=isPostSaved(post.id);
-   const saveItem=document.createElement("div");saveItem.className="tt-side-item";
+   const savedNow=isPostSaved(post.id);const saveItem=document.createElement("div");saveItem.className="tt-side-item";
    const saveBtn=document.createElement("button");saveBtn.className="tt-side-btn";saveBtn.type="button";
    const saveCircle=document.createElement("span");saveCircle.className="tt-action-circle"+(savedNow?" active":"");saveCircle.textContent="🔖";
-   saveBtn.appendChild(saveCircle);
-   const saveLbl=document.createElement("span");saveLbl.className="tt-side-label";saveLbl.textContent=savedNow?"محفوظ":"حفظ";
-   saveBtn.onclick=()=>toggleSavePost(post,saveCircle,saveLbl);
-   saveItem.append(saveBtn,saveLbl);
-
+   saveBtn.appendChild(saveCircle);const saveLbl=document.createElement("span");saveLbl.className="tt-side-label";saveLbl.textContent=savedNow?"محفوظ":"حفظ";
+   saveBtn.onclick=()=>toggleSavePost(post,saveCircle,saveLbl);saveItem.append(saveBtn,saveLbl);
    const shareItem=document.createElement("div");shareItem.className="tt-side-item";
    const shareBtn=document.createElement("button");shareBtn.className="tt-side-btn";shareBtn.type="button";
    shareBtn.innerHTML=`<span class="violet-icon violet-icon-lg"><svg viewBox="0 0 24 24"><use href="#ico-share"></use></svg></span>`;
-   shareBtn.onclick=()=>sharePost(post.id);
-   const sLbl=document.createElement("span");sLbl.className="tt-side-label";sLbl.textContent="مشاركة";
+   shareBtn.onclick=()=>sharePost(post.id);const sLbl=document.createElement("span");sLbl.className="tt-side-label";sLbl.textContent="مشاركة";
    shareItem.append(shareBtn,sLbl);
-
    const disc=document.createElement("div");disc.className="tt-disc";disc.title="الأغاني";disc.textContent="♫";disc.onclick=openMusicPicker;
-
    actions.append(avWrap,likeItem,commentItem,saveItem,shareItem,disc);
    card.append(video,overlay,sound,actions);list.appendChild(card);
   });
-
   setupVideoObserver();
  }catch(e){
-  list.replaceChildren();
-  const error=document.createElement("div");error.className="videos-empty";
+  list.replaceChildren();const error=document.createElement("div");error.className="videos-empty";
   error.innerHTML=`<strong>تعذر تحميل الفيديوهات</strong><p class="small">${e.message||""}</p>`;
-  const retry=document.createElement("button");retry.textContent="إعادة المحاولة";retry.onclick=loadVideos;
-  error.appendChild(retry);list.appendChild(error);
+  const retry=document.createElement("button");retry.textContent="إعادة المحاولة";retry.onclick=loadVideos;error.appendChild(retry);list.appendChild(error);
  }
 }
 
 function setupVideoObserver(){
- if(videoObserver)videoObserver.disconnect();
- const videos=[...document.querySelectorAll("#videosList video")];
- if(!videos.length)return;
+ if(videoObserver)videoObserver.disconnect();const videos=[...document.querySelectorAll("#videosList video")];if(!videos.length)return;
  videoObserver=new IntersectionObserver(entries=>{
   entries.forEach(entry=>{
    const video=entry.target;
-   if(entry.isIntersecting&&entry.intersectionRatio>=0.65){
-    videos.forEach(other=>{if(other!==video)other.pause()});
-    video.play().catch(()=>{});
-   }else video.pause();
+   if(entry.isIntersecting&&entry.intersectionRatio>=0.65){videos.forEach(other=>{if(other!==video)other.pause()});video.play().catch(()=>{})}else video.pause();
   });
  },{root:el("videosList"),threshold:[0,0.35,0.65,0.9]});
  videos.forEach(video=>videoObserver.observe(video));
@@ -2379,101 +1834,52 @@ function setupVideoObserver(){
 async function loadPosts(){
  const list=el("postsList");list.textContent="جارٍ تحميل المنشورات...";
  const {data,error}=await client.from("posts").select("*").order("created_at",{ascending:false});
- if(error){list.textContent="تعذر تحميل المنشورات: "+error.message;return}
- list.replaceChildren();
+ if(error){list.textContent="تعذر تحميل المنشورات: "+error.message;return}list.replaceChildren();
  if(!data?.length){list.textContent="لا توجد منشورات حتى الآن";return}
  const ids=[...new Set(data.map(p=>p.user_id))];
  const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
  const names={};(profiles||[]).forEach(p=>names[p.id]=p);
-
  for(const post of data){
   const card=document.createElement("article");card.className="post";card.id="post-"+post.id;
   const author=document.createElement("strong"),p=names[post.user_id];
   author.className="clickable-user";author.onclick=()=>openUserProfile(post.user_id);
-  addVerifiedName(author,p?(p.full_name||"مستخدم")+" @"+(p.username||""):"مستخدم DERT",p?.is_verified===true);
-  card.appendChild(author);
-
+  addVerifiedName(author,p?(p.full_name||"مستخدم")+" @"+(p.username||""):"مستخدم DERT",p?.is_verified===true);card.appendChild(author);
   const parsed=parseSongFromPost(post);
   if(parsed.cleanContent){const t=document.createElement("p");t.className="post-text";t.textContent=parsed.cleanContent;card.appendChild(t)}
   if(parsed.song){const b=document.createElement("div");b.className="sound-line";b.textContent="♫ "+parsed.song.title;card.appendChild(b)}
-
   const imgs=getPostImages(post);
   if(imgs.length)card.appendChild(createImageCarousel(imgs));
-  else if(post.image_url && post.media_type==="video"){
-   const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v);
-  }
-
-  const date=document.createElement("div");date.className="post-date";date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");
-  card.appendChild(date);
-
+  else if(post.image_url && post.media_type==="video"){const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v)}
+  const date=document.createElement("div");date.className="post-date";date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");card.appendChild(date);
   const bottom=document.createElement("div");bottom.className="post-bottom";
-  const likePostBtn=document.createElement("button");
-  likePostBtn.textContent=isPostLiked(post.id)?"❤️ أعجبني":"🤍 إعجاب";
-  likePostBtn.onclick=()=>{
-   toggleLikePost(post.id,null,null);
-   likePostBtn.textContent=isPostLiked(post.id)?"❤️ أعجبني":"🤍 إعجاب";
-  };
-  bottom.appendChild(likePostBtn);
-
+  const likePostBtn=document.createElement("button");likePostBtn.textContent=isPostLiked(post.id)?"❤️ أعجبني":"🤍 إعجاب";
+  likePostBtn.onclick=()=>{toggleLikePost(post.id,null,null);likePostBtn.textContent=isPostLiked(post.id)?"❤️ أعجبني":"🤍 إعجاب"};bottom.appendChild(likePostBtn);
   const commentBtn=document.createElement("button");commentBtn.className="comment-open";commentBtn.textContent="التعليقات";
-  const count=document.createElement("span");count.className="small";count.textContent="...";
-  commentBtn.appendChild(count);commentBtn.onclick=()=>openPostComments(post);bottom.appendChild(commentBtn);
-
-  const savePostBtn=document.createElement("button");
-  savePostBtn.textContent=isPostSaved(post.id)?"🔖 محفوظ":"🔖 حفظ";
-  savePostBtn.onclick=()=>{
-   toggleSavePost(post,null,null);
-   savePostBtn.textContent=isPostSaved(post.id)?"🔖 محفوظ":"🔖 حفظ";
-  };
-  bottom.appendChild(savePostBtn);
-
-  const menuWrap=document.createElement("div");menuWrap.className="post-menu-wrap";
-  const menuBtn=document.createElement("button");menuBtn.textContent="⋮";
+  const count=document.createElement("span");count.className="small";count.textContent="...";commentBtn.appendChild(count);commentBtn.onclick=()=>openPostComments(post);bottom.appendChild(commentBtn);
+  const savePostBtn=document.createElement("button");savePostBtn.textContent=isPostSaved(post.id)?"🔖 محفوظ":"🔖 حفظ";
+  savePostBtn.onclick=()=>{toggleSavePost(post,null,null);savePostBtn.textContent=isPostSaved(post.id)?"🔖 محفوظ":"🔖 حفظ"};bottom.appendChild(savePostBtn);
+  const menuWrap=document.createElement("div");menuWrap.className="post-menu-wrap";const menuBtn=document.createElement("button");menuBtn.textContent="⋮";
   const menu=document.createElement("div");menu.className="post-menu hidden";
-  function addMenuItem(label,handler,cls=""){
-   const b=document.createElement("button");b.textContent=label;if(cls)b.className=cls;
-   b.onclick=()=>{menu.classList.add("hidden");handler()};menu.appendChild(b);
-  }
-  if(post.user_id===currentUser.id){
-   addMenuItem("تعديل المنشور",()=>editPost(post));
-   addMenuItem("حذف المنشور",()=>deletePost(post.id,menuBtn),"red");
-  }
-  addMenuItem("مشاركة",()=>sharePost(post.id));
-  addMenuItem("نسخ الرابط",()=>copyPostLink(post.id));
-  addMenuItem("إبلاغ",()=>reportContent("post",post.id));
+  function addMenuItem(label,handler,cls=""){const b=document.createElement("button");b.textContent=label;if(cls)b.className=cls;b.onclick=()=>{menu.classList.add("hidden");handler()};menu.appendChild(b)}
+  if(post.user_id===currentUser.id){addMenuItem("تعديل المنشور",()=>editPost(post));addMenuItem("حذف المنشور",()=>deletePost(post.id,menuBtn),"red")}
+  addMenuItem("مشاركة",()=>sharePost(post.id));addMenuItem("نسخ الرابط",()=>copyPostLink(post.id));addMenuItem("إبلاغ",()=>reportContent("post",post.id));
   menuBtn.onclick=(e)=>{e.stopPropagation();document.querySelectorAll(".post-menu").forEach(m=>{if(m!==menu)m.classList.add("hidden")});menu.classList.toggle("hidden")};
-  menu.onclick=e=>e.stopPropagation();
-  menuWrap.append(menuBtn,menu);bottom.appendChild(menuWrap);
-  card.appendChild(bottom);list.appendChild(card);
+  menu.onclick=e=>e.stopPropagation();menuWrap.append(menuBtn,menu);bottom.appendChild(menuWrap);card.appendChild(bottom);list.appendChild(card);
   updatePostCommentCount(post.id,count);
  }
 }
 document.addEventListener("click",()=>document.querySelectorAll(".post-menu").forEach(m=>m.classList.add("hidden")));
 
-async function updatePostCommentCount(postId,element){
- const {count,error}=await client.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",postId);
- if(error){element.textContent="";return}
- element.textContent=" ("+(count||0)+")";
-}
-async function openPostComments(post){
- if(!currentUser)return;
- activeCommentPost=post;el("commentModal").classList.remove("hidden");
- el("commentModalList").textContent="جارٍ تحميل التعليقات...";el("commentInput").value="";
- document.body.style.overflow="hidden";
- await loadComments(post,el("commentModalList"));
-}
+async function updatePostCommentCount(postId,element){const {count,error}=await client.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",postId);if(error){element.textContent="";return}element.textContent=" ("+(count||0)+")"}
+async function openPostComments(post){if(!currentUser)return;activeCommentPost=post;el("commentModal").classList.remove("hidden");el("commentModalList").textContent="جارٍ تحميل التعليقات...";el("commentInput").value="";document.body.style.overflow="hidden";await loadComments(post,el("commentModalList"))}
 function closePostComments(){el("commentModal").classList.add("hidden");document.body.style.overflow="";activeCommentPost=null}
 el("sendCommentBtn").onclick=async()=>{
- if(!activeCommentPost||!currentUser)return;
- const input=el("commentInput"),text=input.value.trim();
- if(!text){alert("اكتب تعليقك أولاً");return}
+ if(!activeCommentPost||!currentUser)return;const input=el("commentInput"),text=input.value.trim();if(!text){alert("اكتب تعليقك أولاً");return}
  const b=el("sendCommentBtn");b.disabled=true;
  try{
-  const {error}=await client.from("post_comments").insert({post_id:activeCommentPost.id,user_id:currentUser.id,content:text});
-  if(error)throw error;input.value="";
+  const {error}=await client.from("post_comments").insert({post_id:activeCommentPost.id,user_id:currentUser.id,content:text});if(error)throw error;input.value="";
   await loadComments(activeCommentPost,el("commentModalList"));
-  const countElement=document.querySelector("#post-"+activeCommentPost.id+" .comment-open span");
-  if(countElement)await updatePostCommentCount(activeCommentPost.id,countElement);
+  const countElement=document.querySelector("#post-"+activeCommentPost.id+" .comment-open span");if(countElement)await updatePostCommentCount(activeCommentPost.id,countElement);
   el("commentModalList").scrollTop=el("commentModalList").scrollHeight;
  }catch(e){alert("تعذر إضافة التعليق: "+e.message)}finally{b.disabled=false}
 };
@@ -2481,69 +1887,36 @@ el("commentInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventD
 
 async function loadComments(post,container){
  const {data,error}=await client.from("post_comments").select("*").eq("post_id",post.id).order("created_at",{ascending:true});
- container.replaceChildren();
- if(error){container.textContent="تعذر تحميل التعليقات: "+error.message;return}
- if(!data?.length){container.textContent="لا توجد تعليقات بعد.";return}
- const ids=[...new Set(data.map(c=>c.user_id))];
- const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
+ container.replaceChildren();if(error){container.textContent="تعذر تحميل التعليقات: "+error.message;return}if(!data?.length){container.textContent="لا توجد تعليقات بعد.";return}
+ const ids=[...new Set(data.map(c=>c.user_id))];const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
  data.forEach(c=>{
-  const row=document.createElement("div");row.className="comment";
-  const head=document.createElement("div");head.className="comment-head";
-  const name=document.createElement("strong");const profile=map[c.user_id];
-  name.className="clickable-user";name.onclick=()=>{closePostComments();openUserProfile(c.user_id)};
+  const row=document.createElement("div");row.className="comment";const head=document.createElement("div");head.className="comment-head";
+  const name=document.createElement("strong");const profile=map[c.user_id];name.className="clickable-user";name.onclick=()=>{closePostComments();openUserProfile(c.user_id)};
   addVerifiedName(name,profile?.full_name||profile?.username||"مستخدم",profile?.is_verified===true);
-  const date=document.createElement("span");date.className="small";date.textContent=new Date(c.created_at).toLocaleString("ar-IQ");
-  head.append(name,date);row.appendChild(head);
-  const text=document.createElement("p");text.textContent=c.content;row.appendChild(text);
-  const tools=document.createElement("div");tools.className="comment-actions";
-  const report=document.createElement("button");report.className="gray";report.textContent="إبلاغ";
-  report.onclick=()=>reportContent("comment",c.id);tools.appendChild(report);
+  const date=document.createElement("span");date.className="small";date.textContent=new Date(c.created_at).toLocaleString("ar-IQ");head.append(name,date);row.appendChild(head);
+  const text=document.createElement("p");text.textContent=c.content;row.appendChild(text);const tools=document.createElement("div");tools.className="comment-actions";
+  const report=document.createElement("button");report.className="gray";report.textContent="إبلاغ";report.onclick=()=>reportContent("comment",c.id);tools.appendChild(report);
   if(c.user_id===currentUser.id||post.user_id===currentUser.id){
    const del=document.createElement("button");del.className="red";del.textContent="حذف";
    del.onclick=async()=>{
     if(!confirm("حذف التعليق؟"))return;del.disabled=true;
-    const {error}=await client.from("post_comments").delete().eq("id",c.id);
-    if(error){alert("تعذر الحذف: "+error.message);del.disabled=false;return}
-    await loadComments(post,container);
-    const countElement=document.querySelector("#post-"+post.id+" .comment-open span");
-    if(countElement)await updatePostCommentCount(post.id,countElement);
-   };
-   tools.appendChild(del);
+    const {error}=await client.from("post_comments").delete().eq("id",c.id);if(error){alert("تعذر الحذف: "+error.message);del.disabled=false;return}
+    await loadComments(post,container);const countElement=document.querySelector("#post-"+post.id+" .comment-open span");if(countElement)await updatePostCommentCount(post.id,countElement);
+   };tools.appendChild(del);
   }
   row.appendChild(tools);container.appendChild(row);
  });
 }
 
-async function sharePost(postId){
- const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(postId);
- try{if(navigator.share)await navigator.share({title:"DERT",url});else await copyPostLink(postId)}catch(e){}
-}
+async function sharePost(postId){const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(postId);try{if(navigator.share)await navigator.share({title:"DERT",url});else await copyPostLink(postId)}catch(e){}}
 async function copyPostLink(postId){
  const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(postId);
- try{
-  if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(url);
-  else{const t=document.createElement("textarea");t.value=url;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}
-  alert("تم نسخ الرابط");
- }catch(e){prompt("انسخ الرابط:",url)}
+ try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(url);else{const t=document.createElement("textarea");t.value=url;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}alert("تم نسخ الرابط")}catch(e){prompt("انسخ الرابط:",url)}
 }
-async function editPost(post){
- if(post.user_id!==currentUser.id)return;
- const content=prompt("عدّل النص:",post.content||"");if(content===null)return;
- const {error}=await client.from("posts").update({content:content.trim()||null}).eq("id",post.id).eq("user_id",currentUser.id);
- if(error){alert(error.message);return}await loadPosts();await loadProfileMediaGrid();
-}
-async function deletePost(id,button){
- if(!confirm("حذف المنشور؟"))return;button.disabled=true;
- const {error}=await client.from("posts").delete().eq("id",id).eq("user_id",currentUser.id);
- if(error){alert(error.message);button.disabled=false;return}
- await loadPosts();await loadStats();await loadVideos();await loadProfileMediaGrid();
-}
-async function reportContent(type,id){
- const reason=prompt("سبب الإبلاغ:");if(!reason?.trim())return;
- const {error}=await client.from("content_reports").insert({reporter_id:currentUser.id,target_type:type,target_id:id,reason:reason.trim()});
- if(error)alert(error.message);else alert("تم إرسال البلاغ");
-}
+async function editPost(post){if(post.user_id!==currentUser.id)return;const content=prompt("عدّل النص:",post.content||"");if(content===null)return;const {error}=await client.from("posts").update({content:content.trim()||null}).eq("id",post.id).eq("user_id",currentUser.id);if(error){alert(error.message);return}await loadPosts();await loadProfileMediaGrid()}
+async function deletePost(id,button){if(!confirm("حذف المنشور؟"))return;button.disabled=true;const {error}=await client.from("posts").delete().eq("id",id).eq("user_id",currentUser.id);if(error){alert(error.message);button.disabled=false;return}await loadPosts();await loadStats();await loadVideos();await loadProfileMediaGrid()}
+async function reportContent(type,id){const reason=prompt("سبب الإبلاغ:");if(!reason?.trim())return;const {error}=await client.from("content_reports").insert({reporter_id:currentUser.id,target_type:type,target_id:id,reason:reason.trim()});if(error)alert(error.message);else alert("تم إرسال البلاغ")}
 
 async function loadStats(){
  if(!currentUser)return;
@@ -2554,22 +1927,16 @@ async function loadStats(){
 }
 
 el("searchBtn").onclick=async()=>{
- const q=el("searchUser").value.trim(),list=el("peopleList");
- list.textContent="جارٍ البحث...";
+ const q=el("searchUser").value.trim(),list=el("peopleList");list.textContent="جارٍ البحث...";
  if(!q){list.textContent="اكتب اسم المستخدم أولاً";return}
  const {data,error}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified").ilike("username","%"+q+"%").limit(25);
- if(error){list.textContent=error.message;return}
- list.replaceChildren();
- const people=(data||[]).filter(p=>p.id!==currentUser.id);
+ if(error){list.textContent=error.message;return}list.replaceChildren();const people=(data||[]).filter(p=>p.id!==currentUser.id);
  if(!people.length){list.textContent="لا توجد نتائج";return}
  for(const p of people){
-  const row=document.createElement("div");row.className="item";
-  const line=document.createElement("div");line.className="chat-row clickable-user";line.onclick=()=>openUserProfile(p.id);
-  line.appendChild(makeAvatar(p.avatar_url,p.full_name||p.username));
-  const info=document.createElement("div");const title=document.createElement("strong");
+  const row=document.createElement("div");row.className="item";const line=document.createElement("div");line.className="chat-row clickable-user";line.onclick=()=>openUserProfile(p.id);
+  line.appendChild(makeAvatar(p.avatar_url,p.full_name||p.username));const info=document.createElement("div");const title=document.createElement("strong");
   addVerifiedName(title,(p.full_name||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
-  const bio=document.createElement("div");bio.className="small";bio.textContent=p.bio||"";
-  info.append(title,bio);line.appendChild(info);row.appendChild(line);
+  const bio=document.createElement("div");bio.className="small";bio.textContent=p.bio||"";info.append(title,bio);line.appendChild(info);row.appendChild(line);
   const actions=document.createElement("div");actions.className="user-row-actions";
   const viewBtn=document.createElement("button");viewBtn.className="gray";viewBtn.textContent="الملف";viewBtn.onclick=()=>openUserProfile(p.id);
   const follow=document.createElement("button");follow.textContent="متابعة";follow.onclick=()=>followUser(p.id,follow);
@@ -2582,171 +1949,88 @@ el("searchBtn").onclick=async()=>{
 el("searchUser").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();el("searchBtn").click()}});
 
 async function followUser(id,button){
- if(!currentUser||id===currentUser.id)return;
- button.disabled=true;
+ if(!currentUser||id===currentUser.id)return;button.disabled=true;
  try{
-  if(button.dataset.following==="yes"){
-   const {error}=await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",id);
-   if(error)throw error;
-   button.textContent=button.classList.contains("tt-plus-badge")?"+":"متابعة";
-   button.dataset.following="";
-   followedIdsSet.delete(id);
-  }else{
-   const {error}=await client.from("follows").insert({follower_id:currentUser.id,following_id:id});
-   if(error)throw error;
-   button.textContent=button.classList.contains("tt-plus-badge")?"✓":"يتابع";
-   button.dataset.following="yes";
-   followedIdsSet.add(id);
-  }
+  if(button.dataset.following==="yes"){await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",id);button.textContent=button.classList.contains("tt-plus-badge")?"+":"متابعة";button.dataset.following="";followedIdsSet.delete(id)}
+  else{await client.from("follows").insert({follower_id:currentUser.id,following_id:id});button.textContent=button.classList.contains("tt-plus-badge")?"✓":"يتابع";button.dataset.following="yes";followedIdsSet.add(id)}
   await loadStats();
  }catch(e){alert("تعذرت العملية: "+e.message)}finally{button.disabled=false}
 }
 
-/* المحادثات وإرسال الرسائل مع مسار بديل مضمون */
 async function startChat(otherId,username){
- if(!currentUser||!otherId)return;
- if(otherId===currentUser.id){alert("لا يمكنك مراسلة نفسك");return}
+ if(!currentUser||!otherId)return;if(otherId===currentUser.id){alert("لا يمكنك مراسلة نفسك");return}
  let convId=null;
  try{
-  const {data:mine}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
-  const ids=(mine||[]).map(x=>x.conversation_id);
-  if(ids.length){
-   const {data:theirs}=await client.from("conversation_members").select("conversation_id").eq("user_id",otherId).in("conversation_id",ids);
-   if(theirs?.length){
-    for(const c of theirs){
-     const {data:members}=await client.from("conversation_members").select("user_id").eq("conversation_id",c.conversation_id);
-     if(members?.length===2){convId=c.conversation_id;break}
-    }
-   }
-  }
+  const {data:mine}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);const ids=(mine||[]).map(x=>x.conversation_id);
+  if(ids.length){const {data:theirs}=await client.from("conversation_members").select("conversation_id").eq("user_id",otherId).in("conversation_id",ids);if(theirs?.length){for(const c of theirs){const {data:members}=await client.from("conversation_members").select("user_id").eq("conversation_id",c.conversation_id);if(members?.length===2){convId=c.conversation_id;break}}}}
   if(!convId){
    let {data:conversation,error}=await client.from("conversations").insert({created_by:currentUser.id,last_message:""}).select("id").single();
-   if(error){
-    const retry=await client.from("conversations").insert({created_by:currentUser.id}).select("id").single();
-    conversation=retry.data;error=retry.error;
-   }
-   if(!error && conversation?.id){
-    const {error:memberError}=await client.from("conversation_members").insert([
-     {conversation_id:conversation.id,user_id:currentUser.id},
-     {conversation_id:conversation.id,user_id:otherId}
-    ]);
-    if(!memberError)convId=conversation.id;
-   }
+   if(error){const retry=await client.from("conversations").insert({created_by:currentUser.id}).select("id").single();conversation=retry.data;error=retry.error}
+   if(!error && conversation?.id){const {error:memberError}=await client.from("conversation_members").insert([{conversation_id:conversation.id,user_id:currentUser.id},{conversation_id:conversation.id,user_id:otherId}]);if(!memberError)convId=conversation.id}
   }
  }catch(e){}
  if(!convId)convId=getDirectRoomId(currentUser.id,otherId);
- openTab("chats");
- await openChat(convId,otherId,username);
+ openTab("chats");await openChat(convId,otherId,username);
 }
 
 async function loadChats(){
- const list=el("chatList");list.textContent="جارٍ تحميل المحادثات...";
- const map=new Map();
+ const list=el("chatList");list.textContent="جارٍ تحميل المحادثات...";const map=new Map();
  try{
   const {data:members}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
   for(const m of (members||[])){
    const {data:others}=await client.from("conversation_members").select("user_id").eq("conversation_id",m.conversation_id).neq("user_id",currentUser.id);
-   const other=others?.[0]?.user_id;
-   if(!other)continue;
+   const other=others?.[0]?.user_id;if(!other)continue;
    const {data:latest}=await client.from("messages").select("content,media_type,created_at").eq("conversation_id",m.conversation_id).order("created_at",{ascending:false}).limit(1);
    map.set(other,{id:m.conversation_id,other,latest:latest?.[0]||null});
   }
  }catch(e){}
-
  try{
-  const {data:directMsgs}=await client.from("messages")
-   .select("conversation_id,sender_id,receiver_id,content,media_type,created_at")
-   .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
-   .order("created_at",{ascending:false})
-   .limit(100);
+  const {data:directMsgs}=await client.from("messages").select("conversation_id,sender_id,receiver_id,content,media_type,created_at").or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order("created_at",{ascending:false}).limit(100);
   for(const m of (directMsgs||[])){
-   const other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;
-   if(!other || other===currentUser.id)continue;
-   if(!map.has(other)){
-    map.set(other,{id:m.conversation_id||getDirectRoomId(currentUser.id,other),other,latest:m});
-   }
+   const other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;if(!other || other===currentUser.id)continue;
+   if(!map.has(other))map.set(other,{id:m.conversation_id||getDirectRoomId(currentUser.id,other),other,latest:m});
   }
  }catch(e){}
-
- list.replaceChildren();
- const entries=[...map.values()];
- if(!entries.length){list.textContent="لا توجد محادثات بعد";return}
-
- const otherIds=entries.map(x=>x.other);
- const {data:profiles}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified").in("id",otherIds);
+ list.replaceChildren();const entries=[...map.values()];if(!entries.length){list.textContent="لا توجد محادثات بعد";return}
+ const otherIds=entries.map(x=>x.other);const {data:profiles}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified").in("id",otherIds);
  const profMap={};(profiles||[]).forEach(p=>profMap[p.id]=p);
-
- const chats=entries.map(e=>({...e,profile:profMap[e.other]||{}}));
- chats.sort((a,b)=>new Date(b.latest?.created_at||0)-new Date(a.latest?.created_at||0));
+ const chats=entries.map(e=>({...e,profile:profMap[e.other]||{}}));chats.sort((a,b)=>new Date(b.latest?.created_at||0)-new Date(a.latest?.created_at||0));
  chatCache=chats;renderChatList(chats);
 }
 function renderChatList(chats){
- const list=el("chatList");list.replaceChildren();
- if(!chats.length){list.textContent="لا توجد محادثات مطابقة";return}
+ const list=el("chatList");list.replaceChildren();if(!chats.length){list.textContent="لا توجد محادثات مطابقة";return}
  chats.forEach(c=>{
-  const row=document.createElement("div");row.className="chat-entry";
-  row.appendChild(makeAvatar(c.profile?.avatar_url,c.profile?.full_name||c.profile?.username));
-  const info=document.createElement("div");info.className="chat-entry-info";
-  const name=document.createElement("strong");
+  const row=document.createElement("div");row.className="chat-entry";row.appendChild(makeAvatar(c.profile?.avatar_url,c.profile?.full_name||c.profile?.username));
+  const info=document.createElement("div");info.className="chat-entry-info";const name=document.createElement("strong");
   addVerifiedName(name,c.profile?.full_name||c.profile?.username||"مستخدم",c.profile?.is_verified===true);
-  const preview=document.createElement("div");preview.className="chat-last";
-  preview.textContent=c.latest?(c.latest.content||"وسائط"):"ابدأ المحادثة";
-  info.append(name,preview);
-  const side=document.createElement("div");side.className="chat-time";
-  side.textContent=c.latest?.created_at?new Date(c.latest.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"}):"";
-  row.append(info,side);
-  row.onclick=()=>openChat(c.id,c.other,c.profile?.username||"مستخدم");
-  list.appendChild(row);
+  const preview=document.createElement("div");preview.className="chat-last";preview.textContent=c.latest?(c.latest.content||"وسائط"):"ابدأ المحادثة";info.append(name,preview);
+  const side=document.createElement("div");side.className="chat-time";side.textContent=c.latest?.created_at?new Date(c.latest.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"}):"";
+  row.append(info,side);row.onclick=()=>openChat(c.id,c.other,c.profile?.username||"مستخدم");list.appendChild(row);
  });
 }
-el("chatSearch").oninput=()=>{
- const q=el("chatSearch").value.trim().toLowerCase();
- renderChatList(chatCache.filter(c=>(c.profile?.full_name||"").toLowerCase().includes(q)||(c.profile?.username||"").toLowerCase().includes(q)));
-};
+el("chatSearch").oninput=()=>{const q=el("chatSearch").value.trim().toLowerCase();renderChatList(chatCache.filter(c=>(c.profile?.full_name||"").toLowerCase().includes(q)||(c.profile?.username||"").toLowerCase().includes(q)))};
 el("newChatBtn").onclick=()=>{openTab("people");el("searchUser").focus()};
 
 async function openChat(conversationId,receiverId,username){
- stopRealtime();activeConversation=conversationId;activeReceiver=receiverId;
- el("chatPanel").classList.remove("hidden");msg("chatStatus","");
+ stopRealtime();activeConversation=conversationId;activeReceiver=receiverId;el("chatPanel").classList.remove("hidden");msg("chatStatus","");
  const {data:profile}=await client.from("profiles").select("username,full_name,avatar_url,is_verified").eq("id",receiverId).maybeSingle();
  addVerifiedName(el("chatTitle"),profile?.full_name||profile?.username||username,profile?.is_verified===true);
  el("chatUsername").textContent="@"+(profile?.username||username||"");
- const old=el("chatAvatar"),newA=makeAvatar(profile?.avatar_url,profile?.full_name||profile?.username);
- newA.id="chatAvatar";old.replaceWith(newA);
+ const old=el("chatAvatar"),newA=makeAvatar(profile?.avatar_url,profile?.full_name||profile?.username);newA.id="chatAvatar";old.replaceWith(newA);
  await loadMessages();await markMessagesRead();startRealtime();
 }
-el("closeChatBtn").onclick=()=>{
- stopRealtime();activeConversation=null;activeReceiver=null;
- el("chatPanel").classList.add("hidden");loadChats();
-};
+el("closeChatBtn").onclick=()=>{stopRealtime();activeConversation=null;activeReceiver=null;el("chatPanel").classList.add("hidden");loadChats()};
 async function loadMessages(){
- if(!activeConversation && !activeReceiver)return;
- const box=el("chatMessages");
- let data=null,error=null;
- if(activeConversation && !String(activeConversation).startsWith("dm_")){
-  const res=await client.from("messages").select("*").eq("conversation_id",activeConversation).order("created_at",{ascending:true});
-  data=res.data;error=res.error;
- }else if(activeReceiver){
-  const res=await client.from("messages").select("*")
-   .or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeReceiver}),and(sender_id.eq.${activeReceiver},receiver_id.eq.${currentUser.id})`)
-   .order("created_at",{ascending:true});
-  data=res.data;error=res.error;
- }
- if(error){box.textContent="خطأ: "+error.message;return}
- box.replaceChildren();
- if(!data?.length){box.textContent="ابدأ المحادثة";return}
+ if(!activeConversation && !activeReceiver)return;const box=el("chatMessages");let data=null,error=null;
+ if(activeConversation && !String(activeConversation).startsWith("dm_")){const res=await client.from("messages").select("*").eq("conversation_id",activeConversation).order("created_at",{ascending:true});data=res.data;error=res.error}
+ else if(activeReceiver){const res=await client.from("messages").select("*").or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeReceiver}),and(sender_id.eq.${activeReceiver},receiver_id.eq.${currentUser.id})`).order("created_at",{ascending:true});data=res.data;error=res.error}
+ if(error){box.textContent="خطأ: "+error.message;return}box.replaceChildren();if(!data?.length){box.textContent="ابدأ المحادثة";return}
  data.forEach(m=>{
   const b=document.createElement("div");b.className="bubble"+(m.sender_id===currentUser.id?" mine":"");
   if(m.content){const t=document.createElement("div");t.textContent=m.content;b.appendChild(t)}
-  if(m.media_url){
-   if(m.media_type==="video"){const v=document.createElement("video");v.src=m.media_url;v.controls=true;v.className="media";b.appendChild(v)}
-   else{const img=document.createElement("img");img.src=m.media_url;img.className="media";b.appendChild(img)}
-  }
-  const meta=document.createElement("div");meta.className="message-meta";
-  meta.textContent=new Date(m.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"});
-  if(m.sender_id===currentUser.id){
-   const s=document.createElement("span");s.textContent=m.is_read?" ✓✓":" ✓";meta.appendChild(s);
-  }
+  if(m.media_url){if(m.media_type==="video"){const v=document.createElement("video");v.src=m.media_url;v.controls=true;v.className="media";b.appendChild(v)}else{const img=document.createElement("img");img.src=m.media_url;img.className="media";b.appendChild(img)}}
+  const meta=document.createElement("div");meta.className="message-meta";meta.textContent=new Date(m.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"});
+  if(m.sender_id===currentUser.id){const s=document.createElement("span");s.textContent=m.is_read?" ✓✓":" ✓";meta.appendChild(s)}
   b.appendChild(meta);box.appendChild(b);
  });
  box.scrollTop=box.scrollHeight;
@@ -2754,111 +2038,48 @@ async function loadMessages(){
 async function markMessagesRead(){
  if(!currentUser)return;
  try{
-  if(activeConversation && !String(activeConversation).startsWith("dm_")){
-   await client.from("messages").update({is_read:true}).eq("conversation_id",activeConversation).eq("receiver_id",currentUser.id).eq("is_read",false);
-  }else if(activeReceiver){
-   await client.from("messages").update({is_read:true}).eq("sender_id",activeReceiver).eq("receiver_id",currentUser.id).eq("is_read",false);
-  }
+  if(activeConversation && !String(activeConversation).startsWith("dm_"))await client.from("messages").update({is_read:true}).eq("conversation_id",activeConversation).eq("receiver_id",currentUser.id).eq("is_read",false);
+  else if(activeReceiver)await client.from("messages").update({is_read:true}).eq("sender_id",activeReceiver).eq("receiver_id",currentUser.id).eq("is_read",false);
  }catch(e){}
 }
 el("sendMessageBtn").onclick=async()=>{
  if(!activeReceiver){msg("chatStatus","اختر محادثة أولاً");return}
- const content=el("chatText").value.trim(),file=el("chatFile").files[0];
- if(!content&&!file){msg("chatStatus","اكتب رسالة أو اختر ملفاً");return}
+ const content=el("chatText").value.trim(),file=el("chatFile").files[0];if(!content&&!file){msg("chatStatus","اكتب رسالة أو اختر ملفاً");return}
  const b=el("sendMessageBtn");b.disabled=true;msg("chatStatus","جارٍ الإرسال...");
  try{
   let media_url=null,media_type=null;
-  if(file){
-   if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))throw new Error("اختر صورة أو فيديو");
-   media_url=await uploadFile(file,"messages");media_type=file.type.startsWith("video/")?"video":"image";
-  }
+  if(file){if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))throw new Error("اختر صورة أو فيديو");media_url=await uploadFile(file,"messages");media_type=file.type.startsWith("video/")?"video":"image"}
   const isDirect=String(activeConversation||"").startsWith("dm_");
-  const baseRow={
-   sender_id:currentUser.id,
-   receiver_id:activeReceiver,
-   content:content||null,
-   media_url,
-   media_type,
-   is_read:false
-  };
+  const baseRow={sender_id:currentUser.id,receiver_id:activeReceiver,content:content||null,media_url,media_type,is_read:false};
   if(!isDirect && activeConversation)baseRow.conversation_id=activeConversation;
-
   let {error}=await client.from("messages").insert(baseRow);
-  if(error && error.message.includes("is_read")){
-   delete baseRow.is_read;
-   const r1=await client.from("messages").insert(baseRow);
-   error=r1.error;
-  }
-  if(error && error.message.includes("conversation_id")){
-   delete baseRow.conversation_id;
-   const r2=await client.from("messages").insert(baseRow);
-   error=r2.error;
-  }
+  if(error && error.message.includes("is_read")){delete baseRow.is_read;const r1=await client.from("messages").insert(baseRow);error=r1.error}
+  if(error && error.message.includes("conversation_id")){delete baseRow.conversation_id;const r2=await client.from("messages").insert(baseRow);error=r2.error}
   if(error)throw error;
-
-  if(!isDirect && activeConversation){
-   await client.from("conversations").update({last_message:content||"وسائط",updated_at:new Date().toISOString()}).eq("id",activeConversation);
-  }
-  el("chatText").value="";el("chatFile").value="";msg("chatStatus","تم الإرسال");
-  await loadMessages();await loadChats();
+  if(!isDirect && activeConversation)await client.from("conversations").update({last_message:content||"وسائط",updated_at:new Date().toISOString()}).eq("id",activeConversation);
+  el("chatText").value="";el("chatFile").value="";msg("chatStatus","تم الإرسال");await loadMessages();await loadChats();
  }catch(e){msg("chatStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
 };
-function startRealtime(){
- if(!activeReceiver)return;
- const rid=activeReceiver;
- activeChannel=client.channel("dert-chat-"+rid).on("postgres_changes",{event:"*",schema:"public",table:"messages"},async()=>{
-  if(activeReceiver!==rid)return;
-  await loadMessages();await markMessagesRead();loadChats();
- }).subscribe();
-}
+function startRealtime(){if(!activeReceiver)return;const rid=activeReceiver;activeChannel=client.channel("dert-chat-"+rid).on("postgres_changes",{event:"*",schema:"public",table:"messages"},async()=>{if(activeReceiver!==rid)return;await loadMessages();await markMessagesRead();loadChats()}).subscribe()}
 function stopRealtime(){if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}}
 
 async function loadAlerts(){
  const list=el("alertsList");list.textContent="جارٍ التحميل...";
- try{
-  const {data,error}=await client.from("notifications").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
-  if(error)throw error;list.replaceChildren();
-  if(!data?.length){list.textContent="لا توجد تنبيهات";return}
-  data.forEach(n=>{const row=document.createElement("div");row.className="item";row.textContent=n.content||"تنبيه جديد";list.appendChild(row)});
- }catch(e){list.textContent="خطأ: "+e.message}
+ try{const {data,error}=await client.from("notifications").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);if(error)throw error;list.replaceChildren();if(!data?.length){list.textContent="لا توجد تنبيهات";return}data.forEach(n=>{const row=document.createElement("div");row.className="item";row.textContent=n.content||"تنبيه جديد";list.appendChild(row)})}
+ catch(e){list.textContent="خطأ: "+e.message}
 }
 el("refreshAlerts").onclick=loadAlerts;
-function startAlertsRealtime(){
- stopAlertsRealtime();if(!currentUser)return;
- alertsChannel=client.channel("dert-alerts-"+currentUser.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:"user_id=eq."+currentUser.id},()=>{
-  if(el("alerts").classList.contains("active"))loadAlerts();
- }).subscribe();
-}
+function startAlertsRealtime(){stopAlertsRealtime();if(!currentUser)return;alertsChannel=client.channel("dert-alerts-"+currentUser.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:"user_id=eq."+currentUser.id},()=>{if(el("alerts").classList.contains("active"))loadAlerts()}).subscribe()}
 function stopAlertsRealtime(){if(alertsChannel){client.removeChannel(alertsChannel);alertsChannel=null}}
 
-/* إدارة طلبات شحن العملات وسحب الأرباح في لوحة الإدارة */
 async function loadAdminTopups(){
- if(!isAdmin())return;
- const box=el("adminTopups");box.textContent="جارٍ التحميل...";
+ if(!isAdmin())return;const box=el("adminTopups");box.textContent="جارٍ التحميل...";
  try{
-  const {data,error}=await client.from("coin_topup_requests").select("*").order("created_at",{ascending:false}).limit(50);
-  if(error)throw error;box.replaceChildren();
-  if(!data?.length){box.textContent="لا توجد طلبات شحن";return}
+  const {data,error}=await client.from("payment_intents").select("*").order("created_at",{ascending:false}).limit(50);
+  if(error)throw error;box.replaceChildren();if(!data?.length){box.textContent="لا توجد عمليات دفع";return}
   data.forEach(t=>{
    const card=document.createElement("div");card.className="request-card";
-   card.innerHTML=`<strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع)<div class="small">المرجع: ${t.reference_code} • المستخدم: ${t.user_id}</div><p class="status-${t.status}">الحالة: ${t.status}</p>`;
-   if(t.status==="pending"){
-    const actions=document.createElement("div");actions.className="admin-actions";
-    const ok=document.createElement("button");ok.className="green";ok.textContent="تأكيد وإضافة العملات";
-    ok.onclick=async()=>{
-     ok.disabled=true;
-     const {error:rpcErr}=await client.rpc("admin_approve_topup",{p_request_id:t.id});
-     if(rpcErr)alert(rpcErr.message);
-     await loadAdminTopups();
-    };
-    const no=document.createElement("button");no.className="red";no.textContent="رفض";
-    no.onclick=async()=>{
-     no.disabled=true;
-     await client.from("coin_topup_requests").update({status:"rejected"}).eq("id",t.id);
-     await loadAdminTopups();
-    };
-    actions.append(ok,no);card.appendChild(actions);
-   }
+   card.innerHTML=`<strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع)<div class="small">المرجع: ${t.provider_ref||"—"} • المستخدم: ${t.user_id}</div><p class="status-${t.status}">الحالة: ${t.status}</p>`;
    box.appendChild(card);
   });
  }catch(e){box.textContent="خطأ: "+e.message}
@@ -2866,31 +2087,19 @@ async function loadAdminTopups(){
 el("refreshTopups").onclick=loadAdminTopups;
 
 async function loadAdminWithdrawals(){
- if(!isAdmin())return;
- const box=el("adminWithdrawals");box.textContent="جارٍ التحميل...";
+ if(!isAdmin())return;const box=el("adminWithdrawals");box.textContent="جارٍ التحميل...";
  try{
   const {data,error}=await client.from("withdrawal_requests").select("*").order("created_at",{ascending:false}).limit(50);
-  if(error)throw error;box.replaceChildren();
-  if(!data?.length){box.textContent="لا توجد طلبات سحب";return}
+  if(error)throw error;box.replaceChildren();if(!data?.length){box.textContent="لا توجد طلبات سحب";return}
   data.forEach(w=>{
    const card=document.createElement("div");card.className="request-card";
    card.innerHTML=`<strong>سحب: ${w.amount}</strong><div class="small">الطريقة: ${w.method_details} • المستخدم: ${w.user_id}</div><p class="status-${w.status}">الحالة: ${w.status}</p>`;
    if(w.status==="pending"){
     const actions=document.createElement("div");actions.className="admin-actions";
     const ok=document.createElement("button");ok.className="green";ok.textContent="موافقة وخصم";
-    ok.onclick=async()=>{
-     ok.disabled=true;
-     const {error:rpcErr}=await client.rpc("admin_review_withdrawal",{p_request_id:w.id,p_approve:true,p_note:"تم الصرف"});
-     if(rpcErr)alert(rpcErr.message);
-     await loadAdminWithdrawals();
-    };
+    ok.onclick=async()=>{ok.disabled=true;const {error:rpcErr}=await client.rpc("admin_review_withdrawal",{p_request_id:w.id,p_approve:true,p_note:"تم الصرف"});if(rpcErr)alert(rpcErr.message);await loadAdminWithdrawals()};
     const no=document.createElement("button");no.className="red";no.textContent="رفض";
-    no.onclick=async()=>{
-     no.disabled=true;
-     const {error:rpcErr}=await client.rpc("admin_review_withdrawal",{p_request_id:w.id,p_approve:false,p_note:"مرفوض"});
-     if(rpcErr)alert(rpcErr.message);
-     await loadAdminWithdrawals();
-    };
+    no.onclick=async()=>{no.disabled=true;const {error:rpcErr}=await client.rpc("admin_review_withdrawal",{p_request_id:w.id,p_approve:false,p_note:"مرفوض"});if(rpcErr)alert(rpcErr.message);await loadAdminWithdrawals()};
     actions.append(ok,no);card.appendChild(actions);
    }
    box.appendChild(card);
@@ -2907,19 +2116,13 @@ async function loadAdminRequests(){
   requests.forEach(r=>{
    const card=document.createElement("div");card.className="request-card";const p=r.profile||{};
    card.innerHTML=`<h3>${p.full_name||p.username||"مستخدم"}</h3><p class="small">${r.user_id}</p><p class="${r.status==="approved"?"status-approved":r.status==="rejected"?"status-rejected":"status-pending"}">${r.status}</p>`;
-   if(r.status==="pending"){
-    const actions=document.createElement("div");actions.className="admin-actions";
-    const yes=document.createElement("button");yes.textContent="موافقة";yes.onclick=()=>reviewVerification(r.request_id,"approve");
-    const no=document.createElement("button");no.className="red";no.textContent="رفض";no.onclick=()=>reviewVerification(r.request_id,"reject");
-    actions.append(yes,no);card.appendChild(actions);
-   }
+   if(r.status==="pending"){const actions=document.createElement("div");actions.className="admin-actions";const yes=document.createElement("button");yes.textContent="موافقة";yes.onclick=()=>reviewVerification(r.request_id,"approve");const no=document.createElement("button");no.className="red";no.textContent="رفض";no.onclick=()=>reviewVerification(r.request_id,"reject");actions.append(yes,no);card.appendChild(actions)}
    box.appendChild(card);
   });
  }catch(e){box.textContent="خطأ: "+e.message}
 }
 async function reviewVerification(id,action){
- if(!isAdmin())return;let reason=null;
- if(action==="reject"){reason=prompt("سبب الرفض:");if(reason===null)return}
+ if(!isAdmin())return;let reason=null;if(action==="reject"){reason=prompt("سبب الرفض:");if(reason===null)return}
  const result=action==="approve"?await client.rpc("admin_approve_verification",{p_request_id:id}):await client.rpc("admin_reject_verification",{p_request_id:id,p_reason:reason});
  if(result.error)alert(result.error.message);else{msg("adminMessage","تم التنفيذ");await loadAdminRequests()}
 }
@@ -2928,16 +2131,10 @@ el("refreshAdmin").onclick=loadAdminRequests;
 async function loadReports(){
  if(!isAdmin())return;const box=el("adminReports");box.textContent="جارٍ التحميل...";
  const {data,error}=await client.from("content_reports").select("*").order("created_at",{ascending:false}).limit(100);
- if(error){box.textContent=error.message;return}box.replaceChildren();
- if(!data?.length){box.textContent="لا توجد بلاغات";return}
+ if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد بلاغات";return}
  data.forEach(r=>{
-  const card=document.createElement("div");card.className="request-card";
-  card.innerHTML=`<strong>بلاغ: ${r.target_type}</strong><p>السبب: ${r.reason}</p><p class="small">الحالة: ${r.status}</p>`;
-  if(r.status==="pending"){
-   const btn=document.createElement("button");btn.className="gray";btn.textContent="تمت المراجعة";
-   btn.onclick=async()=>{btn.disabled=true;await client.from("content_reports").update({status:"reviewed"}).eq("id",r.id);await loadReports()};
-   card.appendChild(btn);
-  }
+  const card=document.createElement("div");card.className="request-card";card.innerHTML=`<strong>بلاغ: ${r.target_type}</strong><p>السبب: ${r.reason}</p><p class="small">الحالة: ${r.status}</p>`;
+  if(r.status==="pending"){const btn=document.createElement("button");btn.className="gray";btn.textContent="تمت المراجعة";btn.onclick=async()=>{btn.disabled=true;await client.from("content_reports").update({status:"reviewed"}).eq("id",r.id);await loadReports()};card.appendChild(btn)}
   box.appendChild(card);
  });
 }
@@ -2945,16 +2142,13 @@ el("refreshReports").onclick=loadReports;
 
 el("sendSupportBtn").onclick=async()=>{
  const message=el("supportText").value.trim();if(!message){msg("supportStatus","اكتب رسالتك أولاً");return}
- const b=el("sendSupportBtn");b.disabled=true;
- const {error}=await client.from("support_messages").insert({user_id:currentUser.id,sender_id:currentUser.id,message,is_admin_reply:false});
- b.disabled=false;
+ const b=el("sendSupportBtn");b.disabled=true;const {error}=await client.from("support_messages").insert({user_id:currentUser.id,sender_id:currentUser.id,message,is_admin_reply:false});b.disabled=false;
  if(error)msg("supportStatus",error.message);else{el("supportText").value="";msg("supportStatus","تم الإرسال");await loadMySupport()}
 };
 async function loadMySupport(){
  const box=el("mySupportMessages");box.textContent="جارٍ التحميل...";
  const {data,error}=await client.from("support_messages").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:true});
- if(error){box.textContent=error.message;return}box.replaceChildren();
- if(!data?.length){box.textContent="لا توجد رسائل";return}
+ if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد رسائل";return}
  data.forEach(m=>{const d=document.createElement("div");d.className="support-message"+(m.sender_id===currentUser.id?" mine":"");d.textContent=(m.is_admin_reply?"الدعم:\n":"أنت:\n")+m.message;box.appendChild(d)});
 }
 el("loadMySupport").onclick=loadMySupport;
@@ -2962,19 +2156,12 @@ el("loadMySupport").onclick=loadMySupport;
 async function loadAdminSupport(){
  if(!isAdmin())return;const box=el("adminSupport");box.textContent="جارٍ التحميل...";
  const {data,error}=await client.from("support_messages").select("*").order("created_at",{ascending:true}).limit(200);
- if(error){box.textContent=error.message;return}box.replaceChildren();
- if(!data?.length){box.textContent="لا توجد رسائل";return}
+ if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد رسائل";return}
  data.forEach(m=>{
-  const card=document.createElement("div");card.className="request-card";
-  card.innerHTML=`<strong>${m.user_id}</strong><p>${m.message}</p>`;
+  const card=document.createElement("div");card.className="request-card";card.innerHTML=`<strong>${m.user_id}</strong><p>${m.message}</p>`;
   if(!m.is_admin_reply){
-   const reply=document.createElement("textarea");reply.placeholder="اكتب الرد...";
-   const btn=document.createElement("button");btn.className="full";btn.textContent="إرسال الرد";
-   btn.onclick=async()=>{
-    const text=reply.value.trim();if(!text)return;btn.disabled=true;
-    await client.from("support_messages").insert({user_id:m.user_id,sender_id:currentUser.id,message:text,is_admin_reply:true});
-    await loadAdminSupport();
-   };
+   const reply=document.createElement("textarea");reply.placeholder="اكتب الرد...";const btn=document.createElement("button");btn.className="full";btn.textContent="إرسال الرد";
+   btn.onclick=async()=>{const text=reply.value.trim();if(!text)return;btn.disabled=true;await client.from("support_messages").insert({user_id:m.user_id,sender_id:currentUser.id,message:text,is_admin_reply:true});await loadAdminSupport()};
    card.append(reply,btn);
   }
   box.appendChild(card);
@@ -2984,27 +2171,18 @@ el("refreshSupportAdmin").onclick=loadAdminSupport;
 
 async function showHome(user){
  currentUser=user;el("auth").classList.add("hidden");el("home").classList.remove("hidden");
- await enforceMandatoryFollow();
- openTab("videos");startAlertsRealtime();
+ await enforceMandatoryFollow();openTab("videos");startAlertsRealtime();
  try{await loadProfile();await loadStats();await loadChats()}catch(e){msg("profileMessage",e.message)}
 }
 
 async function checkSession(){
  try{
-  const params=new URLSearchParams(window.location.search);
-  const hash=new URLSearchParams(window.location.hash.replace(/^#/,""));
+  const params=new URLSearchParams(window.location.search);const hash=new URLSearchParams(window.location.hash.replace(/^#/,""));
   const authError=params.get("error_description")||params.get("error")||hash.get("error_description")||hash.get("error");
   if(authError){showAuthForm("login");msg("message","تعذر تأكيد البريد: "+authError.replace(/\+/g," "));return}
   const code=params.get("code");
-  if(code){
-   const {data:sessionData,error:exchangeError}=await client.auth.exchangeCodeForSession(code);
-   if(exchangeError)throw exchangeError;
-   if(sessionData?.user){window.history.replaceState({},document.title,window.location.pathname);await showHome(sessionData.user);return}
-  }
-  const {data:{session},error}=await client.auth.getSession();
-  if(error)throw error;
-  if(session?.user){await showHome(session.user);return}
-  showLogin();
+  if(code){const {data:sessionData,error:exchangeError}=await client.auth.exchangeCodeForSession(code);if(exchangeError)throw exchangeError;if(sessionData?.user){window.history.replaceState({},document.title,window.location.pathname);await showHome(sessionData.user);return}}
+  const {data:{session},error}=await client.auth.getSession();if(error)throw error;if(session?.user){await showHome(session.user);return}showLogin();
  }catch(e){showAuthForm("login");msg("message","تعذر فحص الجلسة: "+e.message)}
 }
 

@@ -14,8 +14,8 @@ body{margin:0;background:var(--bg);color:#ffffff;font-family:Arial,sans-serif}
 button{border:0;border-radius:10px;padding:11px 14px;background:var(--accent);color:#fff;font-size:14px;cursor:pointer;transition:transform .12s,opacity .15s}
 button:active{transform:scale(.96)}
 button:disabled{opacity:.5;cursor:not-allowed}
-input,textarea{width:100%;padding:12px;margin:6px 0;border:1px solid var(--line);border-radius:10px;background:#14151a;color:#fff;font-size:15px;outline:none}
-input:focus,textarea:focus{border-color:#fff}
+input,textarea,select{width:100%;padding:12px;margin:6px 0;border:1px solid var(--line);border-radius:10px;background:#14151a;color:#fff;font-size:15px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:#fff}
 textarea{min-height:72px;resize:vertical}
 .full{width:100%}.gray{background:#25262e}.red{background:#fe2c55}.green{background:#18a968}
 .small{font-size:12px;color:var(--muted)}
@@ -215,7 +215,8 @@ nav button.active{color:#ffffff;background:transparent}
 .auth-message{font-size:13px;color:#ffd0da;min-height:20px}
 
 .profile-cover{height:90px;background:linear-gradient(120deg,#fe2c5533,#181922 50%,#7c3aed44)}
-.profile-heading{text-align:center;padding:0 14px 16px;margin-top:-50px}
+.profile-heading{text-align:center;padding:0 14px 16px;margin-top:-50px;position:relative}
+.profile-menu-trigger{position:absolute;top:54px;left:10px;width:36px;height:36px;padding:0;border-radius:10px;background:#1b1c24;border:1px solid #2e303e;color:#fff;font-size:18px;display:inline-flex;align-items:center;justify-content:center}
 .profile-photo-wrap{position:relative;width:104px;height:104px;margin:0 auto 10px;display:block;cursor:pointer}
 .profile-photo-wrap .avatar{width:104px;height:104px;border:3px solid #121216;font-size:38px}
 .verified-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;min-width:18px;margin-inline-start:5px;border-radius:50%;background:#20d5ec;color:#000;font-size:12px;font-weight:900}
@@ -225,6 +226,23 @@ nav button.active{color:#ffffff;background:transparent}
 .profile-stats strong{display:block;font-size:20px;color:#fff}
 .profile-stats span{font-size:12px;color:var(--muted)}
 .profile-settings{margin:12px 0;padding:14px;background:#16171e;border:1px solid var(--line);border-radius:14px}
+
+/* قائمة الملف الشخصي بأسلوب تيك توك */
+.tt-menu-section{margin-top:14px}
+.tt-menu-group-title{font-size:12px;font-weight:700;color:#8e9099;padding:8px 4px 6px}
+.tt-menu-card{background:#15161d;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tt-menu-item{width:100%;background:transparent;border-radius:0;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff;border-bottom:1px solid #20222b;text-align:right}
+.tt-menu-item:last-child{border-bottom:0}
+.tt-menu-item:active{background:#1f212b}
+.tt-menu-left{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
+.tt-menu-arrow{color:#8e9099;font-size:16px}
+.tt-sub-box{background:#171821;border:1px solid #2d2f3d;border-radius:12px;padding:12px;margin-top:10px}
+.tt-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.tt-stat-tile{background:#12131a;border:1px solid #262834;border-radius:12px;padding:12px;text-align:center}
+.tt-stat-tile strong{display:block;font-size:18px;color:#fff}
+.tt-stat-tile span{font-size:11px;color:var(--muted)}
+.tt-qr-box{background:#ffffff;color:#000;border-radius:14px;padding:16px;text-align:center;margin:10px 0}
+
 .request-card{background:#16171e;border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
 .status-pending{color:#ffc65c}.status-approved{color:#29d389}.status-rejected{color:#ff5c77}
 .admin-actions{display:flex;gap:8px;margin-top:10px}
@@ -260,51 +278,35 @@ nav button.active{color:#ffffff;background:transparent}
    <stop offset="100%" stop-color="#6d28d9"/>
   </linearGradient>
 
-  <!-- 1. الرئيسية (بيت) -->
   <g id="ico-home">
    <path d="M3 10.5L12 3l9 7.5" fill="none" stroke="url(#vAccent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
    <path d="M5.5 9.5V19a1.5 1.5 0 0 0 1.5 1.5h3V15h4v5.5h3A1.5 1.5 0 0 0 18.5 19V9.5L12 4.2 5.5 9.5z" fill="url(#vGrad)"/>
   </g>
-
-  <!-- 2. الأصدقاء / الملف الشخصي (شخص مع ربطة عنق بنفسجية) -->
   <g id="ico-user">
    <circle cx="12" cy="6.5" r="3.4" fill="url(#vGrad)"/>
    <path d="M5 19.5c0-3.5 3.1-6 7-6s7 2.5 7 6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" fill="url(#vGrad)"/>
    <polygon points="12,14.2 10.4,17 12,20.2 13.6,17" fill="url(#vAccent)"/>
   </g>
-
-  <!-- 3. البحث (عدسة) -->
   <g id="ico-search">
    <circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="url(#vGrad)" stroke-width="2.6"/>
    <line x1="15.2" y1="15.2" x2="20" y2="20" stroke="url(#vAccent)" stroke-width="3.2" stroke-linecap="round"/>
   </g>
-
-  <!-- 4. صندوق الوارد / التنبيهات (فقاعة رسائل بثلاث نقاط) -->
   <g id="ico-chat">
    <path d="M4.5 5.5h15A2.5 2.5 0 0 1 22 8v7.5a2.5 2.5 0 0 1-2.5 2.5H9.5L5 21.5v-3.5A2.5 2.5 0 0 1 2.5 15.5V8A2.5 2.5 0 0 1 4.5 5.5z" fill="url(#vGrad)"/>
    <circle cx="8.5" cy="11.8" r="1.4" fill="#3b1d7a"/>
    <circle cx="12.2" cy="11.8" r="1.4" fill="#3b1d7a"/>
    <circle cx="15.9" cy="11.8" r="1.4" fill="#3b1d7a"/>
   </g>
-
-  <!-- 5. الإدارة / الحماية (ترس بنفسجي) -->
   <g id="ico-admin">
    <path d="M12 3.5l1.4 2.1 2.5-.5.5 2.5 2.1 1.4-1.2 2.2 1.2 2.2-2.1 1.4-.5 2.5-2.5-.5L12 20.5l-1.4-2.1-2.5.5-.5-2.5-2.1-1.4 1.2-2.2-1.2-2.2 2.1-1.4.5-2.5 2.5.5L12 3.5z" fill="url(#vGrad)"/>
    <circle cx="12" cy="12" r="3.4" fill="url(#vAccent)"/>
   </g>
-
-  <!-- 6. المشاركة -->
   <g id="ico-share">
    <line x1="8.2" y1="10.8" x2="15.8" y2="6.8" stroke="url(#vGrad)" stroke-width="2.2"/>
    <line x1="8.2" y1="13.2" x2="15.8" y2="17.2" stroke="url(#vGrad)" stroke-width="2.2"/>
    <circle cx="6.5" cy="12" r="2.8" fill="url(#vGrad)"/>
    <circle cx="17.5" cy="5.8" r="2.8" fill="url(#vAccent)"/>
    <circle cx="17.5" cy="18.2" r="2.8" fill="url(#vAccent)"/>
-  </g>
-
-  <!-- 7. نجمة / مفضلة -->
-  <g id="ico-star">
-   <polygon points="12,3.2 14.7,8.7 20.8,9.6 16.4,13.9 17.4,20 12,17.1 6.6,20 7.6,13.9 3.2,9.6 9.3,8.7" fill="url(#vAccent)"/>
   </g>
  </defs>
 </svg>
@@ -446,6 +448,7 @@ nav button.active{color:#ffffff;background:transparent}
 <div class="card">
 <div class="profile-cover"></div>
 <div class="profile-heading">
+<button type="button" class="profile-menu-trigger" title="القائمة" onclick="openProfileMenuModal()">☰</button>
 <label for="avatarFile" class="profile-photo-wrap"><div id="avatarDisplay" class="avatar">D</div></label>
 <input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp">
 <h2 id="displayName">مستخدم DERT</h2>
@@ -467,6 +470,62 @@ nav button.active{color:#ffffff;background:transparent}
  <span>أتابع</span>
 </div>
 </div>
+
+<!-- قائمة الخيارات الكاملة داخل الملف الشخصي مثل الصورة[span_3](start_span)[span_3](end_span) -->
+<div class="tt-menu-section">
+ <div class="tt-menu-group-title">الأصول</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openProfileTool('balance')">
+   <span class="tt-menu-left"><span>💳</span><span>الرصيد</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">الأدوات الشخصية</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openProfileTool('activity')">
+   <span class="tt-menu-left"><span>🕒</span><span>مركز الأنشطة</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openProfileTool('offline')">
+   <span class="tt-menu-left"><span>📥</span><span>فيديوهات دون اتصال بالإنترنت</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openProfileTool('qr')">
+   <span class="tt-menu-left"><span>⊞</span><span>رمز QR لديك</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openProfileTool('minis')">
+   <span class="tt-menu-left"><span>⬡</span><span>DERT Minis</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">أدوات الإبداع والأعمال</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openProfileTool('shop')">
+   <span class="tt-menu-left"><span>🏪</span><span>المجموعة التجارية</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openProfileTool('studio')">
+   <span class="tt-menu-left"><span>🎬</span><span>DERT Studio</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openProfileTool('promote')">
+   <span class="tt-menu-left"><span>🔥</span><span>الترويج</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">الإعدادات والخصوصية</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openProfileTool('settings')">
+   <span class="tt-menu-left"><span>⚙️</span><span>الإعدادات والخصوصية</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+</div>
+
 <div id="profileSettings" class="profile-settings hidden">
 <h3>تعديل الملف الشخصي</h3>
 <input id="fullName" placeholder="الاسم الكامل">
@@ -521,6 +580,17 @@ nav button.active{color:#ffffff;background:transparent}
 </button>
 </nav>
 </div>
+</div>
+
+<!-- نافذة أدوات الملف الشخصي والقائمة السريعة -->
+<div id="profileToolModal" class="overlay-modal hidden" onclick="if(event.target===this)closeProfileToolModal()">
+ <div class="modal-card">
+  <div class="modal-top">
+   <strong id="profileToolTitle">الأداة</strong>
+   <button type="button" onclick="closeProfileToolModal()">✕</button>
+  </div>
+  <div id="profileToolBody"></div>
+ </div>
 </div>
 
 <!-- نافذة المتابعين / أتابع -->
@@ -645,6 +715,243 @@ const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
 
+function getDertState(){
+ try{
+  return JSON.parse(localStorage.getItem("dert_user_state_"+(currentUser?.id||"guest"))||"{}");
+ }catch(e){return {}}
+}
+function saveDertState(patch){
+ const next={...getDertState(),...patch};
+ localStorage.setItem("dert_user_state_"+(currentUser?.id||"guest"),JSON.stringify(next));
+ return next;
+}
+
+function closeProfileToolModal(){el("profileToolModal").classList.add("hidden")}
+
+function openProfileMenuModal(){
+ const body=el("profileToolBody");
+ el("profileToolTitle").textContent="قائمة الحساب";
+ body.innerHTML=`
+  <div class="tt-menu-group-title">الأصول</div>
+  <div class="tt-menu-card">
+   <button type="button" class="tt-menu-item" onclick="openProfileTool('balance')"><span class="tt-menu-left"><span>💳</span><span>الرصيد</span></span><span class="tt-menu-arrow">‹</span></button>
+  </div>
+  <div class="tt-menu-group-title">الأدوات الشخصية</div>
+  <div class="tt-menu-card">
+   <button type="button" class="tt-menu-item" onclick="openProfileTool('activity')"><span class="tt-menu-left"><span>🕒</span><span>مركز الأنشطة</span></span><span class="tt-menu-arrow">‹</span></button>
+   <button type="button" class="tt-menu-item" onclick="openProfileTool('offline')"><span class="tt-menu-left"><span>📥</span><span>فيديوهات دون اتصال بالإنترنت</span></span><span class="tt-menu-arrow">‹</span></button>
+   <button type="button" class="tt-menu-item" onclick="openProfileTool('qr')"><span class="tt-menu-left"><span>⊞</span><span>رمز QR لديك</span></span><span class="tt-menu-arrow">‹</span></button>
+   <button type="button" class="tt-menu-item" onclick="openProfileTool('minis')"><span class="tt-menu-left"><span>⬡</span><span>DERT Minis</span></span><span class="tt-menu-arrow">‹</span></button>
+  </div>
+  <div class="tt-menu-group-title">أدوات الإبداع والأعمال</div>
+  <div class="tt-menu-card">
+   <button type="button" class="tt-menu-item" onclick="openProfileTool('shop')"><span class="tt-menu-left"><span>🏪</span><span>المجموعة التجارية</span></span><span class="tt-menu-arrow">‹</span></button>
+   <button type="button" class="tt-menu-item" onclick="openProfileTool('studio')"><span class="tt-menu-left"><span>🎬</span><span>DERT Studio</span></span><span class="tt-menu-arrow">‹</span></button>
+   <button type="button" class="tt-menu-item" onclick="openProfileTool('promote')"><span class="tt-menu-left"><span>🔥</span><span>الترويج</span></span><span class="tt-menu-arrow">‹</span></button>
+  </div>
+  <div class="tt-menu-group-title">الإعدادات والخصوصية</div>
+  <div class="tt-menu-card">
+   <button type="button" class="tt-menu-item" onclick="openProfileTool('settings')"><span class="tt-menu-left"><span>⚙️</span><span>الإعدادات والخصوصية</span></span><span class="tt-menu-arrow">‹</span></button>
+  </div>
+ `;
+ el("profileToolModal").classList.remove("hidden");
+}
+
+async function openProfileTool(tool){
+ const body=el("profileToolBody");
+ el("profileToolModal").classList.remove("hidden");
+ const st=getDertState();
+ const uname=currentProfile?.username||"user";
+ const fname=currentProfile?.full_name||"مستخدم DERT";
+
+ if(tool==="balance"){
+  el("profileToolTitle").textContent="الرصيد";
+  const coins=Number(st.coins||120);
+  const log=Array.isArray(st.coinLog)?st.coinLog:[];
+  body.innerHTML=`
+   <div class="tt-sub-box" style="text-align:center">
+    <div class="small">رصيد عملات DERT</div>
+    <h2 style="margin:6px 0">${coins} 🪙</h2>
+    <button type="button" class="green full" id="addDemoCoinsBtn">+ إضافة 50 عملة تجريبية</button>
+   </div>
+   <div id="coinHistoryBox" style="margin-top:10px">${log.length?log.map(x=>`<div class="item small">${x}</div>`).join(""):`<div class="small">لا توجد عمليات سابقة</div>`}</div>
+  `;
+  el("addDemoCoinsBtn").onclick=()=>{
+   const nextCoins=coins+50;
+   const nextLog=[`+${50} عملة • ${new Date().toLocaleTimeString("ar-IQ")}`,...log].slice(0,15);
+   saveDertState({coins:nextCoins,coinLog:nextLog});
+   openProfileTool("balance");
+  };
+  return;
+ }
+
+ if(tool==="activity"){
+  el("profileToolTitle").textContent="مركز الأنشطة";
+  body.textContent="جارٍ تحميل نشاطاتك...";
+  const [{count:pCnt},{count:cCnt},{count:fCnt}]=await Promise.all([
+   client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),
+   client.from("post_comments").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),
+   client.from("follows").select("*",{count:"exact",head:true}).eq("follower_id",currentUser.id)
+  ]);
+  body.innerHTML=`
+   <div class="tt-stat-grid">
+    <div class="tt-stat-tile"><strong>${pCnt||0}</strong><span>منشوراتك</span></div>
+    <div class="tt-stat-tile"><strong>${cCnt||0}</strong><span>تعليقاتك</span></div>
+    <div class="tt-stat-tile"><strong>${fCnt||0}</strong><span>متابعاتك</span></div>
+    <div class="tt-stat-tile"><strong>نشط</strong><span>حالة الحساب</span></div>
+   </div>
+   <button type="button" class="full gray" onclick="closeProfileToolModal();openTab('feed')">الانتقال إلى منشوراتي</button>
+  `;
+  return;
+ }
+
+ if(tool==="offline"){
+  el("profileToolTitle").textContent="فيديوهات دون اتصال بالإنترنت";
+  const saved=Array.isArray(st.offlineVideos)?st.offlineVideos:[];
+  const {data:vids}=await client.from("posts").select("id,content,image_url,created_at").eq("media_type","video").limit(10);
+  const list=vids||[];
+  body.innerHTML=`<p class="small">اختر فيديوهات لحفظها في قائمة الوصول السريع على جهازك:</p><div id="offlineListBox"></div>`;
+  const box=el("offlineListBox");
+  if(!list.length){box.innerHTML=`<div class="small">لا توجد فيديوهات متاحة حالياً</div>`;return}
+  list.forEach(v=>{
+   const isSaved=saved.some(item=>item.id===v.id);
+   const row=document.createElement("div");row.className="item";
+   const title=document.createElement("strong");title.textContent=(v.content||"فيديو DERT").slice(0,45);
+   const btn=document.createElement("button");btn.type="button";btn.className=isSaved?"gray":"green";
+   btn.style.marginTop="8px";btn.textContent=isSaved?"محفوظ ✓":"حفظ للقائمة السريعة";
+   btn.onclick=()=>{
+    const current=getDertState().offlineVideos||[];
+    const exists=current.some(item=>item.id===v.id);
+    const updated=exists?current.filter(item=>item.id!==v.id):[v,...current].slice(0,12);
+    saveDertState({offlineVideos:updated});
+    openProfileTool("offline");
+   };
+   row.append(title,document.createElement("br"),btn);box.appendChild(row);
+  });
+  return;
+ }
+
+ if(tool==="qr"){
+  el("profileToolTitle").textContent="رمز QR لديك";
+  const shareUrl=`${DERT_SITE_URL}?user=${encodeURIComponent(uname)}`;
+  const qrImg=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
+  body.innerHTML=`
+   <div class="tt-qr-box">
+    <img src="${qrImg}" alt="QR Code" style="width:180px;height:180px;border-radius:10px">
+    <div style="font-weight:800;margin-top:8px">${fname}</div>
+    <div style="font-size:13px;color:#444">@${uname}</div>
+   </div>
+   <button type="button" class="full" id="copyQrLinkBtn">نسخ رابط الحساب</button>
+  `;
+  el("copyQrLinkBtn").onclick=async()=>{
+   try{await navigator.clipboard.writeText(shareUrl)}catch(e){}
+   alert("تم نسخ رابط الحساب: "+shareUrl);
+  };
+  return;
+ }
+
+ if(tool==="minis"){
+  el("profileToolTitle").textContent="DERT Minis";
+  body.innerHTML=`
+   <div class="tt-sub-box">
+    <strong>⚡ مولّد هاشتاغات سريع</strong>
+    <input id="miniTopicInput" placeholder="اكتب موضوع الفيديو مثل: سفر أو تقنية...">
+    <button type="button" class="full" id="genTagsBtn">توليد هاشتاغات</button>
+    <div id="miniTagsOut" class="small" style="margin-top:8px"></div>
+   </div>
+   <div class="tt-sub-box">
+    <strong>🎵 مستعرض الأغاني</strong>
+    <p class="small">افتح مكتبة الأغاني لإضافة صوت لمنشورك.</p>
+    <button type="button" class="full gray" onclick="closeProfileToolModal();openMusicPicker()">فتح مكتبة الأغاني</button>
+   </div>
+  `;
+  el("genTagsBtn").onclick=()=>{
+   const t=(el("miniTopicInput").value||"DERT").trim().replace(/\s+/g,"_");
+   el("miniTagsOut").textContent=`#${t} #DERT #ترند #محتوى_عربي #اكسبلور`;
+  };
+  return;
+ }
+
+ if(tool==="shop"){
+  el("profileToolTitle").textContent="المجموعة التجارية";
+  const items=Array.isArray(st.shopItems)?st.shopItems:[
+   {name:"باقة تصميم احترافية",price:"$15"},
+   {name:"قالب واجهة مخصص",price:"$25"}
+  ];
+  body.innerHTML=`
+   <div id="shopItemsList">${items.map(i=>`<div class="item"><strong>${i.name}</strong><div class="small">السعر: ${i.price}</div></div>`).join("")}</div>
+   <div class="tt-sub-box">
+    <strong>إضافة عنصر جديد</strong>
+    <input id="shopItemName" placeholder="اسم المنتج أو الخدمة">
+    <input id="shopItemPrice" placeholder="السعر مثال: $10">
+    <button type="button" class="full green" id="addShopItemBtn">إضافة للمجموعة</button>
+   </div>
+  `;
+  el("addShopItemBtn").onclick=()=>{
+   const name=el("shopItemName").value.trim();
+   const price=el("shopItemPrice").value.trim()||"مجاناً";
+   if(!name)return;
+   const next=[...items,{name,price}];
+   saveDertState({shopItems:next});
+   openProfileTool("shop");
+  };
+  return;
+ }
+
+ if(tool==="studio"){
+  el("profileToolTitle").textContent="DERT Studio";
+  const [{count:postsC},{count:followersC}]=await Promise.all([
+   client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),
+   client.from("follows").select("*",{count:"exact",head:true}).eq("following_id",currentUser.id)
+  ]);
+  body.innerHTML=`
+   <div class="tt-stat-grid">
+    <div class="tt-stat-tile"><strong>${postsC||0}</strong><span>إجمالي المنشورات</span></div>
+    <div class="tt-stat-tile"><strong>${followersC||0}</strong><span>المتابعون</span></div>
+   </div>
+   <button type="button" class="full" onclick="closeProfileToolModal();openCreateModal()">+ نشر محتوى جديد الآن</button>
+  `;
+  return;
+ }
+
+ if(tool==="promote"){
+  el("profileToolTitle").textContent="الترويج";
+  const {data:myPosts}=await client.from("posts").select("id,content").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(10);
+  const opts=(myPosts||[]).map(p=>`<option value="${p.id}">${(p.content||"منشور بدون نص").slice(0,35)}</option>`).join("");
+  body.innerHTML=`
+   <div class="tt-sub-box">
+    <label class="small">اختر منشوراً للترويج</label>
+    <select id="promoPostSelect">${opts||`<option value="">لا توجد منشورات</option>`}</select>
+    <label class="small">مدة الترويج</label>
+    <select id="promoDaysSelect"><option value="1">يوم واحد</option><option value="3">3 أيام</option><option value="7">7 أيام</option></select>
+    <button type="button" class="full" id="startPromoBtn">تفعيل الترويج</button>
+    <div id="promoStatus" class="small" style="margin-top:8px"></div>
+   </div>
+  `;
+  el("startPromoBtn").onclick=()=>{
+   const days=el("promoDaysSelect").value;
+   el("promoStatus").textContent=`تم جدولة الترويج لمدة ${days} يوم بنجاح ✓`;
+  };
+  return;
+ }
+
+ if(tool==="settings"){
+  el("profileToolTitle").textContent="الإعدادات والخصوصية";
+  const priv=!!st.privateAccount;
+  body.innerHTML=`
+   <div class="tt-sub-box">
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+     <input type="checkbox" id="privateAccChk" ${priv?"checked":""} style="width:auto;margin:0">
+     <span>حساب خاص (تفضيل الخصوصية)</span>
+    </label>
+    <button type="button" class="full gray" style="margin-top:10px" onclick="closeProfileToolModal();el('editProfileBtn').click()">تعديل بيانات الملف الشخصي</button>
+    <button type="button" class="full red" style="margin-top:8px" onclick="closeProfileToolModal();el('logoutBtn').click()">تسجيل الخروج</button>
+   </div>
+  `;
+  el("privateAccChk").onchange=(e)=>saveDertState({privateAccount:e.target.checked});
+ }
+}
+
 function parseSongFromPost(post){
  const raw=post?.content||"";
  const match=raw.match(/\[🎵\s*([^\]]+)\]/);
@@ -718,6 +1025,7 @@ function openCreateModal(){
 }
 
 function goBackSmart(){
+ if(!el("profileToolModal").classList.contains("hidden")){closeProfileToolModal();return}
  if(!el("commentModal").classList.contains("hidden")){closePostComments();return}
  if(!el("userProfileModal").classList.contains("hidden")){closeUserProfileModal();return}
  if(!el("followModal").classList.contains("hidden")){closeFollowModal();return}
@@ -777,7 +1085,7 @@ function openTab(name,button,fromBack=false){
 }
 
 function showLogin(){
- closePostComments();closeFollowModal();closeUserProfileModal();closeMusicPicker();stopVideoPlayback();
+ closePostComments();closeFollowModal();closeUserProfileModal();closeMusicPicker();closeProfileToolModal();stopVideoPlayback();
  el("auth").classList.remove("hidden");el("home").classList.add("hidden");
  el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
  currentUser=null;currentProfile=null;activeConversation=null;activeReceiver=null;

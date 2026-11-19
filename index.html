@@ -87,10 +87,17 @@ textarea{min-height:72px;resize:vertical}
 .tt-switch-label{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:13px;cursor:pointer}
 .tt-switch-label input[type="checkbox"]{width:18px;height:18px;margin:0;accent-color:#fe2c55}
 
-.comment{background:#16171e;padding:10px;border-radius:10px;margin:8px 0}
+/* التعليقات والردود بأسلوب تيك توك */
+.comment{background:#16171e;padding:10px 12px;border-radius:12px;margin:8px 0;border:1px solid #222430}
+.comment-reply{margin-inline-start:22px;background:#12131a;border-inline-start:2px solid #fe2c55}
 .comment-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
-.comment-actions{display:flex;gap:6px;margin-top:7px}
-.comment-actions button{padding:6px 10px;font-size:11px}
+.comment-body-text{margin:6px 0 0;white-space:pre-wrap;line-height:1.5;font-size:14px}
+.reply-target-badge{display:inline-block;font-size:11px;color:#25f4ee;margin-bottom:4px;font-weight:700}
+.comment-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.comment-actions button{padding:5px 10px;font-size:11px;border-radius:8px}
+.reply-banner{background:#1b1d28;border:1px solid #2e3142;border-radius:10px;padding:7px 10px;margin:0 12px 6px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:#25f4ee}
+.reply-banner button{padding:3px 8px;font-size:11px}
+
 .post-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
 .post-bottom button{background:transparent;padding:8px 10px;color:#fff}
 .post-bottom .comment-open{background:#1d1f28;border:1px solid #2f3240;flex:1;text-align:center}
@@ -100,7 +107,7 @@ textarea{min-height:72px;resize:vertical}
 .post-menu button:active{background:#2b2d3a}
 
 .comment-modal{position:fixed;inset:0;z-index:1000;background:#0009;display:flex;align-items:flex-end;justify-content:center}
-.comment-sheet{width:100%;max-width:720px;height:78vh;height:min(78dvh,720px);background:#121216;border:1px solid #2a2c38;border-bottom:0;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:sheetUp .2s ease-out}
+.comment-sheet{width:100%;max-width:720px;height:80vh;height:min(80dvh,740px);background:#121216;border:1px solid #2a2c38;border-bottom:0;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:sheetUp .2s ease-out}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .comment-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid var(--line)}
 .comment-sheet-list{flex:1;overflow-y:auto;padding:12px}
@@ -766,8 +773,12 @@ nav button.active{color:#ffffff;background:transparent}
    <button type="button" onclick="closePostComments()">✕</button>
   </div>
   <div id="commentModalList" class="comment-sheet-list">جارٍ تحميل التعليقات...</div>
+  <div id="replyTargetBanner" class="reply-banner hidden">
+   <span id="replyTargetText">جارٍ الرد على...</span>
+   <button type="button" class="gray" onclick="clearReplyTarget()">إلغاء</button>
+  </div>
   <div class="comment-sheet-form">
-   <input id="commentInput" placeholder="اكتب تعليقك..." maxlength="1000">
+   <input id="commentInput" placeholder="اكتب تعليقاً أو رداً..." maxlength="1000">
    <button id="sendCommentBtn">إرسال</button>
   </div>
  </div>
@@ -797,7 +808,7 @@ const DERT_SONGS=[
 
 let currentUser=null,currentProfile=null,activeConversation=null,activeReceiver=null;
 let activeChannel=null,alertsChannel=null,pendingPhone=null,chatCache=[];
-let activeCommentPost=null,videoObserver=null,videoPostsCache=[],videoFeedMode="foryou";
+let activeCommentPost=null,replyTarget=null,videoObserver=null,videoPostsCache=[],videoFeedMode="foryou";
 let followedIdsSet=new Set(),selectedImages=[],selectedVideo=null,selectedSong=null;
 let tabHistory=["videos"],previewAudio=new Audio(),playingSongId=null;
 let activeProfileMediaTab="posts",liveStream=null;
@@ -811,6 +822,15 @@ function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
 function getDirectRoomId(u1,u2){return "dm_"+[String(u1),String(u2)].sort().join("_")}
 function stopIntentPolling(){if(intentPollTimer){clearInterval(intentPollTimer);intentPollTimer=null}}
+
+function shuffleArray(arr){
+ const copy=[...arr];
+ for(let i=copy.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [copy[i],copy[j]]=[copy[j],copy[i]];
+ }
+ return copy;
+}
 
 function updateDescCounter(){
  const ta=el("dertDescription");
@@ -833,6 +853,45 @@ function saveDertState(patch){
  const next={...getDertState(),...patch};
  localStorage.setItem("dert_user_state_"+(currentUser?.id||"guest"),JSON.stringify(next));
  return next;
+}
+
+function isCommentLiked(commentId){
+ const st=getDertState();
+ return Array.isArray(st.likedComments) && st.likedComments.includes(String(commentId));
+}
+function toggleCommentLike(commentId,btn){
+ const st=getDertState();
+ const set=new Set((st.likedComments||[]).map(String));
+ const key=String(commentId);
+ let liked=false;
+ if(set.has(key)){set.delete(key);liked=false}else{set.add(key);liked=true}
+ saveDertState({likedComments:[...set]});
+ if(btn)btn.textContent=liked?"❤️ أعجبني":"🤍 إعجاب";
+}
+
+function setReplyTarget(commentId,authorName,snippet){
+ replyTarget={id:commentId,authorName:authorName||"مستخدم",snippet:(snippet||"").slice(0,45)};
+ el("replyTargetText").textContent=`الرد على @${replyTarget.authorName}: ${replyTarget.snippet}`;
+ el("replyTargetBanner").classList.remove("hidden");
+ el("commentInput").focus();
+}
+function clearReplyTarget(){
+ replyTarget=null;
+ el("replyTargetBanner")?.classList.add("hidden");
+ if(el("replyTargetText"))el("replyTargetText").textContent="";
+}
+
+function encodeCommentPayload(text,target){
+ if(!target)return text;
+ const safeName=String(target.authorName||"user").replace(/\]/g,"");
+ const safeSnippet=String(target.snippet||"").replace(/\]/g,"").replace(/\n/g," ");
+ return `[REPLY_TO:${safeName}|${safeSnippet}]\n${text}`;
+}
+function decodeCommentPayload(raw){
+ const str=String(raw||"");
+ const m=str.match(/^\[REPLY_TO:([^|\]]+)\|([^\]]*)\]\n?([\s\S]*)$/);
+ if(m)return{isReply:true,replyToName:m[1].trim(),replyToSnippet:m[2].trim(),body:m[3]};
+ return{isReply:false,replyToName:"",replyToSnippet:"",body:str};
 }
 
 async function fetchWalletBalance(userId=currentUser?.id){
@@ -1013,7 +1072,6 @@ function getMethodArabicName(method){
  return map[method]||method;
 }
 
-/* متابعة حالة طلب الدفع حتى يتم تأكيده من السيرفر */
 function watchPaymentIntent(intentId){
  stopIntentPolling();
  let checks=0;
@@ -1756,6 +1814,7 @@ async function loadVideos(){
   if(followError)throw followError;followedIdsSet=new Set((myFollows||[]).map(x=>x.following_id));
   let allVids=data||[];
   if(videoFeedMode==="following")allVids=allVids.filter(p=>p.user_id===currentUser.id || followedIdsSet.has(p.user_id));
+  else allVids=shuffleArray(allVids);
   videoPostsCache=allVids;
   if(!videoPostsCache.length){
    const empty=document.createElement("div");empty.className="videos-empty";
@@ -1797,6 +1856,7 @@ async function loadVideos(){
    const commentBtn=document.createElement("button");commentBtn.className="tt-side-btn";commentBtn.type="button";
    commentBtn.innerHTML=`<span class="violet-icon violet-icon-lg"><svg viewBox="0 0 24 24"><use href="#ico-chat"></use></svg></span>`;
    commentBtn.onclick=()=>openPostComments(post);const cLbl=document.createElement("span");cLbl.className="tt-side-label";cLbl.textContent="تعليق";
+   updatePostCommentCount(post.id,cLbl);
    commentItem.append(commentBtn,cLbl);
    const savedNow=isPostSaved(post.id);const saveItem=document.createElement("div");saveItem.className="tt-side-item";
    const saveBtn=document.createElement("button");saveBtn.className="tt-side-btn";saveBtn.type="button";
@@ -1870,16 +1930,45 @@ async function loadPosts(){
 }
 document.addEventListener("click",()=>document.querySelectorAll(".post-menu").forEach(m=>m.classList.add("hidden")));
 
-async function updatePostCommentCount(postId,element){const {count,error}=await client.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",postId);if(error){element.textContent="";return}element.textContent=" ("+(count||0)+")"}
-async function openPostComments(post){if(!currentUser)return;activeCommentPost=post;el("commentModal").classList.remove("hidden");el("commentModalList").textContent="جارٍ تحميل التعليقات...";el("commentInput").value="";document.body.style.overflow="hidden";await loadComments(post,el("commentModalList"))}
-function closePostComments(){el("commentModal").classList.add("hidden");document.body.style.overflow="";activeCommentPost=null}
+async function updatePostCommentCount(postId,element){
+ const {count,error}=await client.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",postId);
+ if(error){element.textContent="";return}
+ element.textContent=" ("+(count||0)+")";
+}
+
+async function openPostComments(post){
+ if(!currentUser)return;
+ activeCommentPost=post;
+ clearReplyTarget();
+ el("commentModal").classList.remove("hidden");
+ el("commentModalTitle").textContent="التعليقات والردود";
+ el("commentModalList").textContent="جارٍ تحميل التعليقات...";
+ el("commentInput").value="";
+ document.body.style.overflow="hidden";
+ await loadComments(post,el("commentModalList"));
+}
+
+function closePostComments(){
+ clearReplyTarget();
+ el("commentModal").classList.add("hidden");
+ document.body.style.overflow="";
+ activeCommentPost=null;
+}
+
 el("sendCommentBtn").onclick=async()=>{
- if(!activeCommentPost||!currentUser)return;const input=el("commentInput"),text=input.value.trim();if(!text){alert("اكتب تعليقك أولاً");return}
+ if(!activeCommentPost||!currentUser)return;
+ const input=el("commentInput"),rawText=input.value.trim();
+ if(!rawText){alert("اكتب تعليقك أو ردك أولاً");return}
+ const finalText=encodeCommentPayload(rawText,replyTarget);
  const b=el("sendCommentBtn");b.disabled=true;
  try{
-  const {error}=await client.from("post_comments").insert({post_id:activeCommentPost.id,user_id:currentUser.id,content:text});if(error)throw error;input.value="";
+  const {error}=await client.from("post_comments").insert({post_id:activeCommentPost.id,user_id:currentUser.id,content:finalText});
+  if(error)throw error;
+  input.value="";
+  clearReplyTarget();
   await loadComments(activeCommentPost,el("commentModalList"));
-  const countElement=document.querySelector("#post-"+activeCommentPost.id+" .comment-open span");if(countElement)await updatePostCommentCount(activeCommentPost.id,countElement);
+  const countElement=document.querySelector("#post-"+activeCommentPost.id+" .comment-open span");
+  if(countElement)await updatePostCommentCount(activeCommentPost.id,countElement);
   el("commentModalList").scrollTop=el("commentModalList").scrollHeight;
  }catch(e){alert("تعذر إضافة التعليق: "+e.message)}finally{b.disabled=false}
 };
@@ -1887,25 +1976,69 @@ el("commentInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventD
 
 async function loadComments(post,container){
  const {data,error}=await client.from("post_comments").select("*").eq("post_id",post.id).order("created_at",{ascending:true});
- container.replaceChildren();if(error){container.textContent="تعذر تحميل التعليقات: "+error.message;return}if(!data?.length){container.textContent="لا توجد تعليقات بعد.";return}
- const ids=[...new Set(data.map(c=>c.user_id))];const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
+ container.replaceChildren();
+ if(error){container.textContent="تعذر تحميل التعليقات: "+error.message;return}
+ if(!data?.length){container.textContent="لا توجد تعليقات بعد. كن أول من يعلق!";return}
+ const ids=[...new Set(data.map(c=>c.user_id))];
+ const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+
  data.forEach(c=>{
-  const row=document.createElement("div");row.className="comment";const head=document.createElement("div");head.className="comment-head";
-  const name=document.createElement("strong");const profile=map[c.user_id];name.className="clickable-user";name.onclick=()=>{closePostComments();openUserProfile(c.user_id)};
-  addVerifiedName(name,profile?.full_name||profile?.username||"مستخدم",profile?.is_verified===true);
-  const date=document.createElement("span");date.className="small";date.textContent=new Date(c.created_at).toLocaleString("ar-IQ");head.append(name,date);row.appendChild(head);
-  const text=document.createElement("p");text.textContent=c.content;row.appendChild(text);const tools=document.createElement("div");tools.className="comment-actions";
-  const report=document.createElement("button");report.className="gray";report.textContent="إبلاغ";report.onclick=()=>reportContent("comment",c.id);tools.appendChild(report);
+  const profile=map[c.user_id]||{};
+  const displayUser=profile.username||profile.full_name||"مستخدم";
+  const parsed=decodeCommentPayload(c.content);
+
+  const row=document.createElement("div");
+  row.className="comment"+(parsed.isReply?" comment-reply":"");
+
+  const head=document.createElement("div");head.className="comment-head";
+  const name=document.createElement("strong");name.className="clickable-user";
+  name.onclick=()=>{closePostComments();openUserProfile(c.user_id)};
+  addVerifiedName(name,(profile.full_name||displayUser)+" @"+displayUser,profile.is_verified===true);
+
+  const date=document.createElement("span");date.className="small";
+  date.textContent=new Date(c.created_at).toLocaleString("ar-IQ");
+  head.append(name,date);row.appendChild(head);
+
+  if(parsed.isReply){
+   const badge=document.createElement("div");badge.className="reply-target-badge";
+   badge.textContent=`↩ رد على @${parsed.replyToName}${parsed.replyToSnippet?` (${parsed.replyToSnippet})`:""}`;
+   row.appendChild(badge);
+  }
+
+  const text=document.createElement("p");text.className="comment-body-text";
+  text.textContent=parsed.body;row.appendChild(text);
+
+  const tools=document.createElement("div");tools.className="comment-actions";
+
+  const likeBtn=document.createElement("button");likeBtn.type="button";likeBtn.className="gray";
+  likeBtn.textContent=isCommentLiked(c.id)?"❤️ أعجبني":"🤍 إعجاب";
+  likeBtn.onclick=()=>toggleCommentLike(c.id,likeBtn);
+
+  const replyBtn=document.createElement("button");replyBtn.type="button";replyBtn.className="gray";
+  replyBtn.textContent="↩ رد";
+  replyBtn.onclick=()=>setReplyTarget(c.id,displayUser,parsed.body);
+
+  const report=document.createElement("button");report.type="button";report.className="gray";
+  report.textContent="إبلاغ";report.onclick=()=>reportContent("comment",c.id);
+
+  tools.append(likeBtn,replyBtn,report);
+
   if(c.user_id===currentUser.id||post.user_id===currentUser.id){
-   const del=document.createElement("button");del.className="red";del.textContent="حذف";
+   const del=document.createElement("button");del.type="button";del.className="red";del.textContent="حذف";
    del.onclick=async()=>{
     if(!confirm("حذف التعليق؟"))return;del.disabled=true;
-    const {error}=await client.from("post_comments").delete().eq("id",c.id);if(error){alert("تعذر الحذف: "+error.message);del.disabled=false;return}
-    await loadComments(post,container);const countElement=document.querySelector("#post-"+post.id+" .comment-open span");if(countElement)await updatePostCommentCount(post.id,countElement);
-   };tools.appendChild(del);
+    const {error:delErr}=await client.from("post_comments").delete().eq("id",c.id);
+    if(delErr){alert("تعذر الحذف: "+delErr.message);del.disabled=false;return}
+    await loadComments(post,container);
+    const countElement=document.querySelector("#post-"+post.id+" .comment-open span");
+    if(countElement)await updatePostCommentCount(post.id,countElement);
+   };
+   tools.appendChild(del);
   }
-  row.appendChild(tools);container.appendChild(row);
+
+  row.appendChild(tools);
+  container.appendChild(row);
  });
 }
 

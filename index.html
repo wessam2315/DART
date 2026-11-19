@@ -28,11 +28,27 @@ header{background:#0b1428;border-bottom:1px solid var(--line);padding:15px;displ
 .clickable-user:active{opacity:.75}
 .post img,.media{width:100%;max-height:420px;object-fit:contain;border-radius:12px;margin-top:10px}
 .post video{width:100%;max-height:440px;object-fit:contain;border-radius:12px;margin-top:10px;background:#000}
-.post audio{width:100%;margin-top:10px}
 .post-text{white-space:pre-wrap;line-height:1.7}
 .post-date{font-size:12px;color:var(--muted);margin-top:10px}
-.post-location{color:#71b6ff;font-size:13px;margin-top:9px}
-.post-music{background:#0b1428;border:1px solid #263653;border-radius:13px;padding:12px;margin-top:12px}
+
+/* شريط التنقل بين الصور بالسحب */
+.carousel-wrap{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;background:#070d1b;border:1px solid var(--line)}
+.carousel-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
+.carousel-track::-webkit-scrollbar{display:none}
+.carousel-track img{flex:0 0 100%;width:100%;max-height:420px;object-fit:contain;scroll-snap-align:start;margin-top:0;border-radius:0}
+.carousel-counter{position:absolute;top:10px;left:10px;background:#0009;color:#fff;font-size:11px;padding:4px 9px;border-radius:12px;pointer-events:none}
+.carousel-dots{display:flex;justify-content:center;gap:6px;padding:8px}
+.carousel-dot{width:7px;height:7px;border-radius:50%;background:#3c5075}
+.carousel-dot.active{background:#48a6ff}
+
+/* معاينة الوسائط قبل النشر */
+.preview-box{margin-top:10px;border:1px solid var(--line);border-radius:14px;padding:10px;background:#0b1428}
+.preview-grid{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.preview-item{position:relative;flex:0 0 110px;height:110px;border-radius:10px;overflow:hidden;border:1px solid #33486b}
+.preview-item img,.preview-item video{width:100%;height:100%;object-fit:cover;display:block}
+.preview-remove{position:absolute;top:4px;left:4px;width:22px;height:22px;padding:0;border-radius:50%;background:#bd3150;font-size:12px;line-height:22px;text-align:center}
+.preview-video{width:100%;max-height:220px;border-radius:10px;background:#000;display:block}
+
 .comment{background:#0b1428;padding:10px;border-radius:12px;margin:8px 0}
 .comment-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .comment-actions{display:flex;gap:6px;margin-top:7px}
@@ -212,13 +228,11 @@ nav button.active{background:#132c50;color:#48a6ff}
 .support-message{padding:11px;border-radius:12px;background:#1b2a46;margin:8px 0;white-space:pre-wrap}
 .support-message.mine{background:#174b83}
 
-/* نافذة الملف الشخصي للآخرين والمتابعين */
 .overlay-modal{position:fixed;inset:0;z-index:1500;background:#000b;display:flex;align-items:center;justify-content:center;padding:14px}
 .modal-card{width:100%;max-width:560px;max-height:86vh;max-height:86dvh;overflow-y:auto;background:#101a30;border:1px solid #365078;border-radius:20px;padding:16px;position:relative}
 .modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px}
 .modal-top button{background:#273653;padding:8px 12px}
 
-/* زر النشر العائم ونافذة النشر */
 #dertAddPost{
  position:fixed;
  z-index:999;
@@ -257,7 +271,7 @@ nav button.active{background:#132c50;color:#48a6ff}
  padding:18px;
 }
 #dertCreateBox h3{margin-top:0}
-#dertCreateBox label{display:block;color:#b8c9e8;font-size:13px;margin-top:13px}
+#dertCreateBox label{display:block;color:#b8c9e8;font-size:13px;margin-top:12px}
 #dertCreateBox input[type=file]{font-size:13px}
 #dertCreateClose{float:left;background:#273653}
 #dertCreateStatus{color:#9db9ef;font-size:13px}
@@ -480,23 +494,16 @@ nav button.active{background:#132c50;color:#48a6ff}
   <button id="dertCreateClose" type="button">✕</button>
   <h3>✨ إنشاء محتوى جديد</h3>
 
-  <label>📷 اختر صورة أو فيديو</label>
-  <input id="dertMediaFile" type="file" accept="image/*,video/*">
+  <label>🖼️ اختر صورة أو عدة صور من المعرض</label>
+  <input id="dertImagesInput" type="file" accept="image/*" multiple>
+
+  <label>🎬 أو اختر فيديو واحد</label>
+  <input id="dertVideoInput" type="file" accept="video/*">
+
+  <div id="dertPreviewBox" class="preview-box hidden"></div>
 
   <label>📝 الوصف</label>
   <textarea id="dertDescription" placeholder="اكتب وصف المحتوى..."></textarea>
-
-  <label>📍 الموقع</label>
-  <input id="dertLocation" placeholder="اكتب اسم المكان أو المدينة">
-
-  <label>🎵 اختر موسيقى من جهازك (اختياري)</label>
-  <input id="dertMusicFile" type="file" accept="audio/*">
-
-  <label>اسم الأغنية</label>
-  <input id="dertMusicTitle" placeholder="اسم الأغنية">
-
-  <label>اسم الفنان</label>
-  <input id="dertMusicArtist" placeholder="اسم الفنان">
 
   <button id="dertPublishButton" class="full" type="button">
    🚀 نشر المحتوى
@@ -541,6 +548,8 @@ let activeChannel=null,alertsChannel=null,pendingPhone=null,chatCache=[];
 let activeCommentPost=null;
 let videoObserver=null;
 let videoPostsCache=[];
+let selectedImages=[];
+let selectedVideo=null;
 
 const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
@@ -611,10 +620,10 @@ function showLogin(){
 
 async function uploadFile(file,folder){
  if(!file)return null;
- const ok=file.type.startsWith("image/")||file.type.startsWith("video/")||file.type.startsWith("audio/");
+ const ok=file.type.startsWith("image/")||file.type.startsWith("video/");
  if(!ok)throw new Error("نوع الملف غير مدعوم");
  if(file.size>50*1024*1024)throw new Error("حجم الملف أكبر من 50 ميغابايت");
- const ext=(file.name.split(".").pop()||"file").toLowerCase().replace(/[^a-z0-9]/g,"");
+ const ext=(file.name.split(".").pop()||"file").toLowerCase().replace(/[^a-z0-9]/g,"")||"bin";
  const path=currentUser.id+"/"+folder+"/"+crypto.randomUUID()+"."+ext;
  const {error}=await client.storage.from("posts").upload(path,file,{contentType:file.type});
  if(error)throw error;
@@ -658,20 +667,14 @@ el("signupBtn").onclick=async()=>{
   msg("message","أدخل بريداً إلكترونياً صحيحاً وكلمة مرور من 6 أحرف على الأقل");
   return;
  }
-
- const b=el("signupBtn");
- b.disabled=true;
+ const b=el("signupBtn");b.disabled=true;
  el("resendEmailBtn").classList.add("hidden");
  msg("message","جارٍ إنشاء الحساب وإرسال رسالة التأكيد...");
-
  try{
   const {data,error}=await client.auth.signUp({
-   email,
-   password,
-   options:{emailRedirectTo:DERT_SITE_URL}
+   email,password,options:{emailRedirectTo:DERT_SITE_URL}
   });
   if(error)throw error;
-
   if(data.session&&data.user){
    msg("message","تم إنشاء الحساب بنجاح.");
    await showHome(data.user);
@@ -687,20 +690,15 @@ el("signupBtn").onclick=async()=>{
 
 el("resendEmailBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase();
- if(!email||!email.includes("@")){
-  msg("message","اكتب بريدك الإلكتروني الصحيح أولاً");return;
- }
+ if(!email||!email.includes("@")){msg("message","اكتب بريدك الإلكتروني الصحيح أولاً");return}
  const b=el("resendEmailBtn");b.disabled=true;
  msg("message","جارٍ إعادة إرسال رسالة التأكيد...");
  try{
-  const {error}=await client.auth.resend({
-   type:"signup",email,options:{emailRedirectTo:DERT_SITE_URL}
-  });
+  const {error}=await client.auth.resend({type:"signup",email,options:{emailRedirectTo:DERT_SITE_URL}});
   if(error)throw error;
-  msg("message","تم طلب إعادة إرسال رسالة التأكيد. افحص صندوق الوارد والبريد غير المرغوب فيه.");
- }catch(e){
-  msg("message","تعذر إعادة الإرسال: "+(e.message||"حدث خطأ"));
- }finally{b.disabled=false}
+  msg("message","تم طلب إعادة إرسال رسالة التأكيد.");
+ }catch(e){msg("message","تعذر إعادة الإرسال: "+(e.message||"حدث خطأ"))}
+ finally{b.disabled=false}
 };
 
 el("loginBtn").onclick=async()=>{
@@ -713,16 +711,13 @@ el("loginBtn").onclick=async()=>{
   const {data,error}=await client.auth.signInWithPassword({email,password});
   if(error)throw error;
   await showHome(data.user);
- }catch(e){
-  msg("message","تعذر تسجيل الدخول: "+(e.message||"حدث خطأ"));
- }finally{b.disabled=false}
+ }catch(e){msg("message","تعذر تسجيل الدخول: "+(e.message||"حدث خطأ"))}
+ finally{b.disabled=false}
 };
 
 el("sendOtpBtn").onclick=async()=>{
  const phone=el("phone").value.trim();
- if(!/^\+[1-9]\d{7,14}$/.test(phone)){
-  msg("message","اكتب الرقم بالصيغة الدولية مثل +9647XXXXXXXXX");return;
- }
+ if(!/^\+[1-9]\d{7,14}$/.test(phone)){msg("message","اكتب الرقم بالصيغة الدولية مثل +9647XXXXXXXXX");return}
  pendingPhone=phone;msg("message","جارٍ إرسال الرمز...");
  try{
   const {error}=await client.auth.signInWithOtp({phone});
@@ -750,18 +745,14 @@ async function loadProfile(){
  if(!currentUser)return;
  let {data,error}=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
  if(error)throw error;
-
  if(!data){
   const defaultUsername="user_"+currentUser.id.slice(0,8);
   const {data:created,error:createErr}=await client.from("profiles").insert({
-   id:currentUser.id,
-   username:defaultUsername,
-   full_name:"مستخدم DERT"
+   id:currentUser.id,username:defaultUsername,full_name:"مستخدم DERT"
   }).select().single();
   if(createErr)throw new Error("لم يتم العثور على الملف الشخصي");
   data=created;
  }
-
  currentProfile=data;
  el("fullName").value=data.full_name||"";
  el("username").value=data.username||"";
@@ -800,23 +791,13 @@ el("requestVerificationBtn").onclick=async()=>{
   if(error)throw error;
   b.textContent="⏳ طلبك قيد المراجعة";
   msg("verificationMessage","تم إرسال الطلب بنجاح.");
- }catch(e){
-  msg("verificationMessage","تعذر إرسال الطلب: "+e.message);b.disabled=false;
- }
+ }catch(e){msg("verificationMessage","تعذر إرسال الطلب: "+e.message);b.disabled=false}
 };
-el("editProfileBtn").onclick=()=>{
- el("profileSettings").classList.remove("hidden");
- el("editProfileBtn").classList.add("hidden");
-};
-el("cancelProfileBtn").onclick=()=>{
- el("profileSettings").classList.add("hidden");
- el("editProfileBtn").classList.remove("hidden");
-};
+el("editProfileBtn").onclick=()=>{el("profileSettings").classList.remove("hidden");el("editProfileBtn").classList.add("hidden")};
+el("cancelProfileBtn").onclick=()=>{el("profileSettings").classList.add("hidden");el("editProfileBtn").classList.remove("hidden")};
 el("saveProfileBtn").onclick=async()=>{
  const username=el("username").value.trim().toLowerCase();
- if(!/^[a-z0-9_]{3,25}$/.test(username)){
-  msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");return;
- }
+ if(!/^[a-z0-9_]{3,25}$/.test(username)){msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");return}
  const b=el("saveProfileBtn");b.disabled=true;
  try{
   let avatar=currentProfile?.avatar_url||null;
@@ -844,78 +825,46 @@ el("avatarFile").onchange=()=>{
  el("editProfileBtn").classList.add("hidden");
 };
 
+/* المتابعون وأتابع */
 async function openFollowList(mode){
  if(!currentUser)return;
  el("followModal").classList.remove("hidden");
  el("followModalTitle").textContent=mode==="followers"?"👥 المتابعون":"👤 الأشخاص الذين أتابعهم";
  const box=el("followModalList");
  box.textContent="جارٍ التحميل...";
-
  try{
   const {data:rows,error}=mode==="followers"
    ? await client.from("follows").select("follower_id").eq("following_id",currentUser.id)
    : await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
-
   if(error)throw error;
-
   const targetIds=[...new Set((rows||[]).map(r=>mode==="followers"?r.follower_id:r.following_id))];
   box.replaceChildren();
-
-  if(!targetIds.length){
-   box.textContent=mode==="followers"?"لا يوجد متابعون حتى الآن":"أنت لا تتابع أحداً حتى الآن";
-   return;
-  }
-
-  const {data:profiles,error:pErr}=await client.from("profiles")
-   .select("id,username,full_name,avatar_url,bio,is_verified")
-   .in("id",targetIds);
-
+  if(!targetIds.length){box.textContent=mode==="followers"?"لا يوجد متابعون حتى الآن":"أنت لا تتابع أحداً حتى الآن";return}
+  const {data:profiles,error:pErr}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified").in("id",targetIds);
   if(pErr)throw pErr;
-
   (profiles||[]).forEach(p=>{
-   const row=document.createElement("div");
-   row.className="item";
-
-   const line=document.createElement("div");
-   line.className="chat-row clickable-user";
+   const row=document.createElement("div");row.className="item";
+   const line=document.createElement("div");line.className="chat-row clickable-user";
    line.onclick=()=>{closeFollowModal();openUserProfile(p.id)};
    line.appendChild(makeAvatar(p.avatar_url,p.full_name||p.username));
-
-   const info=document.createElement("div");
-   info.className="chat-row-info";
+   const info=document.createElement("div");info.className="chat-row-info";
    const title=document.createElement("strong");
    addVerifiedName(title,(p.full_name||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
-   const bio=document.createElement("div");
-   bio.className="small";
-   bio.textContent=p.bio||"";
-   info.append(title,bio);
-   line.appendChild(info);
-   row.appendChild(line);
+   const bio=document.createElement("div");bio.className="small";bio.textContent=p.bio||"";
+   info.append(title,bio);line.appendChild(info);row.appendChild(line);
 
-   const actions=document.createElement("div");
-   actions.className="user-row-actions";
-
-   const viewBtn=document.createElement("button");
-   viewBtn.className="gray";
-   viewBtn.textContent="عرض الملف";
+   const actions=document.createElement("div");actions.className="user-row-actions";
+   const viewBtn=document.createElement("button");viewBtn.className="gray";viewBtn.textContent="عرض الملف";
    viewBtn.onclick=()=>{closeFollowModal();openUserProfile(p.id)};
-
-   const dmBtn=document.createElement("button");
-   dmBtn.textContent="مراسلة";
+   const dmBtn=document.createElement("button");dmBtn.textContent="مراسلة";
    dmBtn.onclick=()=>{closeFollowModal();startChat(p.id,p.username)};
-
-   actions.append(viewBtn,dmBtn);
-   row.appendChild(actions);
-   box.appendChild(row);
+   actions.append(viewBtn,dmBtn);row.appendChild(actions);box.appendChild(row);
   });
- }catch(e){
-  box.textContent="تعذر تحميل القائمة: "+e.message;
- }
+ }catch(e){box.textContent="تعذر تحميل القائمة: "+e.message}
 }
-function closeFollowModal(){
- el("followModal").classList.add("hidden");
-}
+function closeFollowModal(){el("followModal").classList.add("hidden")}
 
+/* ملف شخص آخر */
 async function openUserProfile(targetUserId){
  if(!currentUser||!targetUserId)return;
  if(targetUserId===currentUser.id){openTab("profile");return}
@@ -1002,17 +951,157 @@ async function openUserProfile(targetUserId){
   (userPosts||[]).forEach(post=>{
    const card=document.createElement("div");card.className="post";
    if(post.content){const t=document.createElement("p");t.className="post-text";t.textContent=post.content;card.appendChild(t)}
-   if(post.image_url){
-    if(post.media_type==="video"){const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v)}
-    else{const img=document.createElement("img");img.src=post.image_url;img.loading="lazy";card.appendChild(img)}
+   const imgs=getPostImages(post);
+   if(imgs.length){
+    card.appendChild(createImageCarousel(imgs));
+   }else if(post.image_url && post.media_type==="video"){
+    const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v);
    }
    body.appendChild(card);
   });
  }catch(e){body.textContent="خطأ: "+e.message}
 }
-function closeUserProfileModal(){
- el("userProfileModal").classList.add("hidden");
+function closeUserProfileModal(){el("userProfileModal").classList.add("hidden")}
+
+/* استخراج الصور المتعددة أو الصورة الواحدة */
+function getPostImages(post){
+ if(Array.isArray(post.image_urls) && post.image_urls.length){
+  return post.image_urls.filter(Boolean);
+ }
+ if(post.image_url && post.media_type!=="video"){
+  return [post.image_url];
+ }
+ return [];
 }
+
+/* إنشاء شريط تمرير الصور بالسحب */
+function createImageCarousel(images){
+ const wrap=document.createElement("div");
+ wrap.className="carousel-wrap";
+
+ const track=document.createElement("div");
+ track.className="carousel-track";
+
+ images.forEach((src,i)=>{
+  const img=document.createElement("img");
+  img.src=src;
+  img.alt="صورة "+(i+1);
+  img.loading="lazy";
+  track.appendChild(img);
+ });
+
+ wrap.appendChild(track);
+
+ if(images.length>1){
+  const counter=document.createElement("div");
+  counter.className="carousel-counter";
+  counter.textContent="1 / "+images.length;
+  wrap.appendChild(counter);
+
+  const dots=document.createElement("div");
+  dots.className="carousel-dots";
+  const dotEls=images.map((_,i)=>{
+   const d=document.createElement("span");
+   d.className="carousel-dot"+(i===0?" active":"");
+   dots.appendChild(d);
+   return d;
+  });
+  wrap.appendChild(dots);
+
+  track.addEventListener("scroll",()=>{
+   const w=track.clientWidth||1;
+   const idx=Math.min(images.length-1,Math.max(0,Math.round(track.scrollLeft/w)));
+   counter.textContent=(idx+1)+" / "+images.length;
+   dotEls.forEach((d,i)=>d.classList.toggle("active",i===idx));
+  },{passive:true});
+ }
+
+ return wrap;
+}
+
+/* معاينة الصور والفيديو قبل النشر */
+function renderMediaPreview(){
+ const box=el("dertPreviewBox");
+ box.replaceChildren();
+
+ if(selectedVideo){
+  box.classList.remove("hidden");
+  const vid=document.createElement("video");
+  vid.className="preview-video";
+  vid.src=URL.createObjectURL(selectedVideo);
+  vid.controls=true;
+  vid.playsInline=true;
+
+  const rem=document.createElement("button");
+  rem.type="button";
+  rem.className="red";
+  rem.style.marginTop="8px";
+  rem.textContent="إزالة الفيديو";
+  rem.onclick=()=>{
+   selectedVideo=null;
+   el("dertVideoInput").value="";
+   renderMediaPreview();
+  };
+  box.append(vid,rem);
+  return;
+ }
+
+ if(selectedImages.length){
+  box.classList.remove("hidden");
+  const grid=document.createElement("div");
+  grid.className="preview-grid";
+
+  selectedImages.forEach((file,idx)=>{
+   const item=document.createElement("div");
+   item.className="preview-item";
+
+   const img=document.createElement("img");
+   img.src=URL.createObjectURL(file);
+   img.alt="معاينة";
+
+   const del=document.createElement("button");
+   del.type="button";
+   del.className="preview-remove";
+   del.textContent="✕";
+   del.onclick=()=>{
+    selectedImages.splice(idx,1);
+    renderMediaPreview();
+   };
+
+   item.append(img,del);
+   grid.appendChild(item);
+  });
+
+  box.appendChild(grid);
+  return;
+ }
+
+ box.classList.add("hidden");
+}
+
+el("dertImagesInput").onchange=(e)=>{
+ const files=[...(e.target.files||[])].filter(f=>f.type.startsWith("image/"));
+ if(files.length){
+  selectedVideo=null;
+  el("dertVideoInput").value="";
+  selectedImages=files;
+ }else{
+  selectedImages=[];
+ }
+ renderMediaPreview();
+};
+
+el("dertVideoInput").onchange=(e)=>{
+ const file=(e.target.files||[])[0];
+ if(file && file.type.startsWith("video/")){
+  selectedImages=[];
+  el("dertImagesInput").value="";
+  selectedVideo=file;
+ }else{
+  selectedVideo=null;
+ }
+ renderMediaPreview();
+};
 
 el("dertAddPost").onclick=()=>{
  if(!currentUser){alert("سجل الدخول أولاً");return}
@@ -1024,20 +1113,9 @@ el("dertCreateModal").onclick=(e)=>{if(e.target===el("dertCreateModal"))el("dert
 el("dertPublishButton").onclick=async()=>{
  if(!currentUser){msg("dertCreateStatus","يرجى تسجيل الدخول أولاً");return}
 
- const file=el("dertMediaFile").files[0];
- const musicFile=el("dertMusicFile").files[0];
  const content=el("dertDescription").value.trim();
- const locationName=el("dertLocation").value.trim();
- const musicTitle=el("dertMusicTitle").value.trim();
- const musicArtist=el("dertMusicArtist").value.trim();
- const isVideosTab=el("videos").classList.contains("active");
-
- if(isVideosTab && !file){
-  msg("dertCreateStatus","اختر صورة أو فيديو أولاً");
-  return;
- }
- if(!file && !content && !musicFile && !locationName){
-  msg("dertCreateStatus","اكتب وصفاً أو اختر ملفاً للنشر");
+ if(!selectedVideo && !selectedImages.length && !content){
+  msg("dertCreateStatus","اختر صوراً أو فيديو أو اكتب وصفاً");
   return;
  }
 
@@ -1046,38 +1124,54 @@ el("dertPublishButton").onclick=async()=>{
  msg("dertCreateStatus","جارٍ رفع المحتوى...");
 
  try{
-  let image_url=null,music_url=null,media_type=null;
+  let image_url=null;
+  let image_urls=null;
+  let media_type=null;
 
-  if(file){
-   if(!file.type.startsWith("image/")&&!file.type.startsWith("video/")){
-    throw new Error("نوع الملف غير مدعوم");
+  if(selectedVideo){
+   image_url=await uploadFile(selectedVideo,"posts");
+   media_type="video";
+  }else if(selectedImages.length){
+   const uploaded=[];
+   for(const f of selectedImages){
+    const url=await uploadFile(f,"posts");
+    uploaded.push(url);
    }
-   image_url=await uploadFile(file,"posts");
-   media_type=file.type.startsWith("video/")?"video":"image";
+   image_url=uploaded[0];
+   image_urls=uploaded;
+   media_type="image";
   }
 
-  if(musicFile){
-   if(!musicFile.type.startsWith("audio/")){
-    throw new Error("اختر ملفاً صوتياً صحيحاً");
-   }
-   music_url=await uploadFile(musicFile,"music");
-  }
-
-  const {error}=await client.from("posts").insert({
+  const payload={
    user_id:currentUser.id,
    content:content||null,
-   image_url:image_url,
-   media_type:media_type,
-   location_name:locationName||null,
-   music_title:musicTitle||musicFile?.name||null,
-   music_artist:musicArtist||null,
-   music_url:music_url
-  });
+   image_url,
+   media_type
+  };
+  if(image_urls)payload.image_urls=image_urls;
+
+  let {error}=await client.from("posts").insert(payload);
+
+  /* إذا لم يكن عمود image_urls موجوداً في جدول posts، نحفظ الصورة الأولى كحل احتياطي */
+  if(error && image_urls){
+   const fallbackRes=await client.from("posts").insert({
+    user_id:currentUser.id,
+    content:content||null,
+    image_url,
+    media_type
+   });
+   error=fallbackRes.error;
+  }
 
   if(error)throw error;
 
   msg("dertCreateStatus","تم النشر بنجاح ❤️");
-  ["dertMediaFile","dertMusicFile","dertDescription","dertLocation","dertMusicTitle","dertMusicArtist"].forEach(id=>el(id).value="");
+  selectedImages=[];
+  selectedVideo=null;
+  el("dertImagesInput").value="";
+  el("dertVideoInput").value="";
+  el("dertDescription").value="";
+  renderMediaPreview();
 
   await loadVideos();
   await loadPosts();
@@ -1095,6 +1189,7 @@ el("dertPublishButton").onclick=async()=>{
  }
 };
 
+/* قسم الفيديوهات العمودية */
 async function loadVideos(){
  if(!currentUser)return;
  const list=el("videosList");
@@ -1123,7 +1218,7 @@ async function loadVideos(){
    const title=document.createElement("strong");
    title.textContent="🎬 لا توجد فيديوهات حالياً";
    const description=document.createElement("p");
-   description.textContent="كن أول من يشارك صورة أو فيديو على DERT. اضغط زر + للنشر.";
+   description.textContent="كن أول من يشارك فيديو على DERT. اضغط زر + للنشر.";
    const go=document.createElement("button");
    go.textContent="＋ إنشاء محتوى";
    go.onclick=()=>el("dertAddPost").click();
@@ -1253,27 +1348,23 @@ async function loadVideos(){
 
 function setupVideoObserver(){
  if(videoObserver)videoObserver.disconnect();
-
  const videos=[...document.querySelectorAll("#videosList video")];
  if(!videos.length)return;
-
  videoObserver=new IntersectionObserver(entries=>{
   entries.forEach(entry=>{
    const video=entry.target;
    if(entry.isIntersecting&&entry.intersectionRatio>=0.65){
-    videos.forEach(other=>{
-     if(other!==video)other.pause();
-    });
+    videos.forEach(other=>{if(other!==video)other.pause()});
     video.play().catch(()=>{});
    }else{
     video.pause();
    }
   });
  },{root:el("videosList"),threshold:[0,0.35,0.65,0.9]});
-
  videos.forEach(video=>videoObserver.observe(video));
 }
 
+/* المنشورات والتعليقات */
 async function loadPosts(){
  const list=el("postsList");list.textContent="جارٍ تحميل المنشورات...";
  const {data,error}=await client.from("posts").select("*").order("created_at",{ascending:false});
@@ -1293,28 +1384,16 @@ async function loadPosts(){
   addVerifiedName(author,p?(p.full_name||"مستخدم")+" @"+(p.username||""):"مستخدم DERT",p?.is_verified===true);
   card.appendChild(author);
 
-  if(post.location_name){
-   const loc=document.createElement("div");loc.className="post-location";
-   loc.textContent="📍 "+post.location_name;card.appendChild(loc);
-  }
   if(post.content){
    const t=document.createElement("p");t.className="post-text";
    t.textContent=post.content;card.appendChild(t);
   }
-  if(post.image_url){
-   if(post.media_type==="video"){
-    const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v);
-   }else{
-    const img=document.createElement("img");img.src=post.image_url;img.alt="صورة المنشور";img.loading="lazy";card.appendChild(img);
-   }
-  }
-  if(post.music_url){
-   const music=document.createElement("div");music.className="post-music";
-   const title=document.createElement("strong");title.textContent="🎵 "+(post.music_title||"مقطع موسيقي");music.appendChild(title);
-   if(post.music_artist){
-    const a=document.createElement("div");a.className="small";a.textContent=post.music_artist;music.appendChild(a);
-   }
-   const audio=document.createElement("audio");audio.src=post.music_url;audio.controls=true;music.appendChild(audio);card.appendChild(music);
+
+  const imgs=getPostImages(post);
+  if(imgs.length){
+   card.appendChild(createImageCarousel(imgs));
+  }else if(post.image_url && post.media_type==="video"){
+   const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v);
   }
 
   const date=document.createElement("div");date.className="post-date";
@@ -1466,11 +1545,9 @@ async function editPost(post){
  if(post.user_id!==currentUser.id){alert("لا يمكنك تعديل منشور شخص آخر");return}
  const content=prompt("عدّل نص المنشور:",post.content||"");
  if(content===null)return;
- const locationName=prompt("عدّل الموقع (اتركه فارغاً إذا لا تريد موقعاً):",post.location_name||"");
- if(locationName===null)return;
  try{
   const {error}=await client.from("posts").update({
-   content:content.trim()||null,location_name:locationName.trim()||null
+   content:content.trim()||null
   }).eq("id",post.id).eq("user_id",currentUser.id);
   if(error)throw error;
   alert("تم تعديل المنشور");await loadPosts();
@@ -1565,8 +1642,10 @@ async function followUser(id,button){
  finally{button.disabled=false}
 }
 
+/* المحادثات وإرسال الرسائل */
 async function startChat(otherId,username){
  try{
+  if(!currentUser||!otherId)return;
   const {data:mine,error:e1}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
   if(e1)throw e1;
   const ids=(mine||[]).map(x=>x.conversation_id);
@@ -1679,10 +1758,7 @@ async function markMessagesRead(){
  }
 }
 el("sendMessageBtn").onclick=async()=>{
- if(!activeConversation||!activeReceiver){
-  msg("chatStatus","اختر محادثة أولاً");
-  return;
- }
+ if(!activeConversation||!activeReceiver){msg("chatStatus","اختر محادثة أولاً");return}
  const content=el("chatText").value.trim(),file=el("chatFile").files[0];
  if(!content&&!file){msg("chatStatus","اكتب رسالة أو اختر ملفاً");return}
  const b=el("sendMessageBtn");b.disabled=true;
@@ -1694,10 +1770,32 @@ el("sendMessageBtn").onclick=async()=>{
    media_url=await uploadFile(file,"messages");
    media_type=file.type.startsWith("video/")?"video":"image";
   }
-  const {error}=await client.from("messages").insert({
-   conversation_id:activeConversation,sender_id:currentUser.id,
-   receiver_id:activeReceiver,content:content||null,media_url,media_type,is_read:false
-  });
+
+  let insertPayload={
+   conversation_id:activeConversation,
+   sender_id:currentUser.id,
+   receiver_id:activeReceiver,
+   content:content||null,
+   media_url,
+   media_type,
+   is_read:false
+  };
+
+  let {error}=await client.from("messages").insert(insertPayload);
+
+  /* إذا كان جدول messages لا يحتوي على عمود is_read أو receiver_id */
+  if(error && (error.message.includes("is_read") || error.message.includes("receiver_id"))){
+   const fallbackPayload={
+    conversation_id:activeConversation,
+    sender_id:currentUser.id,
+    content:content||null,
+    media_url,
+    media_type
+   };
+   const res=await client.from("messages").insert(fallbackPayload);
+   error=res.error;
+  }
+
   if(error)throw error;
 
   await client.from("conversations").update({
@@ -1709,7 +1807,7 @@ el("sendMessageBtn").onclick=async()=>{
   await loadMessages();await loadChats();
  }catch(e){
   console.error("Send message error:",e);
-  msg("chatStatus","تعذر الإرسال: "+(e.message||JSON.stringify(e)));
+  msg("chatStatus","تعذر الإرسال: "+(e.message||"تحقق من صلاحيات جدول messages"));
  }finally{b.disabled=false}
 };
 function startRealtime(){
@@ -1725,6 +1823,7 @@ function stopRealtime(){
  if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}
 }
 
+/* الإشعارات */
 async function loadAlerts(){
  const list=el("alertsList");list.textContent="جارٍ تحميل الإشعارات...";
  try{
@@ -1750,6 +1849,7 @@ function stopAlertsRealtime(){
  if(alertsChannel){client.removeChannel(alertsChannel);alertsChannel=null}
 }
 
+/* الإدارة */
 async function loadAdminRequests(){
  if(!isAdmin())return;
  const box=el("adminRequests");box.textContent="جارٍ تحميل الطلبات...";

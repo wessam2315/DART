@@ -1551,72 +1551,81 @@ async function loadAdminSupport(){
  });
 }
 el("refreshSupportAdmin").onclick=loadAdminSupport;
-
 /* فتح التطبيق بعد تسجيل الدخول */
 async function showHome(user){
- currentUser=user;
+ currentUser = user;
  el("auth").classList.add("hidden");
  el("home").classList.remove("hidden");
- try{
-  await loadProfile();
-  await loadStats();
-  await loadChats();
-  startAlertsRealtime();
-  openTab("videos");
- }catch(e){msg("profileMessage","ملاحظة: "+e.message)}
-async function showHome(user){
- currentUser=user;
-
- el("auth").classList.add("hidden");
- el("home").classList.remove("hidden");
-
  openTab("videos");
  startAlertsRealtime();
 
- try{
+ try {
   await loadProfile();
- }catch(e){
-  msg("profileMessage","تعذر تحميل الملف الشخصي: "+e.message);
+ } catch(e) {
+  console.error("Profile error:", e);
+  msg("profileMessage", "تعذر تحميل الملف الشخصي: " + e.message);
  }
 
- try{
+ try {
   await loadStats();
- }catch(e){
-  console.error("Stats error:",e);
+ } catch(e) {
+  console.error("Stats error:", e);
  }
 
- try{
+ try {
   await loadChats();
- }catch(e){
-  console.error("Chats error:",e);
+ } catch(e) {
+  console.error("Chats error:", e);
  }
 }
 
-  const params=new URLSearchParams(window.location.search);
-  const hash=new URLSearchParams(window.location.hash.replace(/^#/,""));
+/* فحص الجلسة وتأكيد البريد الإلكتروني */
+async function checkSession(){
+ try {
+  const params = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
 
-  const authError=
-   params.get("error_description")||
-   params.get("error")||
-   hash.get("error_description")||
+  const authError =
+   params.get("error_description") ||
+   params.get("error") ||
+   hash.get("error_description") ||
    hash.get("error");
 
   if(authError){
    showAuthForm("login");
-   const readable=authError.replace(/\+/g," ");
-   msg("message","تعذر تأكيد البريد: "+readable);
+   msg("message", "تعذر تأكيد البريد: " + authError.replace(/\+/g, " "));
    return;
   }
 
-  const code=params.get("code");
+  const code = params.get("code");
+
   if(code){
-   const {data:sessionData,error:exchangeError}=await client.auth.exchangeCodeForSession(code);
-   if(exchangeError)throw exchangeError;
-   if(sessionData?.user){
-    await showHome(sessionData.user);
+   const {data, error} = await client.auth.exchangeCodeForSession(code);
+   if(error) throw error;
+
+   if(data?.user){
+    await showHome(data.user);
+    window.history.replaceState({}, document.title, window.location.pathname);
     return;
    }
   }
+
+  const {data, error} = await client.auth.getSession();
+  if(error) throw error;
+
+  if(data?.session?.user){
+   await showHome(data.session.user);
+   return;
+  }
+
+  showLogin();
+
+ } catch(e) {
+  console.error("Session error:", e);
+  showAuthForm("login");
+  msg("message", "تعذر فحص تسجيل الدخول أو تأكيد البريد: " + (e.message || "حدث خطأ"));
+ }
+}
 
   showLogin();
  }catch(e){

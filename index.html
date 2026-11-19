@@ -1564,23 +1564,33 @@ async function showHome(user){
   startAlertsRealtime();
   openTab("videos");
  }catch(e){msg("profileMessage","ملاحظة: "+e.message)}
-}
+async function showHome(user){
+ currentUser=user;
 
-/* مراقبة تغيّر حالة تسجيل الدخول */
-client.auth.onAuthStateChange((event,session)=>{
- if(event==="SIGNED_OUT")showLogin();
-});
+ el("auth").classList.add("hidden");
+ el("home").classList.remove("hidden");
 
-/* فحص الجلسة ومعالجة الرجوع من رابط التأكيد */
-async function checkSession(){
+ openTab("videos");
+ startAlertsRealtime();
+
  try{
-  const {data,error}=await client.auth.getSession();
-  if(error)throw error;
+  await loadProfile();
+ }catch(e){
+  msg("profileMessage","تعذر تحميل الملف الشخصي: "+e.message);
+ }
 
-  if(data.session){
-   await showHome(data.session.user);
-   return;
-  }
+ try{
+  await loadStats();
+ }catch(e){
+  console.error("Stats error:",e);
+ }
+
+ try{
+  await loadChats();
+ }catch(e){
+  console.error("Chats error:",e);
+ }
+}
 
   const params=new URLSearchParams(window.location.search);
   const hash=new URLSearchParams(window.location.hash.replace(/^#/,""));

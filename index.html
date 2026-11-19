@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta name="google-site-verification" content="VoZ2mrh8ouou83SzxXvIWkET2pq4lfmWEYaLivj0_IM">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DERT 🌍</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -68,10 +67,126 @@ header{background:#0b1428;border-bottom:1px solid var(--line);padding:15px;displ
 .chat-last{font-size:13px;color:#9baaca;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:5px}
 .chat-time{font-size:11px;color:#9baaca}
 #avatarFile{display:none}
-nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:9px 5px calc(9px + env(safe-area-inset-bottom));background:#0b1428ed;border-top:1px solid #263958;backdrop-filter:blur(15px);max-width:720px;margin:auto}
-nav button{margin:0;padding:7px 2px;background:transparent;color:#91a2c2;border-radius:12px;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px}
+
+/* شريط التنقل */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding:8px 3px calc(8px + env(safe-area-inset-bottom));background:#0b1428ed;border-top:1px solid #263958;backdrop-filter:blur(15px);max-width:720px;margin:auto}
+nav button{margin:0;padding:7px 1px;background:transparent;color:#91a2c2;border-radius:12px;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
 nav button.active{background:#132c50;color:#48a6ff}
 .nav-icon{font-size:19px}
+
+/* واجهة الفيديوهات العمودية */
+#videos{margin:-12px -12px 0}
+.videos-feed{
+ height:calc(100dvh - 143px);
+ min-height:420px;
+ overflow-y:auto;
+ scroll-snap-type:y mandatory;
+ overscroll-behavior-y:contain;
+ scrollbar-width:none;
+ background:#000;
+}
+.videos-feed::-webkit-scrollbar{display:none}
+.video-card{
+ height:100%;
+ min-height:420px;
+ width:100%;
+ position:relative;
+ overflow:hidden;
+ scroll-snap-align:start;
+ scroll-snap-stop:always;
+ background:#000;
+}
+.video-card video{
+ width:100%;
+ height:100%;
+ object-fit:contain;
+ background:#000;
+ display:block;
+}
+.video-overlay{
+ position:absolute;
+ inset:0;
+ pointer-events:none;
+ display:flex;
+ flex-direction:column;
+ justify-content:flex-end;
+ padding:18px 15px 20px;
+ background:linear-gradient(transparent 45%,#0002 60%,#000c 100%);
+}
+.video-details{
+ max-width:85%;
+ padding-bottom:8px;
+ text-shadow:0 1px 5px #000;
+}
+.video-author{font-weight:bold;font-size:16px;margin-bottom:9px}
+.video-description{font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.video-date{font-size:11px;color:#ddd;margin-top:9px}
+.video-side-actions{
+ position:absolute;
+ left:12px;
+ bottom:90px;
+ display:flex;
+ flex-direction:column;
+ gap:15px;
+ align-items:center;
+ pointer-events:auto;
+}
+.video-side-actions button{
+ width:47px;height:47px;padding:0;
+ border-radius:50%;
+ background:#101a30bd;
+ border:1px solid #ffffff55;
+ font-size:20px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+}
+.video-side-actions .video-follow{
+ width:auto;height:auto;
+ min-width:75px;
+ padding:9px 12px;
+ border-radius:20px;
+ font-size:12px;
+}
+.video-sound{
+ position:absolute;
+ top:15px;
+ left:15px;
+ width:43px;height:43px;
+ border-radius:50%;
+ background:#101a30b8;
+ border:1px solid #ffffff55;
+ font-size:20px;
+ padding:0;
+}
+.video-hint{
+ position:absolute;
+ top:50%;
+ left:50%;
+ transform:translate(-50%,-50%);
+ color:#fff;
+ background:#0008;
+ padding:12px 18px;
+ border-radius:20px;
+ font-size:14px;
+ pointer-events:none;
+}
+.videos-empty{
+ min-height:300px;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ text-align:center;
+ color:#c6d5ef;
+ padding:25px;
+ background:#101a30;
+}
+.videos-empty strong{font-size:22px;margin-bottom:12px}
+.videos-empty p{font-size:14px;line-height:1.8;color:#9baaca}
+.video-loading{text-align:center;padding:30px;color:#9baaca}
+
+/* شاشة الدخول */
 .auth-screen{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 50% 35%,#182a64 0%,#11152f 42%,#050a16 100%);color:white;display:flex;align-items:center;justify-content:center;padding:22px}
 .auth-inner{width:100%;max-width:390px;text-align:center}
 .brand-mark{width:180px;height:180px;margin:0 auto 15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:100px;border:2px solid #428dff;box-shadow:0 0 35px #286bff99;background:radial-gradient(circle at 35% 30%,#244d9d,#101c49 60%,#080f25)}
@@ -104,7 +219,13 @@ nav button.active{background:#132c50;color:#48a6ff}
 .admin-actions button{flex:1}
 .support-message{padding:11px;border-radius:12px;background:#1b2a46;margin:8px 0;white-space:pre-wrap}
 .support-message.mine{background:#174b83}
-@media(max-width:380px){nav button{font-size:9px}.nav-icon{font-size:17px}.brand-mark{width:150px;height:150px;font-size:82px}.brand-name{font-size:44px}}
+@media(max-width:380px){
+ nav button{font-size:8px}
+ .nav-icon{font-size:16px}
+ .brand-mark{width:150px;height:150px;font-size:82px}
+ .brand-name{font-size:44px}
+ .video-details{max-width:82%}
+}
 </style>
 </head>
 <body>
@@ -154,7 +275,14 @@ nav button.active{background:#132c50;color:#48a6ff}
 <header><span class="header-brand">DERT 🌍</span><span class="header-sub">عالم التواصل</span></header>
 <div class="container">
 
-<section id="chats" class="section active">
+<!-- قسم الفيديوهات الجديد -->
+<section id="videos" class="section active">
+<div id="videosList" class="videos-feed">
+<div class="video-loading">جارٍ تحميل الفيديوهات...</div>
+</div>
+</section>
+
+<section id="chats" class="section">
 <div class="card">
 <h2>المحادثات</h2>
 <input id="chatSearch" placeholder="🔎 البحث في المحادثات">
@@ -273,7 +401,8 @@ nav button.active{background:#132c50;color:#48a6ff}
 </section>
 
 <nav>
-<button class="active" onclick="openTab('chats',this)"><span class="nav-icon">💬</span>المحادثات</button>
+<button class="active" onclick="openTab('videos',this)"><span class="nav-icon">▶️</span>فيديوهات</button>
+<button onclick="openTab('chats',this)"><span class="nav-icon">💬</span>المحادثات</button>
 <button onclick="openTab('feed',this)"><span class="nav-icon">▦</span>المنشورات</button>
 <button onclick="openTab('people',this)"><span class="nav-icon">🌐</span>اكتشف</button>
 <button onclick="openTab('alerts',this)"><span class="nav-icon">♧</span>الإشعارات</button>
@@ -315,6 +444,8 @@ const ADMIN_ID="221ecf80-7f89-4172-b61a-304369cbe870";
 let currentUser=null,currentProfile=null,activeConversation=null,activeReceiver=null;
 let activeChannel=null,alertsChannel=null,pendingPhone=null,chatCache=[];
 let activeCommentPost=null;
+let videoObserver=null;
+let videoPostsCache=[];
 
 const el=id=>document.getElementById(id);
 function msg(id,text){el(id).textContent=text}
@@ -332,16 +463,30 @@ function makeAvatar(url,name){
  const d=document.createElement("div");d.className="avatar";d.textContent=(name||"D").charAt(0).toUpperCase();return d;
 }
 function showAvatar(url,name){el("avatarDisplay").replaceChildren(makeAvatar(url,name))}
+
+/* إيقاف كل الفيديوهات عند مغادرة قسم الفيديوهات */
+function stopVideoPlayback(){
+ if(videoObserver){videoObserver.disconnect();videoObserver=null}
+ document.querySelectorAll("#videosList video").forEach(v=>{
+  v.pause();
+ });
+}
 function openTab(name,button){
  if(name==="admin"&&!isAdmin()){alert("غير مصرح لك");return}
+
+ if(name!=="videos")stopVideoPlayback();
+
  document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
  el(name).classList.add("active");
+
  document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
  if(button)button.classList.add("active");
  else{
   const b=[...document.querySelectorAll("nav button")].find(x=>x.getAttribute("onclick")?.includes("'"+name+"'"));
   if(b)b.classList.add("active");
  }
+
+ if(name==="videos")loadVideos();
  if(name==="chats")loadChats();
  if(name==="alerts")loadAlerts();
  if(name==="profile"){loadStats();loadProfile().catch(e=>msg("profileMessage",e.message))}
@@ -350,6 +495,7 @@ function openTab(name,button){
 }
 function showLogin(){
  closePostComments();
+ stopVideoPlayback();
  el("auth").classList.remove("hidden");el("home").classList.add("hidden");
  el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
  currentUser=null;currentProfile=null;activeConversation=null;activeReceiver=null;
@@ -416,11 +562,8 @@ el("signupBtn").onclick=async()=>{
   const {data,error}=await client.auth.signUp({
    email,
    password,
-   options:{
-    emailRedirectTo:DERT_SITE_URL
-   }
+   options:{emailRedirectTo:DERT_SITE_URL}
   });
-
   if(error)throw error;
 
   if(data.session&&data.user){
@@ -433,109 +576,67 @@ el("signupBtn").onclick=async()=>{
  }catch(e){
   el("resendEmailBtn").classList.remove("hidden");
   msg("message","تعذر إنشاء الحساب: "+(e.message||"حدث خطأ غير معروف"));
- }finally{
-  b.disabled=false;
- }
+ }finally{b.disabled=false}
 };
 
 /* إعادة إرسال رسالة تأكيد البريد */
 el("resendEmailBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase();
-
  if(!email||!email.includes("@")){
-  msg("message","اكتب بريدك الإلكتروني الصحيح أولاً");
-  return;
+  msg("message","اكتب بريدك الإلكتروني الصحيح أولاً");return;
  }
-
- const b=el("resendEmailBtn");
- b.disabled=true;
+ const b=el("resendEmailBtn");b.disabled=true;
  msg("message","جارٍ إعادة إرسال رسالة التأكيد...");
-
  try{
   const {error}=await client.auth.resend({
-   type:"signup",
-   email,
-   options:{
-    emailRedirectTo:DERT_SITE_URL
-   }
+   type:"signup",email,options:{emailRedirectTo:DERT_SITE_URL}
   });
-
   if(error)throw error;
-
   msg("message","تم طلب إعادة إرسال رسالة التأكيد. افحص صندوق الوارد والبريد غير المرغوب فيه.");
  }catch(e){
   msg("message","تعذر إعادة الإرسال: "+(e.message||"حدث خطأ"));
- }finally{
-  b.disabled=false;
- }
+ }finally{b.disabled=false}
 };
 
 /* تسجيل الدخول بالبريد */
 el("loginBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase();
  const password=el("password").value;
-
- if(!email||!password){
-  msg("message","أدخل البريد وكلمة المرور");
-  return;
- }
-
- const b=el("loginBtn");
- b.disabled=true;
+ if(!email||!password){msg("message","أدخل البريد وكلمة المرور");return}
+ const b=el("loginBtn");b.disabled=true;
  msg("message","جارٍ تسجيل الدخول...");
-
  try{
   const {data,error}=await client.auth.signInWithPassword({email,password});
   if(error)throw error;
   await showHome(data.user);
  }catch(e){
   msg("message","تعذر تسجيل الدخول: "+(e.message||"حدث خطأ"));
- }finally{
-  b.disabled=false;
- }
+ }finally{b.disabled=false}
 };
 
 /* تسجيل الدخول برقم الهاتف */
 el("sendOtpBtn").onclick=async()=>{
  const phone=el("phone").value.trim();
  if(!/^\+[1-9]\d{7,14}$/.test(phone)){
-  msg("message","اكتب الرقم بالصيغة الدولية مثل +9647XXXXXXXXX");
-  return;
+  msg("message","اكتب الرقم بالصيغة الدولية مثل +9647XXXXXXXXX");return;
  }
-
- pendingPhone=phone;
- msg("message","جارٍ إرسال الرمز...");
-
+ pendingPhone=phone;msg("message","جارٍ إرسال الرمز...");
  try{
   const {error}=await client.auth.signInWithOtp({phone});
   if(error)throw error;
   el("otpArea").classList.remove("hidden");
   msg("message","تم طلب الرمز. افحص هاتفك.");
- }catch(e){
-  msg("message","تعذر إرسال الرمز: "+e.message);
- }
+ }catch(e){msg("message","تعذر إرسال الرمز: "+e.message)}
 };
-
 el("verifyOtpBtn").onclick=async()=>{
  const token=el("otp").value.trim();
- if(!pendingPhone||!token){
-  msg("message","أدخل رمز التحقق");
-  return;
- }
-
+ if(!pendingPhone||!token){msg("message","أدخل رمز التحقق");return}
  try{
-  const {data,error}=await client.auth.verifyOtp({
-   phone:pendingPhone,
-   token,
-   type:"sms"
-  });
+  const {data,error}=await client.auth.verifyOtp({phone:pendingPhone,token,type:"sms"});
   if(error)throw error;
   if(data.user)await showHome(data.user);
- }catch(e){
-  msg("message","تعذر تأكيد الرمز: "+e.message);
- }
+ }catch(e){msg("message","تعذر تأكيد الرمز: "+e.message)}
 };
-
 el("logoutBtn").onclick=async()=>{
  const {error}=await client.auth.signOut();
  if(error){msg("profileMessage",error.message);return}
@@ -563,8 +664,7 @@ async function loadMyVerificationStatus(){
  const btn=el("requestVerificationBtn");
  if(currentProfile?.is_verified===true){
   btn.disabled=true;btn.textContent="✓ حسابك موثّق";
-  msg("verificationMessage","حسابك موثّق بالفعل.");
-  return;
+  msg("verificationMessage","حسابك موثّق بالفعل.");return;
  }
  const {data,error}=await client.from("verification_requests").select("status").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1);
  if(error){msg("verificationMessage","تعذر فحص الطلب: "+error.message);return}
@@ -587,8 +687,7 @@ el("requestVerificationBtn").onclick=async()=>{
   b.textContent="⏳ طلبك قيد المراجعة";
   msg("verificationMessage","تم إرسال الطلب بنجاح.");
  }catch(e){
-  msg("verificationMessage","تعذر إرسال الطلب: "+e.message);
-  b.disabled=false;
+  msg("verificationMessage","تعذر إرسال الطلب: "+e.message);b.disabled=false;
  }
 };
 el("editProfileBtn").onclick=()=>{
@@ -602,8 +701,7 @@ el("cancelProfileBtn").onclick=()=>{
 el("saveProfileBtn").onclick=async()=>{
  const username=el("username").value.trim().toLowerCase();
  if(!/^[a-z0-9_]{3,25}$/.test(username)){
-  msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");
-  return;
+  msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");return;
  }
  const b=el("saveProfileBtn");b.disabled=true;
  try{
@@ -611,10 +709,7 @@ el("saveProfileBtn").onclick=async()=>{
   const f=el("avatarFile").files[0];
   if(f)avatar=await uploadFile(f,"profile");
   const {data,error}=await client.from("profiles").update({
-   full_name:el("fullName").value.trim(),
-   username,
-   bio:el("bio").value.trim(),
-   avatar_url:avatar
+   full_name:el("fullName").value.trim(),username,bio:el("bio").value.trim(),avatar_url:avatar
   }).eq("id",currentUser.id).select().single();
   if(error)throw error;
   currentProfile=data;
@@ -625,11 +720,8 @@ el("saveProfileBtn").onclick=async()=>{
   el("profileSettings").classList.add("hidden");
   el("editProfileBtn").classList.remove("hidden");
   msg("profileMessage","تم حفظ الملف الشخصي ❤️");
- }catch(e){
-  msg("profileMessage","تعذر الحفظ: "+e.message);
- }finally{
-  b.disabled=false;
- }
+ }catch(e){msg("profileMessage","تعذر الحفظ: "+e.message)}
+ finally{b.disabled=false}
 };
 el("avatarFile").onchange=()=>{
  const f=el("avatarFile").files[0];if(!f)return;
@@ -646,11 +738,9 @@ el("publishBtn").onclick=async()=>{
  const locationName=el("postLocation").value.trim();
  const musicTitle=el("musicTitle").value.trim();
  const musicArtist=el("musicArtist").value.trim();
-
  if(!content&&!file&&!musicFile&&!locationName){
   msg("postMessage","اكتب منشوراً أو اختر ملفاً");return;
  }
-
  const b=el("publishBtn");b.disabled=true;
  try{
   let image_url=null,music_url=null,media_type=null;
@@ -660,28 +750,199 @@ el("publishBtn").onclick=async()=>{
    media_type=file.type.startsWith("video/")?"video":"image";
   }
   if(musicFile)music_url=await uploadFile(musicFile,"music");
-
   const {error}=await client.from("posts").insert({
-   user_id:currentUser.id,
-   content:content||null,
-   image_url,
-   media_type,
-   location_name:locationName||null,
-   music_title:musicTitle||musicFile?.name||null,
-   music_artist:musicArtist||null,
-   music_url
+   user_id:currentUser.id,content:content||null,image_url,media_type,
+   location_name:locationName||null,music_title:musicTitle||musicFile?.name||null,
+   music_artist:musicArtist||null,music_url
   });
   if(error)throw error;
-
   ["postContent","postImage","postLocation","postMusic","musicTitle","musicArtist"].forEach(id=>el(id).value="");
   msg("postMessage","تم نشر المنشور بنجاح ❤️");
   await loadPosts();await loadStats();
- }catch(e){
-  msg("postMessage","تعذر النشر: "+e.message);
- }finally{
-  b.disabled=false;
- }
+  if(media_type==="video")await loadVideos();
+ }catch(e){msg("postMessage","تعذر النشر: "+e.message)}
+ finally{b.disabled=false}
 };
+
+/* قسم الفيديوهات العمودية */
+async function loadVideos(){
+ if(!currentUser)return;
+ const list=el("videosList");
+ stopVideoPlayback();
+ list.replaceChildren();
+ const loading=document.createElement("div");
+ loading.className="video-loading";loading.textContent="جارٍ تحميل الفيديوهات...";
+ list.appendChild(loading);
+
+ try{
+  const {data,error}=await client.from("posts")
+   .select("*")
+   .eq("media_type","video")
+   .not("image_url","is",null)
+   .order("created_at",{ascending:false})
+   .limit(100);
+
+  if(error)throw error;
+
+  list.replaceChildren();
+  videoPostsCache=data||[];
+
+  if(!videoPostsCache.length){
+   const empty=document.createElement("div");
+   empty.className="videos-empty";
+   const title=document.createElement("strong");
+   title.textContent="🎬 لا توجد فيديوهات حالياً";
+   const description=document.createElement("p");
+   description.textContent="كن أول من يشارك فيديو على DERT. انتقل إلى المنشورات واختر فيديو من جهازك ثم اضغط نشر.";
+   const go=document.createElement("button");
+   go.textContent="＋ نشر فيديو";
+   go.onclick=()=>openTab("feed");
+   empty.append(title,description,go);
+   list.appendChild(empty);
+   return;
+  }
+
+  const userIds=[...new Set(videoPostsCache.map(p=>p.user_id))];
+  const {data:profiles,error:profileError}=await client.from("profiles")
+   .select("id,username,full_name,avatar_url,is_verified")
+   .in("id",userIds);
+
+  if(profileError)throw profileError;
+
+  const names={};
+  (profiles||[]).forEach(p=>names[p.id]=p);
+
+  const {data:myFollows,error:followError}=await client.from("follows")
+   .select("following_id")
+   .eq("follower_id",currentUser.id);
+
+  if(followError)throw followError;
+
+  const followed=new Set((myFollows||[]).map(x=>x.following_id));
+
+  videoPostsCache.forEach(post=>{
+   const profile=names[post.user_id]||{};
+   const card=document.createElement("article");
+   card.className="video-card";
+   card.dataset.postId=post.id;
+
+   const video=document.createElement("video");
+   video.src=post.image_url;
+   video.autoplay=true;
+   video.muted=true;
+   video.loop=true;
+   video.playsInline=true;
+   video.preload="metadata";
+   video.setAttribute("playsinline","");
+   video.setAttribute("webkit-playsinline","");
+   video.addEventListener("click",()=>{
+    if(video.paused)video.play().catch(()=>{});
+    else video.pause();
+   });
+
+   const overlay=document.createElement("div");
+   overlay.className="video-overlay";
+
+   const details=document.createElement("div");
+   details.className="video-details";
+
+   const author=document.createElement("div");
+   author.className="video-author";
+   const authorName=(profile.full_name||profile.username||"مستخدم DERT")+"  @"+(profile.username||"user");
+   addVerifiedName(author,authorName,profile.is_verified===true);
+
+   const description=document.createElement("div");
+   description.className="video-description";
+   description.textContent=post.content||"";
+
+   const date=document.createElement("div");
+   date.className="video-date";
+   date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");
+
+   details.append(author);
+   if(post.content)details.appendChild(description);
+   details.appendChild(date);
+   overlay.appendChild(details);
+
+   const sound=document.createElement("button");
+   sound.className="video-sound";
+   sound.textContent="🔇";
+   sound.title="تشغيل أو كتم الصوت";
+   sound.onclick=()=>{
+    video.muted=!video.muted;
+    sound.textContent=video.muted?"🔇":"🔊";
+    if(!video.paused)video.play().catch(()=>{});
+   };
+
+   const actions=document.createElement("div");
+   actions.className="video-side-actions";
+
+   const comment=document.createElement("button");
+   comment.textContent="💬";
+   comment.title="التعليقات";
+   comment.onclick=()=>openPostComments(post);
+
+   const share=document.createElement("button");
+   share.textContent="↗️";
+   share.title="مشاركة الفيديو";
+   share.onclick=()=>sharePost(post.id);
+
+   const follow=document.createElement("button");
+   follow.className="video-follow";
+   follow.textContent=followed.has(post.user_id)?"إلغاء المتابعة":"+ متابعة";
+   follow.dataset.following=followed.has(post.user_id)?"yes":"";
+   if(post.user_id===currentUser.id){
+    follow.classList.add("hidden");
+   }else{
+    follow.onclick=()=>followUser(post.user_id,follow);
+   }
+
+   actions.append(comment,share,follow);
+   card.append(video,overlay,sound,actions);
+   list.appendChild(card);
+  });
+
+  setupVideoObserver();
+
+ }catch(e){
+  list.replaceChildren();
+  const error=document.createElement("div");
+  error.className="videos-empty";
+  const title=document.createElement("strong");
+  title.textContent="تعذر تحميل الفيديوهات";
+  const detail=document.createElement("p");
+  detail.textContent=e.message||"حدث خطأ غير معروف";
+  const retry=document.createElement("button");
+  retry.textContent="إعادة المحاولة";
+  retry.onclick=loadVideos;
+  error.append(title,detail,retry);
+  list.appendChild(error);
+ }
+}
+
+/* تشغيل الفيديو الظاهر وإيقاف البقية */
+function setupVideoObserver(){
+ if(videoObserver)videoObserver.disconnect();
+
+ const videos=[...document.querySelectorAll("#videosList video")];
+ if(!videos.length)return;
+
+ videoObserver=new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+   const video=entry.target;
+   if(entry.isIntersecting&&entry.intersectionRatio>=0.65){
+    videos.forEach(other=>{
+     if(other!==video)other.pause();
+    });
+    video.play().catch(()=>{});
+   }else{
+    video.pause();
+   }
+  });
+ },{root:el("videosList"),threshold:[0,0.35,0.65,0.9]});
+
+ videos.forEach(video=>videoObserver.observe(video));
+}
 
 /* المنشورات والتعليقات */
 async function loadPosts(){
@@ -798,11 +1059,8 @@ el("sendCommentBtn").onclick=async()=>{
   const countElement=document.querySelector("#post-"+activeCommentPost.id+" .comment-open span");
   if(countElement)await updatePostCommentCount(activeCommentPost.id,countElement);
   el("commentModalList").scrollTop=el("commentModalList").scrollHeight;
- }catch(e){
-  alert("تعذر إضافة التعليق: "+e.message);
- }finally{
-  b.disabled=false;
- }
+ }catch(e){alert("تعذر إضافة التعليق: "+e.message)}
+ finally{b.disabled=false}
 };
 el("commentInput").addEventListener("keydown",e=>{
  if(e.key==="Enter"){e.preventDefault();el("sendCommentBtn").click()}
@@ -853,9 +1111,7 @@ async function sharePost(postId){
  try{
   if(navigator.share){
    await navigator.share({title:"منشور على DERT 🌍",text:"شاهد هذا المنشور على DERT",url});
-  }else{
-   await copyPostLink(postId);
-  }
+  }else{await copyPostLink(postId)}
  }catch(e){
   if(e.name!=="AbortError")alert("تعذرت المشاركة. يمكنك نسخ الرابط بدلاً من ذلك.");
  }
@@ -871,9 +1127,7 @@ async function copyPostLink(postId){
    if(!ok)throw new Error("copy failed");
   }
   alert("تم نسخ رابط المنشور");
- }catch(e){
-  prompt("انسخ رابط المنشور:",url);
- }
+ }catch(e){prompt("انسخ رابط المنشور:",url)}
 }
 async function editPost(post){
  if(post.user_id!==currentUser.id){alert("لا يمكنك تعديل منشور شخص آخر");return}
@@ -883,14 +1137,11 @@ async function editPost(post){
  if(locationName===null)return;
  try{
   const {error}=await client.from("posts").update({
-   content:content.trim()||null,
-   location_name:locationName.trim()||null
+   content:content.trim()||null,location_name:locationName.trim()||null
   }).eq("id",post.id).eq("user_id",currentUser.id);
   if(error)throw error;
   alert("تم تعديل المنشور");await loadPosts();
- }catch(e){
-  alert("تعذر تعديل المنشور: "+e.message);
- }
+ }catch(e){alert("تعذر تعديل المنشور: "+e.message)}
 }
 async function deletePost(id,button){
  if(!confirm("هل أنت متأكد من حذف المنشور؟ لا يمكن التراجع."))return;
@@ -898,10 +1149,8 @@ async function deletePost(id,button){
  try{
   const {error}=await client.from("posts").delete().eq("id",id).eq("user_id",currentUser.id);
   if(error)throw error;
-  await loadPosts();await loadStats();
- }catch(e){
-  alert("تعذر حذف المنشور: "+e.message);button.disabled=false;
- }
+  await loadPosts();await loadStats();await loadVideos();
+ }catch(e){alert("تعذر حذف المنشور: "+e.message);button.disabled=false}
 }
 async function reportContent(type,id){
  const reason=prompt("ما سبب الإبلاغ؟\nمثلاً: محتوى مسيء، انتحال، مضايقة، محتوى غير مناسب");
@@ -914,9 +1163,7 @@ async function reportContent(type,id){
   });
   if(error)throw error;
   alert("تم إرسال البلاغ إلى إدارة DERT. شكراً لمساعدتنا.");
- }catch(e){
-  alert("تعذر إرسال البلاغ: "+e.message);
- }
+ }catch(e){alert("تعذر إرسال البلاغ: "+e.message)}
 }
 
 /* الإحصائيات */
@@ -964,6 +1211,8 @@ el("searchBtn").onclick=async()=>{
  }
 };
 async function followUser(id,button){
+ if(!currentUser||id===currentUser.id)return;
+ button.disabled=true;
  try{
   if(button.dataset.following==="yes"){
    const {error}=await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",id);
@@ -975,9 +1224,8 @@ async function followUser(id,button){
    button.textContent="إلغاء المتابعة";button.dataset.following="yes";
   }
   await loadStats();
- }catch(e){
-  alert("تعذرت العملية: "+e.message);
- }
+ }catch(e){alert("تعذرت العملية: "+e.message)}
+ finally{button.disabled=false}
 }
 
 /* المحادثات */
@@ -1003,9 +1251,7 @@ async function startChat(otherId,username){
   ]);
   if(memberError)throw memberError;
   openTab("chats");await openChat(conversation.id,otherId,username);
- }catch(e){
-  alert("تعذر بدء المحادثة: "+e.message);
- }
+ }catch(e){alert("تعذر بدء المحادثة: "+e.message)}
 }
 async function loadChats(){
  const list=el("chatList");list.textContent="جارٍ تحميل المحادثات...";
@@ -1118,11 +1364,8 @@ el("sendMessageBtn").onclick=async()=>{
   el("chatText").value="";el("chatFile").value="";
   msg("chatStatus","تم إرسال الرسالة");
   await loadMessages();await loadChats();
- }catch(e){
-  msg("chatStatus","تعذر الإرسال: "+e.message);
- }finally{
-  b.disabled=false;
- }
+ }catch(e){msg("chatStatus","تعذر الإرسال: "+e.message)}
+ finally{b.disabled=false}
 };
 function startRealtime(){
  if(!activeConversation)return;
@@ -1149,9 +1392,7 @@ async function loadAlerts(){
    const row=document.createElement("div");row.className="item";
    row.textContent=n.content||"إشعار جديد";list.appendChild(row);
   });
- }catch(e){
-  list.textContent="تعذر تحميل الإشعارات: "+e.message;
- }
+ }catch(e){list.textContent="تعذر تحميل الإشعارات: "+e.message}
 }
 el("refreshAlerts").onclick=loadAlerts;
 function startAlertsRealtime(){
@@ -1192,9 +1433,7 @@ async function loadAdminRequests(){
    }
    box.appendChild(card);
   });
- }catch(e){
-  box.textContent="تعذر تحميل طلبات التوثيق: "+e.message;
- }
+ }catch(e){box.textContent="تعذر تحميل طلبات التوثيق: "+e.message}
 }
 async function reviewVerification(id,action){
  if(!isAdmin())return;
@@ -1207,9 +1446,7 @@ async function reviewVerification(id,action){
   if(result.error)throw result.error;
   msg("adminMessage","تم تنفيذ القرار بنجاح");
   await loadAdminRequests();
- }catch(e){
-  alert("تعذر تنفيذ القرار: "+e.message);
- }
+ }catch(e){alert("تعذر تنفيذ القرار: "+e.message)}
 }
 el("refreshAdmin").onclick=loadAdminRequests;
 
@@ -1258,11 +1495,8 @@ el("sendSupportBtn").onclick=async()=>{
   el("supportText").value="";
   msg("supportStatus","تم إرسال رسالتك إلى الدعم بنجاح.");
   await loadMySupport();
- }catch(e){
-  msg("supportStatus","تعذر إرسال الرسالة: "+e.message);
- }finally{
-  b.disabled=false;
- }
+ }catch(e){msg("supportStatus","تعذر إرسال الرسالة: "+e.message)}
+ finally{b.disabled=false}
 };
 async function loadMySupport(){
  const box=el("mySupportMessages");box.textContent="جارٍ تحميل رسائلك...";
@@ -1328,17 +1562,13 @@ async function showHome(user){
   await loadStats();
   await loadChats();
   startAlertsRealtime();
-  openTab("chats");
- }catch(e){
-  msg("profileMessage","ملاحظة: "+e.message);
- }
+  openTab("videos");
+ }catch(e){msg("profileMessage","ملاحظة: "+e.message)}
 }
 
 /* مراقبة تغيّر حالة تسجيل الدخول */
 client.auth.onAuthStateChange((event,session)=>{
- if(event==="SIGNED_OUT"){
-  showLogin();
- }
+ if(event==="SIGNED_OUT")showLogin();
 });
 
 /* فحص الجلسة ومعالجة الرجوع من رابط التأكيد */

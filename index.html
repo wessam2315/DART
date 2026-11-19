@@ -313,11 +313,23 @@ nav button.active{color:#ffffff;background:transparent}
 .tt-stat-tile span{font-size:11px;color:var(--muted)}
 .tt-qr-box{background:#ffffff;color:#000;border-radius:14px;padding:16px;text-align:center;margin:10px 0}
 
-/* غرفة البث المباشر LIVE */
+/* باقات طرق الدفع العراقية */
+.pay-methods-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
+.pay-method-btn{background:#1a1b25;border:1px solid #2d3042;color:#fff;padding:10px;border-radius:10px;font-size:12px;font-weight:700}
+.pay-method-btn.active{background:#fe2c55;border-color:#fe2c55}
+.packages-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0}
+.pkg-btn{background:#1a1b25;border:1px solid #2d3042;color:#fff;padding:10px 6px;border-radius:10px;font-size:12px}
+.pkg-btn.active{background:#18a968;border-color:#18a968}
+
+/* غرفة البث المباشر LIVE وتوزيع النسب 60% / 40% */
 .tt-live-stage{background:#0b0c12;border:1px solid #282a3a;border-radius:16px;padding:12px}
-.tt-live-screen{position:relative;height:220px;border-radius:12px;background:radial-gradient(circle at 50% 30%,#3b1d7a,#09090d 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;padding:12px}
+.tt-live-screen{position:relative;height:210px;border-radius:12px;background:radial-gradient(circle at 50% 30%,#3b1d7a,#09090d 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;padding:12px}
 .tt-live-screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .tt-live-badge-top{position:relative;z-index:2;background:#fe2c55;color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;margin-bottom:8px}
+.tt-split-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.tt-split-box{background:#15161e;border:1px solid #262836;border-radius:12px;padding:10px;text-align:center}
+.tt-split-box strong{display:block;font-size:16px;color:#fff}
+.tt-split-box span{font-size:11px;color:var(--muted)}
 .tt-live-chat{max-height:170px;overflow-y:auto;background:#101118;border:1px solid #222432;border-radius:12px;padding:10px;margin-top:10px}
 .tt-live-gifts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .tt-live-gifts button{padding:7px 11px;font-size:12px;background:#1d1f2b;border:1px solid #2e3142}
@@ -537,14 +549,28 @@ nav button.active{color:#ffffff;background:transparent}
 <section id="admin" class="section">
 <div class="card">
 <h2>لوحة إدارة DERT</h2>
-<button class="full" id="refreshAdmin">تحديث طلبات التوثيق</button>
+
+<h3>طلبات شحن العملات (زين كاش / سوبر كي / زين / آسياسيل)</h3>
+<button class="full green" id="refreshTopups">تحديث طلبات الشحن</button>
+<div id="adminTopups"></div>
+<hr style="border-color:var(--line)">
+
+<h3>طلبات سحب الأرباح</h3>
+<button class="full" id="refreshWithdrawals">تحديث طلبات السحب</button>
+<div id="adminWithdrawals"></div>
+<hr style="border-color:var(--line)">
+
+<h3>طلبات التوثيق</h3>
+<button class="full gray" id="refreshAdmin">تحديث طلبات التوثيق</button>
 <div id="adminMessage" class="small"></div>
 <div id="adminRequests"></div>
 <hr style="border-color:var(--line)">
+
 <h3>البلاغات</h3>
 <button class="full gray" id="refreshReports">تحديث البلاغات</button>
 <div id="adminReports"></div>
 <hr style="border-color:var(--line)">
+
 <h3>رسائل الدعم</h3>
 <button class="full gray" id="refreshSupportAdmin">تحديث رسائل الدعم</button>
 <div id="adminSupport"></div>
@@ -622,7 +648,11 @@ nav button.active{color:#ffffff;background:transparent}
  <div class="tt-menu-group-title">الأصول</div>
  <div class="tt-menu-card">
   <button type="button" class="tt-menu-item" onclick="openStandaloneTool('balance')">
-   <span class="tt-menu-left"><span>💳</span><span>الرصيد</span></span>
+   <span class="tt-menu-left"><span>💳</span><span>الرصيد والأرباح (60% / 40%)</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('topup')">
+   <span class="tt-menu-left"><span>🪙</span><span>شراء العملات (زين كاش / سوبر كي / زين / آسياسيل)</span></span>
    <span class="tt-menu-arrow">‹</span>
   </button>
  </div>
@@ -884,6 +914,10 @@ const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
 const ADMIN_ID="221ecf80-7f89-4172-b61a-304369cbe870";
 const MANDATORY_FOLLOW_USER_ID="221ecf80-7f89-4172-b61a-304369cbe870";
 
+/* نسب توزيع الدعم: 60% لصاحب البث و 40% لك */
+const STREAMER_SHARE_RATE=0.60;
+const OWNER_SHARE_RATE=0.40;
+
 const DERT_SONGS=[
  {id:"s1",title:"أيامي بيك - Elissa",artist:"Music Mix",duration:"0:28",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"},
  {id:"s2",title:"نبض الليل - Night Pulse",artist:"DERT Sound",duration:"0:32",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"},
@@ -906,7 +940,9 @@ let previewAudio=new Audio();
 let playingSongId=null;
 let activeProfileMediaTab="posts";
 let liveStream=null;
-let liveChatMessages=["أهلاً بالجميع في بث DERT المباشر! 🎉"];
+let liveChatMessages=["أهلاً بالجميع في بث DERT المباشر! 🎉 (توزيع الدعم: 60% لصاحب البث • 40% أرباحك)"];
+let selectedPayMethod="zaincash";
+let selectedPackage={amount:5000,coins:100};
 
 const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
@@ -952,6 +988,54 @@ function saveDertState(patch){
  return next;
 }
 
+/* جلب الرصيد الحقيقي من Supabase wallets */
+async function fetchWalletBalance(userId=currentUser?.id){
+ if(!userId)return 0;
+ try{
+  const {data,error}=await client.from("wallets").select("balance").eq("user_id",userId).maybeSingle();
+  if(error)throw error;
+  return Number(data?.balance||0);
+ }catch(e){
+  return Number(getDertState().streamerBalance||0);
+ }
+}
+
+/* تنفيذ توزيع الدعم (60% لصاحب البث / 40% لك) عبر RPC في Supabase مع fallback محلي */
+async function processSupportSplit(totalAmount,giftLabel="دعم",targetStreamerId=null){
+ const amt=Number(totalAmount);
+ if(!Number.isFinite(amt) || amt<=0)return null;
+ const streamerCut=Number((amt*STREAMER_SHARE_RATE).toFixed(2));
+ const ownerCut=Number((amt*OWNER_SHARE_RATE).toFixed(2));
+ const recipientId=targetStreamerId || ADMIN_ID;
+
+ let rpcDone=false;
+ try{
+  const {error}=await client.rpc("send_support_split",{
+   p_streamer_id:recipientId,
+   p_amount:amt,
+   p_gift_label:giftLabel
+  });
+  if(!error)rpcDone=true;
+ }catch(e){}
+
+ const st=getDertState();
+ const history=Array.isArray(st.supportSplitLog)?st.supportSplitLog:[];
+ const entry={
+  giftLabel,
+  total:amt,
+  streamerCut,
+  ownerCut,
+  synced:rpcDone,
+  time:new Date().toLocaleTimeString("ar-IQ")
+ };
+ saveDertState({
+  streamerBalance:Number((Number(st.streamerBalance||0)+streamerCut).toFixed(2)),
+  ownerProfit:Number((Number(st.ownerProfit||0)+ownerCut).toFixed(2)),
+  supportSplitLog:[entry,...history].slice(0,30)
+ });
+ return {total:amt,streamerCut,ownerCut,synced:rpcDone};
+}
+
 function isPostLiked(postId){
  const st=getDertState();
  return Array.isArray(st.likedPosts) && st.likedPosts.includes(String(postId));
@@ -991,27 +1075,51 @@ function stopLiveCamera(){
  }
 }
 
+async function refreshLiveSplitCards(){
+ const dbBal=await fetchWalletBalance(currentUser?.id);
+ const st=getDertState();
+ if(el("liveStreamerEarned"))el("liveStreamerEarned").textContent=dbBal || Number(st.streamerBalance||0);
+ if(el("liveOwnerEarned"))el("liveOwnerEarned").textContent=Number(st.ownerProfit||0);
+}
+
 async function openLiveRoom(){
  closeAllStandaloneScreens();
  el("toolScreenTitle").textContent="غرفة البث المباشر LIVE";
  const body=el("toolScreenBody");
  el("toolScreen").classList.remove("hidden");
+ const st=getDertState();
+ const dbBal=await fetchWalletBalance(currentUser?.id);
  body.innerHTML=`
   <div class="tt-live-stage">
    <div class="tt-live-screen" id="liveScreenBox">
     <span class="tt-live-badge-top">● LIVE مباشر</span>
     <strong id="liveRoomHeading">بث DERT المباشر</strong>
-    <div class="small" id="liveViewersCount" style="margin-top:4px">👁️ 128 مشاهد</div>
+    <div class="small" id="liveViewersCount" style="margin-top:4px">👁️ 128 مشاهد • 60% صاحب البث / 40% أرباحك</div>
+   </div>
+   <div class="tt-split-summary">
+    <div class="tt-split-box">
+     <strong id="liveStreamerEarned">${dbBal || Number(st.streamerBalance||0)}</strong>
+     <span>رصيدك / حصة البث (60%)</span>
+    </div>
+    <div class="tt-split-box">
+     <strong id="liveOwnerEarned">${Number(st.ownerProfit||0)}</strong>
+     <span>أرباحك أنت (40%)</span>
+    </div>
    </div>
    <div class="user-row-actions" style="justify-content:center;margin-top:10px">
     <button type="button" class="green" id="startCamLiveBtn">تشغيل الكاميرا</button>
     <button type="button" class="gray" id="stopCamLiveBtn">إيقاف الكاميرا</button>
+    <button type="button" class="gray" onclick="openStandaloneTool('topup')">🪙 شراء عملات</button>
    </div>
    <div class="tt-live-gifts">
-    <button type="button" onclick="sendLiveGift('❤️ قلب')">❤️ قلب</button>
-    <button type="button" onclick="sendLiveGift('🌹 وردة')">🌹 وردة</button>
-    <button type="button" onclick="sendLiveGift('🔥 نار')">🔥 نار</button>
-    <button type="button" onclick="sendLiveGift('💎 ماسة')">💎 ماسة</button>
+    <button type="button" onclick="sendLiveGift('❤️ قلب',10)">❤️ قلب (10)</button>
+    <button type="button" onclick="sendLiveGift('🌹 وردة',25)">🌹 وردة (25)</button>
+    <button type="button" onclick="sendLiveGift('🔥 نار',50)">🔥 نار (50)</button>
+    <button type="button" onclick="sendLiveGift('💎 ماسة',100)">💎 ماسة (100)</button>
+   </div>
+   <div style="display:flex;gap:8px;margin-top:8px">
+    <input id="customSupportAmount" type="number" min="1" placeholder="مبلغ دعم مخصص..." style="margin:0;flex:1">
+    <button type="button" class="green" id="sendCustomSupportBtn">دعم بالمبلغ</button>
    </div>
    <div class="tt-live-chat" id="liveChatBox"></div>
    <div style="display:flex;gap:8px;margin-top:8px">
@@ -1036,17 +1144,28 @@ async function openLiveRoom(){
   const box=el("liveScreenBox");
   const oldVid=box?.querySelector("video");if(oldVid)oldVid.remove();
  };
+ el("sendCustomSupportBtn").onclick=async()=>{
+  const val=Number(el("customSupportAmount").value);
+  if(!Number.isFinite(val) || val<=0){alert("أدخل مبلغ دعم صحيح");return}
+  await sendLiveGift("🎁 دعم مباشر",val);
+  el("customSupportAmount").value="";
+ };
  el("sendLiveMsgBtn").onclick=()=>{
   const inp=el("liveMsgInput");const t=inp.value.trim();if(!t)return;
   const sender=currentProfile?.full_name||currentProfile?.username||"أنت";
   liveChatMessages.push(`${sender}: ${t}`);inp.value="";renderLiveChat();
  };
 }
-function sendLiveGift(gift){
+
+async function sendLiveGift(gift,amount=10){
+ const split=await processSupportSplit(amount,gift,currentUser?.id||ADMIN_ID);
+ if(!split)return;
  const sender=currentProfile?.full_name||currentProfile?.username||"أنت";
- liveChatMessages.push(`🎁 أرسل ${sender} هدية ${gift}`);
+ liveChatMessages.push(`🎁 دعم ${gift} (${split.total}) من ${sender} ⬅️ صاحب البث: ${split.streamerCut} (60%) | أرباحك: ${split.ownerCut} (40%)`);
+ await refreshLiveSplitCards();
  renderLiveChat();
 }
+
 function renderLiveChat(){
  const box=el("liveChatBox");if(!box)return;
  box.innerHTML=liveChatMessages.map(m=>`<div class="small" style="padding:4px 0;color:#fff">${m}</div>`).join("");
@@ -1146,6 +1265,18 @@ function closeToolScreen(){
  el("menuScreen").classList.remove("hidden");
 }
 
+function getMethodInstructions(method){
+ if(method==="zaincash")return "حوّل المبلغ إلى محفظة زين كاش (ZainCash) المعتمدة، ثم أدخل رقم العملية / المرجع هنا للمراجعة والإضافة.";
+ if(method==="superqi")return "ادفع عبر سوبر كي (SuperQi)، ثم أدخل رقم العملية أو المرجع لتأكيد الطلب وإضافة العملات.";
+ if(method==="zain_iq")return "اتبع تعليمات الدفع عبر رصيد زين العراق ثم أدخل رمز الشحن أو رقم العملية.";
+ return "اتبع تعليمات الدفع عبر رصيد آسياسيل ثم أدخل رمز الشحن أو رقم العملية.";
+}
+
+function getMethodArabicName(method){
+ const map={zaincash:"زين كاش",superqi:"سوبر كي",zain_iq:"زين العراق",asiacell:"آسياسيل"};
+ return map[method]||method;
+}
+
 async function openStandaloneTool(tool){
  const body=el("toolScreenBody");
  el("menuScreen").classList.add("hidden");
@@ -1155,23 +1286,153 @@ async function openStandaloneTool(tool){
  const uname=currentProfile?.username||"user";
  const fname=currentProfile?.full_name||"مستخدم DERT";
 
- if(tool==="balance"){
-  el("toolScreenTitle").textContent="الرصيد";
-  const coins=Number(st.coins||120);
-  const log=Array.isArray(st.coinLog)?st.coinLog:[];
+ if(tool==="topup"){
+  el("toolScreenTitle").textContent="شراء العملات";
+  const pkgs=[
+   {amount:5000,coins:100,label:"5,000 د.ع = 100 عملة"},
+   {amount:10000,coins:220,label:"10,000 د.ع = 220 عملة"},
+   {amount:25000,coins:600,label:"25,000 د.ع = 600 عملة"}
+  ];
+  let myTopups=[];
+  try{
+   const {data}=await client.from("coin_topup_requests").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(10);
+   myTopups=data||[];
+  }catch(e){}
+
   body.innerHTML=`
-   <div class="tt-sub-box" style="text-align:center">
-    <div class="small">رصيد عملات DERT</div>
-    <h2 style="margin:6px 0">${coins} 🪙</h2>
-    <button type="button" class="green full" id="addDemoCoinsBtn">+ إضافة 50 عملة تجريبية</button>
+   <div class="tt-sub-box">
+    <strong>اختر طريقة الدفع في العراق</strong>
+    <div class="pay-methods-grid">
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='zaincash'?'active':''}" data-m="zaincash">زين كاش</button>
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='superqi'?'active':''}" data-m="superqi">سوبر كي</button>
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='zain_iq'?'active':''}" data-m="zain_iq">زين العراق</button>
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='asiacell'?'active':''}" data-m="asiacell">آسياسيل</button>
+    </div>
+    <p id="topupInstructions" class="small">${getMethodInstructions(selectedPayMethod)}</p>
+
+    <strong>اختر باقة العملات</strong>
+    <div class="packages-grid">
+     ${pkgs.map((p,idx)=>`<button type="button" class="pkg-btn ${selectedPackage.coins===p.coins?'active':''}" data-idx="${idx}">${p.label}</button>`).join("")}
+    </div>
+
+    <input id="topupRefCode" placeholder="رقم العملية / رمز الشحن أو مرجع الدفع">
+    <button type="button" class="green full" id="submitTopupBtn">إرسال طلب شحن العملات</button>
+    <p id="topupStatusMsg" class="small" style="margin-top:8px"></p>
    </div>
-   <div id="coinHistoryBox" style="margin-top:10px">${log.length?log.map(x=>`<div class="item small">${x}</div>`).join(""):`<div class="small">لا توجد عمليات سابقة</div>`}</div>
+
+   <div class="tt-sub-box">
+    <strong>طلباتي السابقة</strong>
+    <div id="myTopupsList">${myTopups.length?myTopups.map(t=>`<div class="item small"><strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع) — الحالة: <span class="status-${t.status}">${t.status}</span></div>`).join(""):`<div class="small">لا توجد طلبات شحن بعد</div>`}</div>
+   </div>
   `;
-  el("addDemoCoinsBtn").onclick=()=>{
-   const nextCoins=coins+50;
-   const nextLog=[`+${50} عملة • ${new Date().toLocaleTimeString("ar-IQ")}`,...log].slice(0,15);
-   saveDertState({coins:nextCoins,coinLog:nextLog});
+
+  body.querySelectorAll(".pay-method-btn").forEach(btn=>{
+   btn.onclick=()=>{
+    selectedPayMethod=btn.dataset.m;
+    body.querySelectorAll(".pay-method-btn").forEach(b=>b.classList.toggle("active",b===btn));
+    el("topupInstructions").textContent=getMethodInstructions(selectedPayMethod);
+   };
+  });
+
+  body.querySelectorAll(".pkg-btn").forEach(btn=>{
+   btn.onclick=()=>{
+    const p=pkgs[Number(btn.dataset.idx)];
+    if(!p)return;
+    selectedPackage={amount:p.amount,coins:p.coins};
+    body.querySelectorAll(".pkg-btn").forEach(b=>b.classList.toggle("active",b===btn));
+   };
+  });
+
+  el("submitTopupBtn").onclick=async()=>{
+   const ref=el("topupRefCode").value.trim();
+   if(!ref){msg("topupStatusMsg","اكتب رقم العملية أو رمز الشحن أولاً");return}
+   const b=el("submitTopupBtn");b.disabled=true;msg("topupStatusMsg","جارٍ إرسال الطلب...");
+   try{
+    const {error}=await client.from("coin_topup_requests").insert({
+     user_id:currentUser.id,
+     payment_method:selectedPayMethod,
+     package_amount:selectedPackage.amount,
+     coins_amount:selectedPackage.coins,
+     reference_code:ref,
+     status:"pending"
+    });
+    if(error)throw error;
+    msg("topupStatusMsg","تم إرسال طلب الشحن بنجاح وسيُضاف الرصيد بعد التأكيد ✓");
+    openStandaloneTool("topup");
+   }catch(e){
+    msg("topupStatusMsg","تعذر إرسال الطلب: "+e.message);
+    b.disabled=false;
+   }
+  };
+  return;
+ }
+
+ if(tool==="balance"){
+  el("toolScreenTitle").textContent="الرصيد والأرباح (60% / 40%)";
+  const dbBal=await fetchWalletBalance(currentUser.id);
+  const streamerBal=dbBal || Number(st.streamerBalance||0);
+  const ownerProfit=Number(st.ownerProfit||0);
+  const log=Array.isArray(st.supportSplitLog)?st.supportSplitLog:[];
+  body.innerHTML=`
+   <div class="tt-split-summary">
+    <div class="tt-split-box">
+     <strong>${streamerBal}</strong>
+     <span>رصيدك الحالي / حصة البث (60%)</span>
+    </div>
+    <div class="tt-split-box">
+     <strong>${ownerProfit}</strong>
+     <span>أرباحك أنت (40%)</span>
+    </div>
+   </div>
+
+   <div class="user-row-actions" style="margin-top:10px">
+    <button type="button" class="green" onclick="openStandaloneTool('topup')" style="flex:1">🪙 شراء عملات</button>
+   </div>
+
+   <div class="tt-sub-box" style="margin-top:10px">
+    <strong>تسجيل عملية دعم جديدة</strong>
+    <input id="supportAmountInput" type="number" min="1" placeholder="اكتب قيمة الدعم مثل 100">
+    <button type="button" class="green full" id="addSupportSplitBtn">توزيع الدعم (60% له / 40% لك)</button>
+   </div>
+
+   <div class="tt-sub-box" style="margin-top:10px">
+    <strong>طلب سحب الأرباح</strong>
+    <input id="withdrawAmountInput" type="number" min="1" placeholder="مبلغ السحب المطلوب">
+    <input id="withdrawMethodInput" placeholder="طريقة السحب (مثال: زين كاش 07XXXXXXXXX أو سوبر كي)">
+    <button type="button" class="full" id="submitWithdrawBtn">إرسال طلب سحب</button>
+    <p id="withdrawStatusMsg" class="small" style="margin-top:6px"></p>
+   </div>
+
+   <div id="coinHistoryBox" style="margin-top:10px">${log.length?log.map(x=>`<div class="item small">${x.giftLabel} • إجمالي: ${x.total} | صاحب البث (60%): ${x.streamerCut} | أرباحك (40%): ${x.ownerCut} • ${x.time}</div>`).join(""):`<div class="small">لا توجد عمليات دعم مسجلة بعد</div>`}</div>
+  `;
+
+  el("addSupportSplitBtn").onclick=async()=>{
+   const amt=Number(el("supportAmountInput").value);
+   if(!Number.isFinite(amt) || amt<=0){alert("أدخل مبلغاً صحيحاً أكبر من 0");return}
+   await processSupportSplit(amt,"🎁 دعم",currentUser.id);
    openStandaloneTool("balance");
+  };
+
+  el("submitWithdrawBtn").onclick=async()=>{
+   const wAmt=Number(el("withdrawAmountInput").value);
+   const wMethod=el("withdrawMethodInput").value.trim();
+   if(!Number.isFinite(wAmt) || wAmt<=0){msg("withdrawStatusMsg","أدخل مبلغ سحب صحيح");return}
+   if(!wMethod){msg("withdrawStatusMsg","اكتب طريقة السحب أو رقم المحفظة");return}
+   const b=el("submitWithdrawBtn");b.disabled=true;msg("withdrawStatusMsg","جارٍ إرسال طلب السحب...");
+   try{
+    const {error}=await client.from("withdrawal_requests").insert({
+     user_id:currentUser.id,
+     amount:wAmt,
+     method_details:wMethod,
+     status:"pending"
+    });
+    if(error)throw error;
+    msg("withdrawStatusMsg","تم إرسال طلب السحب بنجاح إلى الإدارة ✓");
+    el("withdrawAmountInput").value="";
+    el("withdrawMethodInput").value="";
+   }catch(e){
+    msg("withdrawStatusMsg","تعذر إرسال طلب السحب: "+e.message);
+   }finally{b.disabled=false}
   };
   return;
  }
@@ -1505,7 +1766,6 @@ function stopVideoPlayback(){
 
 function switchVideoFeedMode(mode){
  videoFeedMode=mode;
- el("topTabFollowing")?.classList.toggle("active",mode==="following");
  openTab("videos",null);
  el("topTabVideos")?.classList.toggle("active",mode==="foryou");
  el("topTabFollowing")?.classList.toggle("active",mode==="following");
@@ -1540,7 +1800,7 @@ function openTab(name,button,fromBack=false){
  if(name==="alerts")loadAlerts();
  if(name==="profile"){loadStats();loadProfileMediaGrid();loadProfile().catch(e=>msg("profileMessage",e.message))}
  if(name==="feed")loadPosts();
- if(name==="admin"){loadAdminRequests();loadReports();loadAdminSupport()}
+ if(name==="admin"){loadAdminTopups();loadAdminWithdrawals();loadAdminRequests();loadReports();loadAdminSupport()}
 }
 
 function showLogin(){
@@ -1815,11 +2075,17 @@ async function openUserProfile(targetUserId){
     fNum.textContent=followers;await loadStats();
    }catch(err){alert(err.message)}finally{followBtn.disabled=false}
   };
+  const supBtn=document.createElement("button");supBtn.type="button";supBtn.className="green";supBtn.textContent="🎁 دعم (60%/40%)";
+  supBtn.onclick=async(e)=>{
+   e.stopPropagation();
+   const sp=await processSupportSplit(20,"🎁 دعم حساب",p.id);
+   if(sp)alert(`تم إرسال الدعم (20): حصة ${p.username||'المستخدم'} = ${sp.streamerCut} (60%) • أرباحك = ${sp.ownerCut} (40%)`);
+  };
   const dmBtn=document.createElement("button");dmBtn.type="button";dmBtn.className="gray";dmBtn.textContent="مراسلة";
   dmBtn.onclick=(e)=>{e.stopPropagation();closeUserProfileModal();startChat(p.id,p.username)};
   const repBtn=document.createElement("button");repBtn.type="button";repBtn.className="red";repBtn.textContent="إبلاغ";
   repBtn.onclick=(e)=>{e.stopPropagation();reportContent("account",p.id)};
-  btns.append(followBtn,dmBtn,repBtn);body.append(header,stats,btns);
+  btns.append(followBtn,supBtn,dmBtn,repBtn);body.append(header,stats,btns);
 
   (userPosts||[]).forEach(post=>{
    const card=document.createElement("div");card.className="post";
@@ -1919,7 +2185,6 @@ async function publishNewContent(){
  }
  const privacy=el("dertPrivacySelect")?.value||"public";
  const allowComments=el("dertAllowComments")?.checked!==false;
- const allowShare=el("dertAllowShare")?.checked!==false;
  const metaNote=[];
  if(privacy==="followers")metaNote.push("[🔒 للمتابعين]");
  if(privacy==="private")metaNote.push("[🔐 خاص]");
@@ -2565,6 +2830,74 @@ function startAlertsRealtime(){
  }).subscribe();
 }
 function stopAlertsRealtime(){if(alertsChannel){client.removeChannel(alertsChannel);alertsChannel=null}}
+
+/* إدارة طلبات شحن العملات وسحب الأرباح في لوحة الإدارة */
+async function loadAdminTopups(){
+ if(!isAdmin())return;
+ const box=el("adminTopups");box.textContent="جارٍ التحميل...";
+ try{
+  const {data,error}=await client.from("coin_topup_requests").select("*").order("created_at",{ascending:false}).limit(50);
+  if(error)throw error;box.replaceChildren();
+  if(!data?.length){box.textContent="لا توجد طلبات شحن";return}
+  data.forEach(t=>{
+   const card=document.createElement("div");card.className="request-card";
+   card.innerHTML=`<strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع)<div class="small">المرجع: ${t.reference_code} • المستخدم: ${t.user_id}</div><p class="status-${t.status}">الحالة: ${t.status}</p>`;
+   if(t.status==="pending"){
+    const actions=document.createElement("div");actions.className="admin-actions";
+    const ok=document.createElement("button");ok.className="green";ok.textContent="تأكيد وإضافة العملات";
+    ok.onclick=async()=>{
+     ok.disabled=true;
+     const {error:rpcErr}=await client.rpc("admin_approve_topup",{p_request_id:t.id});
+     if(rpcErr)alert(rpcErr.message);
+     await loadAdminTopups();
+    };
+    const no=document.createElement("button");no.className="red";no.textContent="رفض";
+    no.onclick=async()=>{
+     no.disabled=true;
+     await client.from("coin_topup_requests").update({status:"rejected"}).eq("id",t.id);
+     await loadAdminTopups();
+    };
+    actions.append(ok,no);card.appendChild(actions);
+   }
+   box.appendChild(card);
+  });
+ }catch(e){box.textContent="خطأ: "+e.message}
+}
+el("refreshTopups").onclick=loadAdminTopups;
+
+async function loadAdminWithdrawals(){
+ if(!isAdmin())return;
+ const box=el("adminWithdrawals");box.textContent="جارٍ التحميل...";
+ try{
+  const {data,error}=await client.from("withdrawal_requests").select("*").order("created_at",{ascending:false}).limit(50);
+  if(error)throw error;box.replaceChildren();
+  if(!data?.length){box.textContent="لا توجد طلبات سحب";return}
+  data.forEach(w=>{
+   const card=document.createElement("div");card.className="request-card";
+   card.innerHTML=`<strong>سحب: ${w.amount}</strong><div class="small">الطريقة: ${w.method_details} • المستخدم: ${w.user_id}</div><p class="status-${w.status}">الحالة: ${w.status}</p>`;
+   if(w.status==="pending"){
+    const actions=document.createElement("div");actions.className="admin-actions";
+    const ok=document.createElement("button");ok.className="green";ok.textContent="موافقة وخصم";
+    ok.onclick=async()=>{
+     ok.disabled=true;
+     const {error:rpcErr}=await client.rpc("admin_review_withdrawal",{p_request_id:w.id,p_approve:true,p_note:"تم الصرف"});
+     if(rpcErr)alert(rpcErr.message);
+     await loadAdminWithdrawals();
+    };
+    const no=document.createElement("button");no.className="red";no.textContent="رفض";
+    no.onclick=async()=>{
+     no.disabled=true;
+     const {error:rpcErr}=await client.rpc("admin_review_withdrawal",{p_request_id:w.id,p_approve:false,p_note:"مرفوض"});
+     if(rpcErr)alert(rpcErr.message);
+     await loadAdminWithdrawals();
+    };
+    actions.append(ok,no);card.appendChild(actions);
+   }
+   box.appendChild(card);
+  });
+ }catch(e){box.textContent="خطأ: "+e.message}
+}
+el("refreshWithdrawals").onclick=loadAdminWithdrawals;
 
 async function loadAdminRequests(){
  if(!isAdmin())return;const box=el("adminRequests");box.textContent="جارٍ التحميل...";

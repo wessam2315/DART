@@ -214,7 +214,7 @@ nav button.active{color:#ffffff;background:transparent}
 .auth-switch button.active{background:#fe2c55;color:#fff}
 .auth-message{font-size:13px;color:#ffd0da;min-height:20px}
 
-/* ملف شخصي عصري بأسلوب تيك توك / إنستغرام */
+/* ملف شخصي نظيف مثل تيك توك */
 .tt-ig-profile-card{background:#0b0b0e;border:1px solid #1d1e26;border-radius:18px;overflow:hidden;padding-bottom:14px}
 .tt-ig-top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px}
 .tt-ig-handle{font-size:16px;font-weight:800;display:flex;align-items:center;gap:4px}
@@ -249,17 +249,31 @@ nav button.active{color:#ffffff;background:transparent}
 .profile-stats span{font-size:12px;color:var(--muted)}
 .profile-settings{margin:12px 0;padding:14px;background:#16171e;border:1px solid var(--line);border-radius:14px}
 
-/* قائمة الملف الشخصي بأسلوب تيك توك */
-.tt-menu-group-title{font-size:12px;font-weight:700;color:#8e9099;padding:8px 4px 6px}
+/* شاشات منفصلة مستقلة للقائمة والإعدادات والأدوات */
+.standalone-page{
+ position:fixed;inset:0;z-index:45;
+ background:#000000;
+ max-width:720px;margin:auto;
+ overflow-y:auto;
+ padding:calc(14px + env(safe-area-inset-top)) 14px calc(32px + env(safe-area-inset-bottom));
+}
+.standalone-header{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ padding-bottom:12px;margin-bottom:12px;
+ border-bottom:1px solid #1f2029;
+ position:sticky;top:0;background:#000000ee;backdrop-filter:blur(8px);z-index:5;padding-top:4px;
+}
+.standalone-header h2{margin:0;font-size:17px;font-weight:800}
+.tt-menu-group-title{font-size:12px;font-weight:700;color:#8e9099;padding:10px 4px 6px}
 .tt-menu-card{background:#15161d;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.tt-menu-item{width:100%;background:transparent;border-radius:0;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff;border-bottom:1px solid #20222b;text-align:right}
+.tt-menu-item{width:100%;background:transparent;border-radius:0;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff;border-bottom:1px solid #20222b;text-align:right}
 .tt-menu-item:last-child{border-bottom:0}
 .tt-menu-item:active{background:#1f212b}
-.tt-menu-left{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
-.tt-menu-arrow{color:#8e9099;font-size:16px}
-.tt-sub-box{background:#171821;border:1px solid #2d2f3d;border-radius:12px;padding:12px;margin-top:10px}
+.tt-menu-left{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600}
+.tt-menu-arrow{color:#8e9099;font-size:18px}
+.tt-sub-box{background:#15161e;border:1px solid #252734;border-radius:14px;padding:14px;margin:10px 0}
 .tt-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
-.tt-stat-tile{background:#12131a;border:1px solid #262834;border-radius:12px;padding:12px;text-align:center}
+.tt-stat-tile{background:#15161e;border:1px solid #252734;border-radius:12px;padding:14px;text-align:center}
 .tt-stat-tile strong{display:block;font-size:18px;color:#fff}
 .tt-stat-tile span{font-size:11px;color:var(--muted)}
 .tt-qr-box{background:#ffffff;color:#000;border-radius:14px;padding:16px;text-align:center;margin:10px 0}
@@ -465,13 +479,14 @@ nav button.active{color:#ffffff;background:transparent}
 </div>
 </section>
 
+<!-- صفحة الملف الشخصي النظيفة مثل تيك توك فقط -->
 <section id="profile" class="section">
 <div class="tt-ig-profile-card">
  <div class="tt-ig-top-bar">
   <div class="tt-ig-handle" id="displayUsernameTop">@user</div>
   <div class="tt-ig-top-btns">
-   <button type="button" class="tt-ig-icon-btn" title="رمز QR" onclick="openProfileTool('qr')">⊞</button>
-   <button type="button" class="tt-ig-icon-btn" title="القائمة" onclick="openProfileMenuModal()">☰</button>
+   <button type="button" class="tt-ig-icon-btn" title="رمز QR" onclick="openStandaloneTool('qr')">⊞</button>
+   <button type="button" class="tt-ig-icon-btn" title="القائمة" onclick="openMenuScreen()">☰</button>
   </div>
  </div>
 
@@ -502,8 +517,7 @@ nav button.active{color:#ffffff;background:transparent}
 
  <div class="tt-ig-cta-row">
   <button id="editProfileBtn" type="button" class="tt-ig-cta-btn">تعديل الملف الشخصي</button>
-  <button type="button" class="tt-ig-cta-btn" onclick="openProfileTool('qr')">مشاركة الحساب</button>
-  <button type="button" class="tt-ig-cta-btn" onclick="openProfileTool('settings')">الإعدادات</button>
+  <button type="button" class="tt-ig-cta-btn" onclick="openStandaloneTool('qr')">مشاركة الحساب</button>
  </div>
 
  <div id="profileSettings" class="profile-settings hidden" style="margin:10px 14px">
@@ -522,19 +536,106 @@ nav button.active{color:#ffffff;background:transparent}
  <div id="profileMediaGrid" class="tt-ig-grid"></div>
  <p id="profileMessage" class="small" style="padding:8px 14px 0"></p>
 </div>
-
-<!-- عناصر مخفية محفوظة للتوافق البرمجي مع النوافذ والأدوات -->
-<div class="hidden">
- <button type="button" id="requestVerificationBtn">طلب توثيق الحساب</button>
- <p id="verificationMessage"></p>
- <textarea id="supportText"></textarea>
- <button type="button" id="sendSupportBtn"></button>
- <p id="supportStatus"></p>
- <button type="button" id="loadMySupport"></button>
- <div id="mySupportMessages"></div>
- <button type="button" id="logoutBtn"></button>
-</div>
 </section>
+
+<!-- شاشة مستقلة 1: قائمة الحساب (الأصول، الأدوات الشخصية، أدوات الإبداع والأعمال، الإعدادات والخصوصية) -->
+<div id="menuScreen" class="standalone-page hidden">
+ <div class="standalone-header">
+  <button type="button" class="tt-back-mini" onclick="closeMenuScreen()">←</button>
+  <h2>القائمة</h2>
+  <span style="width:30px"></span>
+ </div>
+
+ <div class="tt-menu-group-title">الأصول</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('balance')">
+   <span class="tt-menu-left"><span>💳</span><span>الرصيد</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">الأدوات الشخصية</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('activity')">
+   <span class="tt-menu-left"><span>🕒</span><span>مركز الأنشطة</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('offline')">
+   <span class="tt-menu-left"><span>📥</span><span>فيديوهات دون اتصال بالإنترنت</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('qr')">
+   <span class="tt-menu-left"><span>⊞</span><span>رمز QR لديك</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('minis')">
+   <span class="tt-menu-left"><span>⬡</span><span>DERT Minis</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">أدوات الإبداع والأعمال</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('shop')">
+   <span class="tt-menu-left"><span>🏪</span><span>المجموعة التجارية</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('studio')">
+   <span class="tt-menu-left"><span>🎬</span><span>DERT Studio</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('promote')">
+   <span class="tt-menu-left"><span>🔥</span><span>الترويج</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">الإعدادات والخصوصية</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openSettingsScreen()">
+   <span class="tt-menu-left"><span>⚙️</span><span>الإعدادات والخصوصية</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+</div>
+
+<!-- شاشة مستقلة 2: الإعدادات والخصوصية (توثيق الحساب، مراسلة الدعم، محادثتك مع الدعم، تسجيل الخروج) -->
+<div id="settingsScreen" class="standalone-page hidden">
+ <div class="standalone-header">
+  <button type="button" class="tt-back-mini" onclick="closeSettingsScreen()">←</button>
+  <h2>الإعدادات والخصوصية</h2>
+  <span style="width:30px"></span>
+ </div>
+
+ <div class="tt-sub-box">
+  <h3>توثيق الحساب</h3>
+  <button class="full gray" id="requestVerificationBtn">طلب توثيق الحساب</button>
+  <p id="verificationMessage" class="small" style="margin-top:8px"></p>
+ </div>
+
+ <div class="tt-sub-box">
+  <h3>مراسلة الدعم</h3>
+  <textarea id="supportText" placeholder="اكتب رسالتك إلى الدعم..."></textarea>
+  <button class="full" id="sendSupportBtn">إرسال إلى الدعم</button>
+  <p id="supportStatus" class="small" style="margin-top:6px"></p>
+  <hr style="border-color:var(--line)">
+  <h4>محادثتك مع الدعم</h4>
+  <button class="full gray" id="loadMySupport">عرض رسائل الدعم</button>
+  <div id="mySupportMessages"></div>
+ </div>
+
+ <button class="full red" id="logoutBtn" style="margin-top:12px">تسجيل الخروج</button>
+</div>
+
+<!-- شاشة مستقلة 3: تفاصيل الأداة المختارة -->
+<div id="toolScreen" class="standalone-page hidden">
+ <div class="standalone-header">
+  <button type="button" class="tt-back-mini" onclick="closeToolScreen()">←</button>
+  <h2 id="toolScreenTitle">الأداة</h2>
+  <span style="width:30px"></span>
+ </div>
+ <div id="toolScreenBody"></div>
+</div>
 
 <!-- شريط التنقل السفلي مثل تيك توك بالأيقونات الجديدة -->
 <nav id="mainNav">
@@ -563,17 +664,6 @@ nav button.active{color:#ffffff;background:transparent}
 </button>
 </nav>
 </div>
-</div>
-
-<!-- نافذة أدوات الملف الشخصي والقائمة السريعة -->
-<div id="profileToolModal" class="overlay-modal hidden" onclick="if(event.target===this)closeProfileToolModal()">
- <div class="modal-card">
-  <div class="modal-top">
-   <strong id="profileToolTitle">الأداة</strong>
-   <button type="button" onclick="closeProfileToolModal()">✕</button>
-  </div>
-  <div id="profileToolBody"></div>
- </div>
 </div>
 
 <!-- نافذة المتابعين / أتابع -->
@@ -710,46 +800,43 @@ function saveDertState(patch){
  return next;
 }
 
-function closeProfileToolModal(){el("profileToolModal").classList.add("hidden")}
-
-function openProfileMenuModal(){
- const body=el("profileToolBody");
- el("profileToolTitle").textContent="قائمة الحساب";
- body.innerHTML=`
-  <div class="tt-menu-group-title">الأصول</div>
-  <div class="tt-menu-card">
-   <button type="button" class="tt-menu-item" onclick="openProfileTool('balance')"><span class="tt-menu-left"><span>💳</span><span>الرصيد</span></span><span class="tt-menu-arrow">‹</span></button>
-  </div>
-  <div class="tt-menu-group-title">الأدوات الشخصية</div>
-  <div class="tt-menu-card">
-   <button type="button" class="tt-menu-item" onclick="openProfileTool('activity')"><span class="tt-menu-left"><span>🕒</span><span>مركز الأنشطة</span></span><span class="tt-menu-arrow">‹</span></button>
-   <button type="button" class="tt-menu-item" onclick="openProfileTool('offline')"><span class="tt-menu-left"><span>📥</span><span>فيديوهات دون اتصال بالإنترنت</span></span><span class="tt-menu-arrow">‹</span></button>
-   <button type="button" class="tt-menu-item" onclick="openProfileTool('qr')"><span class="tt-menu-left"><span>⊞</span><span>رمز QR لديك</span></span><span class="tt-menu-arrow">‹</span></button>
-   <button type="button" class="tt-menu-item" onclick="openProfileTool('minis')"><span class="tt-menu-left"><span>⬡</span><span>DERT Minis</span></span><span class="tt-menu-arrow">‹</span></button>
-  </div>
-  <div class="tt-menu-group-title">أدوات الإبداع والأعمال</div>
-  <div class="tt-menu-card">
-   <button type="button" class="tt-menu-item" onclick="openProfileTool('shop')"><span class="tt-menu-left"><span>🏪</span><span>المجموعة التجارية</span></span><span class="tt-menu-arrow">‹</span></button>
-   <button type="button" class="tt-menu-item" onclick="openProfileTool('studio')"><span class="tt-menu-left"><span>🎬</span><span>DERT Studio</span></span><span class="tt-menu-arrow">‹</span></button>
-   <button type="button" class="tt-menu-item" onclick="openProfileTool('promote')"><span class="tt-menu-left"><span>🔥</span><span>الترويج</span></span><span class="tt-menu-arrow">‹</span></button>
-  </div>
-  <div class="tt-menu-group-title">الإعدادات والخصوصية</div>
-  <div class="tt-menu-card">
-   <button type="button" class="tt-menu-item" onclick="openProfileTool('settings')"><span class="tt-menu-left"><span>⚙️</span><span>الإعدادات والخصوصية</span></span><span class="tt-menu-arrow">‹</span></button>
-  </div>
- `;
- el("profileToolModal").classList.remove("hidden");
+function closeAllStandaloneScreens(){
+ el("menuScreen")?.classList.add("hidden");
+ el("settingsScreen")?.classList.add("hidden");
+ el("toolScreen")?.classList.add("hidden");
+}
+function openMenuScreen(){
+ closeAllStandaloneScreens();
+ el("menuScreen").classList.remove("hidden");
+}
+function closeMenuScreen(){
+ el("menuScreen").classList.add("hidden");
+}
+async function openSettingsScreen(){
+ el("menuScreen").classList.add("hidden");
+ el("settingsScreen").classList.remove("hidden");
+ await loadMyVerificationStatus();
+}
+function closeSettingsScreen(){
+ el("settingsScreen").classList.add("hidden");
+ el("menuScreen").classList.remove("hidden");
+}
+function closeToolScreen(){
+ el("toolScreen").classList.add("hidden");
+ el("menuScreen").classList.remove("hidden");
 }
 
-async function openProfileTool(tool){
- const body=el("profileToolBody");
- el("profileToolModal").classList.remove("hidden");
+async function openStandaloneTool(tool){
+ const body=el("toolScreenBody");
+ el("menuScreen").classList.add("hidden");
+ el("settingsScreen").classList.add("hidden");
+ el("toolScreen").classList.remove("hidden");
  const st=getDertState();
  const uname=currentProfile?.username||"user";
  const fname=currentProfile?.full_name||"مستخدم DERT";
 
  if(tool==="balance"){
-  el("profileToolTitle").textContent="الرصيد";
+  el("toolScreenTitle").textContent="الرصيد";
   const coins=Number(st.coins||120);
   const log=Array.isArray(st.coinLog)?st.coinLog:[];
   body.innerHTML=`
@@ -764,13 +851,13 @@ async function openProfileTool(tool){
    const nextCoins=coins+50;
    const nextLog=[`+${50} عملة • ${new Date().toLocaleTimeString("ar-IQ")}`,...log].slice(0,15);
    saveDertState({coins:nextCoins,coinLog:nextLog});
-   openProfileTool("balance");
+   openStandaloneTool("balance");
   };
   return;
  }
 
  if(tool==="activity"){
-  el("profileToolTitle").textContent="مركز الأنشطة";
+  el("toolScreenTitle").textContent="مركز الأنشطة";
   body.textContent="جارٍ تحميل نشاطاتك...";
   const [{count:pCnt},{count:cCnt},{count:fCnt}]=await Promise.all([
    client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),
@@ -784,13 +871,13 @@ async function openProfileTool(tool){
     <div class="tt-stat-tile"><strong>${fCnt||0}</strong><span>متابعاتك</span></div>
     <div class="tt-stat-tile"><strong>نشط</strong><span>حالة الحساب</span></div>
    </div>
-   <button type="button" class="full gray" onclick="closeProfileToolModal();openTab('feed')">الانتقال إلى منشوراتي</button>
+   <button type="button" class="full gray" onclick="closeAllStandaloneScreens();openTab('feed')">الانتقال إلى منشوراتي</button>
   `;
   return;
  }
 
  if(tool==="offline"){
-  el("profileToolTitle").textContent="فيديوهات دون اتصال بالإنترنت";
+  el("toolScreenTitle").textContent="فيديوهات دون اتصال بالإنترنت";
   const saved=Array.isArray(st.offlineVideos)?st.offlineVideos:[];
   const {data:vids}=await client.from("posts").select("id,content,image_url,created_at").eq("media_type","video").limit(10);
   const list=vids||[];
@@ -808,7 +895,7 @@ async function openProfileTool(tool){
     const exists=current.some(item=>item.id===v.id);
     const updated=exists?current.filter(item=>item.id!==v.id):[v,...current].slice(0,12);
     saveDertState({offlineVideos:updated});
-    openProfileTool("offline");
+    openStandaloneTool("offline");
    };
    row.append(title,document.createElement("br"),btn);box.appendChild(row);
   });
@@ -816,7 +903,7 @@ async function openProfileTool(tool){
  }
 
  if(tool==="qr"){
-  el("profileToolTitle").textContent="رمز QR لديك";
+  el("toolScreenTitle").textContent="رمز QR لديك";
   const shareUrl=`${DERT_SITE_URL}?user=${encodeURIComponent(uname)}`;
   const qrImg=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
   body.innerHTML=`
@@ -835,7 +922,7 @@ async function openProfileTool(tool){
  }
 
  if(tool==="minis"){
-  el("profileToolTitle").textContent="DERT Minis";
+  el("toolScreenTitle").textContent="DERT Minis";
   body.innerHTML=`
    <div class="tt-sub-box">
     <strong>⚡ مولّد هاشتاغات سريع</strong>
@@ -846,7 +933,7 @@ async function openProfileTool(tool){
    <div class="tt-sub-box">
     <strong>🎵 مستعرض الأغاني</strong>
     <p class="small">افتح مكتبة الأغاني لإضافة صوت لمنشورك.</p>
-    <button type="button" class="full gray" onclick="closeProfileToolModal();openMusicPicker()">فتح مكتبة الأغاني</button>
+    <button type="button" class="full gray" onclick="closeAllStandaloneScreens();openMusicPicker()">فتح مكتبة الأغاني</button>
    </div>
   `;
   el("genTagsBtn").onclick=()=>{
@@ -857,7 +944,7 @@ async function openProfileTool(tool){
  }
 
  if(tool==="shop"){
-  el("profileToolTitle").textContent="المجموعة التجارية";
+  el("toolScreenTitle").textContent="المجموعة التجارية";
   const items=Array.isArray(st.shopItems)?st.shopItems:[
    {name:"باقة تصميم احترافية",price:"$15"},
    {name:"قالب واجهة مخصص",price:"$25"}
@@ -877,13 +964,13 @@ async function openProfileTool(tool){
    if(!name)return;
    const next=[...items,{name,price}];
    saveDertState({shopItems:next});
-   openProfileTool("shop");
+   openStandaloneTool("shop");
   };
   return;
  }
 
  if(tool==="studio"){
-  el("profileToolTitle").textContent="DERT Studio";
+  el("toolScreenTitle").textContent="DERT Studio";
   const [{count:postsC},{count:followersC}]=await Promise.all([
    client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),
    client.from("follows").select("*",{count:"exact",head:true}).eq("following_id",currentUser.id)
@@ -893,13 +980,13 @@ async function openProfileTool(tool){
     <div class="tt-stat-tile"><strong>${postsC||0}</strong><span>إجمالي المنشورات</span></div>
     <div class="tt-stat-tile"><strong>${followersC||0}</strong><span>المتابعون</span></div>
    </div>
-   <button type="button" class="full" onclick="closeProfileToolModal();openCreateModal()">+ نشر محتوى جديد الآن</button>
+   <button type="button" class="full" onclick="closeAllStandaloneScreens();openCreateModal()">+ نشر محتوى جديد الآن</button>
   `;
   return;
  }
 
  if(tool==="promote"){
-  el("profileToolTitle").textContent="الترويج";
+  el("toolScreenTitle").textContent="الترويج";
   const {data:myPosts}=await client.from("posts").select("id,content").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(10);
   const opts=(myPosts||[]).map(p=>`<option value="${p.id}">${(p.content||"منشور بدون نص").slice(0,35)}</option>`).join("");
   body.innerHTML=`
@@ -915,49 +1002,6 @@ async function openProfileTool(tool){
   el("startPromoBtn").onclick=()=>{
    const days=el("promoDaysSelect").value;
    el("promoStatus").textContent=`تم جدولة الترويج لمدة ${days} يوم بنجاح ✓`;
-  };
-  return;
- }
-
- if(tool==="settings"){
-  el("profileToolTitle").textContent="الإعدادات والخصوصية";
-  const priv=!!st.privateAccount;
-  const isVer=currentProfile?.is_verified===true;
-  body.innerHTML=`
-   <div class="tt-sub-box">
-    <strong>توثيق الحساب</strong>
-    <p class="small" style="margin:6px 0">${isVer?"✓ حسابك موثّق بالفعل":"يمكنك طلب شارة التوثيق الزرقاء لحسابك"}</p>
-    <button type="button" class="full gray" id="modalVerifyBtn" ${isVer?"disabled":""}>${isVer?"✓ حسابك موثّق":"طلب توثيق الحساب"}</button>
-   </div>
-   <div class="tt-sub-box">
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-     <input type="checkbox" id="privateAccChk" ${priv?"checked":""} style="width:auto;margin:0">
-     <span>حساب خاص (تفضيل الخصوصية)</span>
-    </label>
-    <button type="button" class="full gray" style="margin-top:10px" onclick="closeProfileToolModal();el('editProfileBtn').click()">تعديل بيانات الملف الشخصي</button>
-   </div>
-   <div class="tt-sub-box">
-    <strong>مراسلة الدعم</strong>
-    <textarea id="modalSupportText" placeholder="اكتب رسالتك إلى الدعم..."></textarea>
-    <button type="button" class="full" id="modalSendSupportBtn">إرسال إلى الدعم</button>
-    <div id="modalSupportMsg" class="small" style="margin-top:6px"></div>
-   </div>
-   <button type="button" class="full red" style="margin-top:10px" onclick="closeProfileToolModal();el('logoutBtn').click()">تسجيل الخروج</button>
-  `;
-  el("privateAccChk").onchange=(e)=>saveDertState({privateAccount:e.target.checked});
-  if(el("modalVerifyBtn")){
-   el("modalVerifyBtn").onclick=async()=>{
-    el("modalVerifyBtn").disabled=true;
-    const {error}=await client.from("verification_requests").insert({user_id:currentUser.id,status:"pending"});
-    alert(error?error.message:"تم إرسال طلب التوثيق بنجاح");
-   };
-  }
-  el("modalSendSupportBtn").onclick=async()=>{
-   const text=el("modalSupportText").value.trim();
-   if(!text)return;
-   const {error}=await client.from("support_messages").insert({user_id:currentUser.id,sender_id:currentUser.id,message:text,is_admin_reply:false});
-   el("modalSupportMsg").textContent=error?error.message:"تم إرسال رسالتك إلى الدعم ✓";
-   if(!error)el("modalSupportText").value="";
   };
  }
 }
@@ -1093,7 +1137,9 @@ function openCreateModal(){
 }
 
 function goBackSmart(){
- if(!el("profileToolModal").classList.contains("hidden")){closeProfileToolModal();return}
+ if(!el("toolScreen").classList.contains("hidden")){closeToolScreen();return}
+ if(!el("settingsScreen").classList.contains("hidden")){closeSettingsScreen();return}
+ if(!el("menuScreen").classList.contains("hidden")){closeMenuScreen();return}
  if(!el("commentModal").classList.contains("hidden")){closePostComments();return}
  if(!el("userProfileModal").classList.contains("hidden")){closeUserProfileModal();return}
  if(!el("followModal").classList.contains("hidden")){closeFollowModal();return}
@@ -1127,6 +1173,7 @@ function stopVideoPlayback(){
 }
 
 function openTab(name,button,fromBack=false){
+ closeAllStandaloneScreens();
  if(name==="admin"&&!isAdmin()){alert("غير مصرح لك");return}
  if(name!=="videos")stopVideoPlayback();
 
@@ -1153,7 +1200,8 @@ function openTab(name,button,fromBack=false){
 }
 
 function showLogin(){
- closePostComments();closeFollowModal();closeUserProfileModal();closeMusicPicker();closeProfileToolModal();stopVideoPlayback();
+ closeAllStandaloneScreens();
+ closePostComments();closeFollowModal();closeUserProfileModal();closeMusicPicker();stopVideoPlayback();
  el("auth").classList.remove("hidden");el("home").classList.add("hidden");
  el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
  currentUser=null;currentProfile=null;activeConversation=null;activeReceiver=null;

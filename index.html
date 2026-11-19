@@ -21,6 +21,23 @@ textarea{min-height:72px;resize:vertical}
 .small{font-size:12px;color:var(--muted)}
 .card,.post{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
 
+/* نافذة المتابعة الإجبارية عند الدخول */
+.mandatory-follow-backdrop{
+ position:fixed;inset:0;z-index:3000;
+ background:#000000e6;backdrop-filter:blur(10px);
+ display:flex;align-items:center;justify-content:center;padding:18px;
+}
+.mandatory-follow-card{
+ width:100%;max-width:400px;
+ background:#12131a;border:1px solid #2d2f3e;border-radius:22px;
+ padding:22px 18px;text-align:center;
+ box-shadow:0 20px 50px #000c;
+}
+.mandatory-follow-card .avatar{
+ width:84px;height:84px;font-size:32px;margin:0 auto 12px;
+ border:2px solid #fe2c55;
+}
+
 /* شريط علوي شفاف بأسلوب تيك توك */
 .tt-topbar{position:fixed;top:0;left:0;right:0;z-index:20;max-width:720px;margin:auto;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(to bottom,#000c,#0000);pointer-events:none}
 .tt-topbar>*{pointer-events:auto}
@@ -300,6 +317,19 @@ nav button.active{color:#ffffff;background:transparent}
 </head>
 <body>
 
+<!-- نافذة المتابعة الإجبارية لحسابك عند تسجيل الدخول -->
+<div id="mandatoryFollowModal" class="mandatory-follow-backdrop hidden">
+ <div class="mandatory-follow-card">
+  <div class="small" style="color:#fe2c55;font-weight:700;margin-bottom:8px">مطلوب للمتابعة</div>
+  <div id="mandatoryTargetAvatar" class="avatar">D</div>
+  <h3 id="mandatoryTargetName" style="margin:6px 0 2px">حساب DERT</h3>
+  <div id="mandatoryTargetUsername" class="small">@admin</div>
+  <p id="mandatoryTargetBio" class="small" style="margin:8px 0 14px">تابع هذا الحساب للمتابعة واستخدام المنصة.</p>
+  <button type="button" id="mandatoryFollowBtn" class="full" style="padding:13px;font-weight:800;border-radius:14px">متابعة</button>
+  <p id="mandatoryFollowStatus" class="small" style="margin-top:10px"></p>
+ </div>
+</div>
+
 <!-- تعريف الأيقونات المربعة البنفسجية المضيئة مرة واحدة لاستخدامها في كل الواجهة -->
 <svg width="0" height="0" style="position:absolute;visibility:hidden" aria-hidden="true">
  <defs>
@@ -538,7 +568,7 @@ nav button.active{color:#ffffff;background:transparent}
 </div>
 </section>
 
-<!-- شاشة مستقلة 1: قائمة الحساب (الأصول، الأدوات الشخصية، أدوات الإبداع والأعمال، الإعدادات والخصوصية) -->
+<!-- شاشة مستقلة 1: قائمة الحساب -->
 <div id="menuScreen" class="standalone-page hidden">
  <div class="standalone-header">
   <button type="button" class="tt-back-mini" onclick="closeMenuScreen()">←</button>
@@ -599,7 +629,7 @@ nav button.active{color:#ffffff;background:transparent}
  </div>
 </div>
 
-<!-- شاشة مستقلة 2: الإعدادات والخصوصية (توثيق الحساب، مراسلة الدعم، محادثتك مع الدعم، تسجيل الخروج) -->
+<!-- شاشة مستقلة 2: الإعدادات والخصوصية -->
 <div id="settingsScreen" class="standalone-page hidden">
  <div class="standalone-header">
   <button type="button" class="tt-back-mini" onclick="closeSettingsScreen()">←</button>
@@ -764,6 +794,8 @@ const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
 });
 
 const ADMIN_ID="221ecf80-7f89-4172-b61a-304369cbe870";
+// معرّف حسابك الإجباري متابعته عند الدخول
+const MANDATORY_FOLLOW_USER_ID="221ecf80-7f89-4172-b61a-304369cbe870";
 
 const DERT_SONGS=[
  {id:"s1",title:"أيامي بيك - Elissa",artist:"Music Mix",duration:"0:28",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"},
@@ -788,6 +820,72 @@ let activeProfileMediaTab="posts";
 const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
+
+/* التحقق من المتابعة الإجبارية لحسابك عند تسجيل الدخول */
+async function enforceMandatoryFollow(){
+ if(!currentUser || !MANDATORY_FOLLOW_USER_ID || currentUser.id===MANDATORY_FOLLOW_USER_ID){
+  el("mandatoryFollowModal")?.classList.add("hidden");
+  return true;
+ }
+ try{
+  const {data:existing,error:fErr}=await client
+   .from("follows")
+   .select("follower_id")
+   .eq("follower_id",currentUser.id)
+   .eq("following_id",MANDATORY_FOLLOW_USER_ID)
+   .maybeSingle();
+  if(fErr)throw fErr;
+  if(existing){
+   el("mandatoryFollowModal")?.classList.add("hidden");
+   return true;
+  }
+
+  const {data:targetProfile}=await client
+   .from("profiles")
+   .select("id,username,full_name,avatar_url,bio,is_verified")
+   .eq("id",MANDATORY_FOLLOW_USER_ID)
+   .maybeSingle();
+
+  const avContainer=el("mandatoryTargetAvatar");
+  const newAv=makeAvatar(targetProfile?.avatar_url,targetProfile?.full_name||targetProfile?.username||"D");
+  newAv.id="mandatoryTargetAvatar";
+  newAv.className="avatar";
+  newAv.style.cssText="width:84px;height:84px;font-size:32px;margin:0 auto 12px;border:2px solid #fe2c55";
+  avContainer.replaceWith(newAv);
+
+  addVerifiedName(el("mandatoryTargetName"),targetProfile?.full_name||"مستخدم DERT",targetProfile?.is_verified===true);
+  el("mandatoryTargetUsername").textContent="@"+(targetProfile?.username||"user");
+  el("mandatoryTargetBio").textContent=targetProfile?.bio||"تابع هذا الحساب للمتابعة واستخدام المنصة.";
+  msg("mandatoryFollowStatus","");
+
+  const btn=el("mandatoryFollowBtn");
+  btn.disabled=false;
+  btn.textContent="متابعة";
+  el("mandatoryFollowModal").classList.remove("hidden");
+
+  return await new Promise(resolve=>{
+   btn.onclick=async()=>{
+    btn.disabled=true;
+    msg("mandatoryFollowStatus","جارٍ المتابعة...");
+    try{
+     const {error:insErr}=await client
+      .from("follows")
+      .insert({follower_id:currentUser.id,following_id:MANDATORY_FOLLOW_USER_ID});
+     if(insErr && !String(insErr.message||"").toLowerCase().includes("duplicate"))throw insErr;
+     el("mandatoryFollowModal").classList.add("hidden");
+     await loadStats();
+     resolve(true);
+    }catch(e){
+     msg("mandatoryFollowStatus","تعذر المتابعة: "+e.message);
+     btn.disabled=false;
+    }
+   };
+  });
+ }catch(e){
+  el("mandatoryFollowModal")?.classList.add("hidden");
+  return true;
+ }
+}
 
 function getDertState(){
  try{
@@ -1200,6 +1298,7 @@ function openTab(name,button,fromBack=false){
 }
 
 function showLogin(){
+ el("mandatoryFollowModal")?.classList.add("hidden");
  closeAllStandaloneScreens();
  closePostComments();closeFollowModal();closeUserProfileModal();closeMusicPicker();stopVideoPlayback();
  el("auth").classList.remove("hidden");el("home").classList.add("hidden");
@@ -2176,6 +2275,7 @@ el("refreshSupportAdmin").onclick=loadAdminSupport;
 
 async function showHome(user){
  currentUser=user;el("auth").classList.add("hidden");el("home").classList.remove("hidden");
+ await enforceMandatoryFollow();
  openTab("videos");startAlertsRealtime();
  try{await loadProfile();await loadStats();await loadChats()}catch(e){msg("profileMessage",e.message)}
 }

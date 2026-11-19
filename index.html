@@ -75,8 +75,8 @@ textarea{min-height:72px;resize:vertical}
 
 /* شريط الموسيقى */
 .sound-line{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 10px;border-radius:16px;background:#ffffff1a;color:#fff;font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.music-picker-btn{width:100%;margin-top:10px;background:linear-gradient(90deg,#fe2c55,#7b2cbf);display:flex;align-items:center;justify-content:space-between;font-weight:700}
-.music-selected-bar{margin-top:8px;padding:9px 12px;border-radius:10px;background:#191a22;border:1px solid #2e303d;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
+.music-picker-btn{width:100%;margin-top:12px;padding:13px 14px;border-radius:14px;background:#1a1b24;border:1px solid #2d2f3e;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:14px}
+.music-selected-bar{margin-top:8px;padding:9px 12px;border-radius:12px;background:#191a22;border:1px solid #2e303d;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
 .music-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;border-bottom:1px solid var(--line)}
 .music-row-info{flex:1;min-width:0}
 .music-row-actions{display:flex;gap:6px}
@@ -93,7 +93,7 @@ textarea{min-height:72px;resize:vertical}
 .carousel-dot.active{background:#fff}
 
 /* معاينة الوسائط */
-.preview-box{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:10px;background:#14151a}
+.preview-box{margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:10px;background:#14151a}
 .preview-grid{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
 .preview-item{position:relative;flex:0 0 105px;height:105px;border-radius:10px;overflow:hidden;border:1px solid #2e303d}
 .preview-item img,.preview-item video{width:100%;height:100%;object-fit:cover;display:block}
@@ -316,12 +316,26 @@ nav button.active{color:#ffffff;background:transparent}
 .modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px}
 .modal-top button{background:#25262e;padding:7px 11px}
 
-#dertCreateModal{position:fixed;inset:0;z-index:2000;background:#000c;display:none;align-items:center;justify-content:center;padding:15px}
-#dertCreateBox{width:100%;max-width:500px;max-height:90vh;max-height:90dvh;overflow-y:auto;background:#121216;border:1px solid #2b2d3a;border-radius:18px;padding:18px}
-#dertCreateBox h3{margin-top:0}
-#dertCreateBox label{display:block;color:#c3c6cf;font-size:13px;margin-top:12px}
-#dertCreateClose{float:left;background:#25262e;padding:7px 11px}
-#dertCreateStatus{color:#b6bac4;font-size:13px}
+/* شاشة إنشاء محتوى بأسلوب تيك توك */
+#dertCreateModal{position:fixed;inset:0;z-index:2000;background:#000000cc;backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center}
+#dertCreateBox{width:100%;max-width:720px;max-height:94vh;max-height:94dvh;overflow-y:auto;background:#0d0e12;border:1px solid #242633;border-bottom:0;border-radius:22px 22px 0 0;padding:14px 16px calc(24px + env(safe-area-inset-bottom));animation:sheetUp .22s ease-out}
+.tt-create-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid #1e202b;position:sticky;top:0;background:#0d0e12;z-index:4}
+.tt-create-top h3{margin:0;font-size:16px;font-weight:800}
+#dertCreateClose{width:34px;height:34px;padding:0;border-radius:50%;background:#1c1d26;color:#fff;font-size:15px;display:inline-flex;align-items:center;justify-content:center}
+.tt-create-top-pub{padding:8px 16px;border-radius:999px;font-size:13px;font-weight:800}
+.tt-media-pick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.tt-pick-card{background:#15161e;border:1px dashed #34374a;border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:border-color .15s,background .15s}
+.tt-pick-card:active{background:#1d1f2b;border-color:#fe2c55}
+.tt-pick-icon{font-size:24px}
+.tt-pick-title{font-size:13px;font-weight:800;color:#fff}
+.tt-pick-sub{font-size:11px;color:#9da1ab}
+.tt-hidden-file{display:none}
+.tt-desc-wrap{margin-top:12px;background:#14151d;border:1px solid #252736;border-radius:14px;padding:10px 12px}
+.tt-desc-wrap textarea{border:0;background:transparent;padding:0;margin:0;min-height:84px;font-size:14px}
+.tt-hashtag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid #222432}
+.tt-tag-chip{background:#1f212d;color:#d6d9e2;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.tt-publish-main{margin-top:14px;padding:14px;border-radius:14px;font-size:15px;font-weight:800}
+#dertCreateStatus{color:#b6bac4;font-size:13px;text-align:center;margin-top:10px}
 </style>
 </head>
 <body>
@@ -742,20 +756,45 @@ nav button.active{color:#ffffff;background:transparent}
  </div>
 </div>
 
-<!-- نافذة إنشاء محتوى -->
+<!-- شاشة إنشاء محتوى بأسلوب تيك توك -->
 <div id="dertCreateModal">
  <div id="dertCreateBox">
-  <button id="dertCreateClose" type="button">✕</button>
-  <h3>إنشاء محتوى جديد</h3>
+  <div class="tt-create-top">
+   <button id="dertCreateClose" type="button" title="إغلاق">✕</button>
+   <h3>نشر على DERT</h3>
+   <button id="dertTopPublishBtn" class="tt-create-top-pub" type="button">نشر</button>
+  </div>
 
-  <label>اختر صورة أو عدة صور</label>
-  <input id="dertImagesInput" type="file" accept="image/*" multiple>
+  <input id="dertImagesInput" class="tt-hidden-file" type="file" accept="image/*" multiple>
+  <input id="dertVideoInput" class="tt-hidden-file" type="file" accept="video/*">
 
-  <label>أو اختر فيديو واحد</label>
-  <input id="dertVideoInput" type="file" accept="video/*">
+  <div class="tt-media-pick-grid">
+   <div class="tt-pick-card" onclick="el('dertImagesInput').click()">
+    <span class="tt-pick-icon">🖼️</span>
+    <span class="tt-pick-title">صور</span>
+    <span class="tt-pick-sub" id="imagesPickSub">صورة أو عدة صور</span>
+   </div>
+   <div class="tt-pick-card" onclick="el('dertVideoInput').click()">
+    <span class="tt-pick-icon">🎬</span>
+    <span class="tt-pick-title">فيديو</span>
+    <span class="tt-pick-sub" id="videoPickSub">مقطع فيديو قصير</span>
+   </div>
+  </div>
+
+  <div id="dertPreviewBox" class="preview-box hidden"></div>
+
+  <div class="tt-desc-wrap">
+   <textarea id="dertDescription" placeholder="اكتب وصفاً جذاباً أو أضف هاشتاغات..."></textarea>
+   <div class="tt-hashtag-row">
+    <button type="button" class="tt-tag-chip" onclick="appendHashtag('#DERT')">#DERT</button>
+    <button type="button" class="tt-tag-chip" onclick="appendHashtag('#اكسبلور')">#اكسبلور</button>
+    <button type="button" class="tt-tag-chip" onclick="appendHashtag('#ترند')">#ترند</button>
+    <button type="button" class="tt-tag-chip" onclick="appendHashtag('#محتوى')">#محتوى</button>
+   </div>
+  </div>
 
   <button id="openMusicPickerBtn" type="button" class="music-picker-btn">
-   <span>♫ إضافة أغنية</span>
+   <span>♫ إضافة صوت / أغنية</span>
    <span>›</span>
   </button>
   <div id="selectedMusicBar" class="music-selected-bar hidden">
@@ -763,12 +802,7 @@ nav button.active{color:#ffffff;background:transparent}
    <button type="button" class="red" style="padding:5px 10px;font-size:11px" onclick="clearSelectedMusic()">إزالة</button>
   </div>
 
-  <div id="dertPreviewBox" class="preview-box hidden"></div>
-
-  <label>الوصف والهاشتاغات</label>
-  <textarea id="dertDescription" placeholder="اكتب وصفاً أو #هاشتاغ..."></textarea>
-
-  <button id="dertPublishButton" class="full" type="button">نشر</button>
+  <button id="dertPublishButton" class="full tt-publish-main" type="button">نشر الآن</button>
   <p id="dertCreateStatus"></p>
  </div>
 </div>
@@ -829,6 +863,24 @@ let activeProfileMediaTab="posts";
 const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
+
+function appendHashtag(tag){
+ const ta=el("dertDescription");
+ if(!ta)return;
+ const cur=ta.value.trim();
+ if(cur.includes(tag))return;
+ ta.value=cur?`${cur} ${tag}`:tag;
+ ta.focus();
+}
+
+function updateMediaPickLabels(){
+ if(el("imagesPickSub")){
+  el("imagesPickSub").textContent=selectedImages.length?`تم اختيار ${selectedImages.length} صورة`:"صورة أو عدة صور";
+ }
+ if(el("videoPickSub")){
+  el("videoPickSub").textContent=selectedVideo?(selectedVideo.name||"فيديو مختار"):"مقطع فيديو قصير";
+ }
+}
 
 async function enforceMandatoryFollow(){
  if(!currentUser || !MANDATORY_FOLLOW_USER_ID || currentUser.id===MANDATORY_FOLLOW_USER_ID){
@@ -1239,6 +1291,7 @@ el("musicSearchInput").oninput=()=>renderMusicList(el("musicSearchInput").value)
 
 function openCreateModal(){
  if(!currentUser){alert("سجل الدخول أولاً");return}
+ updateMediaPickLabels();
  el("dertCreateModal").style.display="flex";
 }
 
@@ -1632,6 +1685,7 @@ function createImageCarousel(images){
 
 function renderMediaPreview(){
  const box=el("dertPreviewBox");box.replaceChildren();
+ updateMediaPickLabels();
  if(selectedVideo){
   box.classList.remove("hidden");
   const vid=document.createElement("video");vid.className="preview-video";vid.src=URL.createObjectURL(selectedVideo);vid.controls=true;vid.playsInline=true;
@@ -1668,7 +1722,7 @@ el("dertVideoInput").onchange=(e)=>{
 el("dertCreateClose").onclick=()=>{el("dertCreateModal").style.display="none"};
 el("dertCreateModal").onclick=(e)=>{if(e.target===el("dertCreateModal"))el("dertCreateModal").style.display="none"};
 
-el("dertPublishButton").onclick=async()=>{
+async function publishNewContent(){
  if(!currentUser){msg("dertCreateStatus","يرجى تسجيل الدخول أولاً");return}
  let content=el("dertDescription").value.trim();
  if(!selectedVideo && !selectedImages.length && !content && !selectedSong){
@@ -1678,7 +1732,11 @@ el("dertPublishButton").onclick=async()=>{
   const tag=`[🎵 ${selectedSong.title}]`;
   content=content ? `${content}\n${tag}` : tag;
  }
- const btn=el("dertPublishButton");btn.disabled=true;msg("dertCreateStatus","جارٍ النشر...");
+ const btn=el("dertPublishButton");
+ const topBtn=el("dertTopPublishBtn");
+ btn.disabled=true;
+ if(topBtn)topBtn.disabled=true;
+ msg("dertCreateStatus","جارٍ النشر...");
  try{
   let image_url=null,image_urls=null,media_type=selectedSong && !selectedVideo && !selectedImages.length ? "audio" : null;
   if(selectedVideo){
@@ -1703,8 +1761,14 @@ el("dertPublishButton").onclick=async()=>{
   await loadVideos();await loadPosts();await loadStats();await loadProfileMediaGrid();
   setTimeout(()=>{el("dertCreateModal").style.display="none";msg("dertCreateStatus","")},700);
  }catch(error){msg("dertCreateStatus","تعذر النشر: "+error.message)}
- finally{btn.disabled=false}
-};
+ finally{
+  btn.disabled=false;
+  if(topBtn)topBtn.disabled=false;
+ }
+}
+
+el("dertPublishButton").onclick=publishNewContent;
+el("dertTopPublishBtn").onclick=publishNewContent;
 
 /* فيديوهات بأسلوب تيك توك */
 async function loadVideos(){

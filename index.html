@@ -1552,46 +1552,26 @@ async function loadAdminSupport(){
 }
 el("refreshSupportAdmin").onclick=loadAdminSupport;
 
-/* فتح التطبيق بعد تسجيل الدخول */
+ /* فتح التطبيق بعد تسجيل الدخول */
 async function showHome(user){
- currentUser=user;
- el("auth").classList.add("hidden");
- el("home").classList.remove("hidden");
- try{
-  await loadProfile();
-  await loadStats();
-  await loadChats();
-  startAlertsRealtime();
+  currentUser = user;
+
+  el("auth").classList.add("hidden");
+  el("home").classList.remove("hidden");
+
   openTab("videos");
- }catch(e){msg("profileMessage","ملاحظة: "+e.message)}
-async function showHome(user){
- currentUser=user;
+  startAlertsRealtime();
 
- el("auth").classList.add("hidden");
- el("home").classList.remove("hidden");
-
- openTab("videos");
- startAlertsRealtime();
-
- try{
-  await loadProfile();
- }catch(e){
-  msg("profileMessage","تعذر تحميل الملف الشخصي: "+e.message);
- }
-
- try{
-  await loadStats();
- }catch(e){
-  console.error("Stats error:",e);
- }
-
- try{
-  await loadChats();
- }catch(e){
-  console.error("Chats error:",e);
- }
+  try {
+    await loadProfile();
+    await loadStats();
+    await loadChats();
+  } catch(e) {
+    console.error("DERT startup error:", e);
+    msg("profileMessage", "تعذر تحميل بعض البيانات: " + e.message);
+  }
 }
-
+ 
   const params=new URLSearchParams(window.location.search);
   const hash=new URLSearchParams(window.location.hash.replace(/^#/,""));
 

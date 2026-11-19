@@ -51,7 +51,7 @@ textarea{min-height:72px;resize:vertical}
 .tt-topbar>*{pointer-events:auto}
 .tt-top-right{display:flex;align-items:center;gap:8px}
 .tt-back-mini{width:30px;height:30px;padding:0;border-radius:50%;background:#ffffff1f;backdrop-filter:blur(8px);color:#fff;font-size:16px;display:inline-flex;align-items:center;justify-content:center}
-.tt-live-pill{padding:4px 8px;border-radius:6px;background:#fe2c55;color:#fff;font-size:11px;font-weight:800;letter-spacing:.5px}
+.tt-live-pill{padding:4px 8px;border-radius:6px;background:#fe2c55;color:#fff;font-size:11px;font-weight:800;letter-spacing:.5px;cursor:pointer}
 .tt-tabs-scroll{display:flex;align-items:center;gap:14px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
 .tt-tabs-scroll::-webkit-scrollbar{display:none}
 .tt-top-tab{background:transparent;padding:4px 2px;border-radius:0;color:#ffffffb8;font-size:15px;font-weight:700;white-space:nowrap;position:relative}
@@ -74,7 +74,7 @@ textarea{min-height:72px;resize:vertical}
 .post-date{font-size:12px;color:var(--muted);margin-top:10px}
 
 /* شريط الموسيقى */
-.sound-line{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 10px;border-radius:16px;background:#ffffff1a;color:#fff;font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sound-line{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 10px;border-radius:16px;background:#ffffff1a;color:#fff;font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 .music-picker-btn{width:100%;margin-top:12px;padding:13px 14px;border-radius:14px;background:#1a1b24;border:1px solid #2d2f3e;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:14px}
 .music-selected-bar{margin-top:8px;padding:9px 12px;border-radius:12px;background:#191a22;border:1px solid #2e303d;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
 .music-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;border-bottom:1px solid var(--line)}
@@ -99,6 +99,13 @@ textarea{min-height:72px;resize:vertical}
 .preview-item img,.preview-item video{width:100%;height:100%;object-fit:cover;display:block}
 .preview-remove{position:absolute;top:4px;left:4px;width:22px;height:22px;padding:0;border-radius:50%;background:#fe2c55;font-size:12px;line-height:22px;text-align:center}
 .preview-video{width:100%;max-height:220px;border-radius:10px;background:#000;display:block}
+
+/* خيارات النشر المتقدمة مثل تيك توك */
+.tt-extra-options{margin-top:10px;background:#14151d;border:1px solid #252736;border-radius:14px;padding:10px 12px;display:grid;gap:8px}
+.tt-opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+.tt-opt-row select{width:auto;min-width:130px;margin:0;padding:7px 10px;font-size:12px}
+.tt-switch-label{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:13px;cursor:pointer}
+.tt-switch-label input[type="checkbox"]{width:18px;height:18px;margin:0;accent-color:#fe2c55}
 
 .comment{background:#16171e;padding:10px;border-radius:10px;margin:8px 0}
 .comment-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
@@ -199,18 +206,20 @@ nav button.active{color:#ffffff;background:transparent}
 .video-side-actions{
  position:absolute;
  left:10px;
- bottom:100px;
+ bottom:96px;
  display:flex;
  flex-direction:column;
- gap:14px;
+ gap:12px;
  align-items:center;
  pointer-events:auto;
 }
 .tt-avatar-wrap{position:relative;width:48px;height:48px;margin-bottom:4px;cursor:pointer}
 .tt-avatar-wrap .avatar{width:48px;height:48px;border:2px solid #fff}
 .tt-plus-badge{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;line-height:1}
-.tt-side-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+.tt-side-item{display:flex;flex-direction:column;align-items:center;gap:2px}
 .tt-side-btn{padding:0;background:transparent;color:#fff;border:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px #000)}
+.tt-action-circle{width:40px;height:40px;border-radius:50%;background:#181922cc;border:1px solid #ffffff2b;display:inline-flex;align-items:center;justify-content:center;font-size:19px}
+.tt-action-circle.active{background:#fe2c5533;border-color:#fe2c55;color:#fe2c55}
 .tt-side-label{font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000}
 .tt-disc{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,#1e1f26 30%,#7c3aed 33%,#141418 38%,#8b5cf6 41%,#111 45%);border:5px solid #24252d;display:flex;align-items:center;justify-content:center;font-size:14px;animation:spinDisc 6s linear infinite}
 @keyframes spinDisc{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -258,8 +267,8 @@ nav button.active{color:#ffffff;background:transparent}
 .tt-ig-cta-row{display:flex;gap:8px;padding:4px 14px 10px}
 .tt-ig-cta-btn{flex:1;padding:10px 12px;border-radius:10px;background:#1b1c24;color:#fff;font-size:13px;font-weight:700;border:1px solid #2b2d3a}
 .tt-ig-cta-btn:active{background:#262834}
-.tt-ig-tabs{display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid #1c1d26;margin-top:4px}
-.tt-ig-tab{background:transparent;border-radius:0;padding:11px 6px;color:#8e919c;font-size:13px;font-weight:700;position:relative}
+.tt-ig-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid #1c1d26;margin-top:4px}
+.tt-ig-tab{background:transparent;border-radius:0;padding:11px 4px;color:#8e919c;font-size:12px;font-weight:700;position:relative}
 .tt-ig-tab.active{color:#fff}
 .tt-ig-tab.active::after{content:"";position:absolute;bottom:0;left:22%;right:22%;height:2.5px;background:#fff;border-radius:2px}
 .tt-ig-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:6px 6px 0}
@@ -303,6 +312,15 @@ nav button.active{color:#ffffff;background:transparent}
 .tt-stat-tile strong{display:block;font-size:18px;color:#fff}
 .tt-stat-tile span{font-size:11px;color:var(--muted)}
 .tt-qr-box{background:#ffffff;color:#000;border-radius:14px;padding:16px;text-align:center;margin:10px 0}
+
+/* غرفة البث المباشر LIVE */
+.tt-live-stage{background:#0b0c12;border:1px solid #282a3a;border-radius:16px;padding:12px}
+.tt-live-screen{position:relative;height:220px;border-radius:12px;background:radial-gradient(circle at 50% 30%,#3b1d7a,#09090d 75%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;padding:12px}
+.tt-live-screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tt-live-badge-top{position:relative;z-index:2;background:#fe2c55;color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;margin-bottom:8px}
+.tt-live-chat{max-height:170px;overflow-y:auto;background:#101118;border:1px solid #222432;border-radius:12px;padding:10px;margin-top:10px}
+.tt-live-gifts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tt-live-gifts button{padding:7px 11px;font-size:12px;background:#1d1f2b;border:1px solid #2e3142}
 
 .request-card{background:#16171e;border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
 .status-pending{color:#ffc65c}.status-approved{color:#29d389}.status-rejected{color:#ff5c77}
@@ -445,12 +463,13 @@ nav button.active{color:#ffffff;background:transparent}
 <div class="tt-topbar">
  <div class="tt-top-right">
   <button type="button" class="tt-back-mini" title="رجوع" onclick="goBackSmart()">‹</button>
-  <span class="tt-live-pill" onclick="openTab('feed')">LIVE</span>
+  <span class="tt-live-pill" onclick="openLiveRoom()">LIVE</span>
  </div>
  <div class="tt-tabs-scroll">
+  <button type="button" class="tt-top-tab" id="topTabFollowing" onclick="switchVideoFeedMode('following')">أتابع</button>
+  <button type="button" class="tt-top-tab active" id="topTabVideos" onclick="switchVideoFeedMode('foryou')">لك</button>
   <button type="button" class="tt-top-tab" onclick="openTab('feed',null)">المنشورات</button>
   <button type="button" class="tt-top-tab" onclick="openTab('chats',null)">المحادثات</button>
-  <button type="button" class="tt-top-tab active" id="topTabVideos" onclick="openTab('videos',null)">لك</button>
  </div>
  <button type="button" class="tt-search-btn" title="بحث" onclick="openTab('people',null)">
   <span class="violet-icon violet-icon-sm"><svg viewBox="0 0 24 24"><use href="#ico-search"></use></svg></span>
@@ -585,6 +604,7 @@ nav button.active{color:#ffffff;background:transparent}
  <div class="tt-ig-tabs">
   <button type="button" class="tt-ig-tab active" id="profTabPosts" onclick="switchProfileMediaTab('posts')">المنشورات</button>
   <button type="button" class="tt-ig-tab" id="profTabVideos" onclick="switchProfileMediaTab('videos')">الفيديوهات</button>
+  <button type="button" class="tt-ig-tab" id="profTabSaved" onclick="switchProfileMediaTab('saved')">المحفوظات</button>
  </div>
  <div id="profileMediaGrid" class="tt-ig-grid"></div>
  <p id="profileMessage" class="small" style="padding:8px 14px 0"></p>
@@ -629,6 +649,10 @@ nav button.active{color:#ffffff;background:transparent}
 
  <div class="tt-menu-group-title">أدوات الإبداع والأعمال</div>
  <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openLiveRoom()">
+   <span class="tt-menu-left"><span>🔴</span><span>غرفة البث المباشر LIVE</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
   <button type="button" class="tt-menu-item" onclick="openStandaloneTool('shop')">
    <span class="tt-menu-left"><span>🏪</span><span>المجموعة التجارية</span></span>
    <span class="tt-menu-arrow">‹</span>
@@ -784,7 +808,8 @@ nav button.active{color:#ffffff;background:transparent}
   <div id="dertPreviewBox" class="preview-box hidden"></div>
 
   <div class="tt-desc-wrap">
-   <textarea id="dertDescription" placeholder="اكتب وصفاً جذاباً أو أضف هاشتاغات..."></textarea>
+   <textarea id="dertDescription" maxlength="400" placeholder="اكتب وصفاً جذاباً أو أضف هاشتاغات..." oninput="updateDescCounter()"></textarea>
+   <div class="small" id="dertDescCounter" style="text-align:left">0 / 400</div>
    <div class="tt-hashtag-row">
     <button type="button" class="tt-tag-chip" onclick="appendHashtag('#DERT')">#DERT</button>
     <button type="button" class="tt-tag-chip" onclick="appendHashtag('#اكسبلور')">#اكسبلور</button>
@@ -800,6 +825,25 @@ nav button.active{color:#ffffff;background:transparent}
   <div id="selectedMusicBar" class="music-selected-bar hidden">
    <span id="selectedMusicLabel">♫ أغنية مختارة</span>
    <button type="button" class="red" style="padding:5px 10px;font-size:11px" onclick="clearSelectedMusic()">إزالة</button>
+  </div>
+
+  <div class="tt-extra-options">
+   <div class="tt-opt-row">
+    <span>من يمكنه المشاهدة</span>
+    <select id="dertPrivacySelect">
+     <option value="public">الجميع</option>
+     <option value="followers">المتابعون</option>
+     <option value="private">خاص بي</option>
+    </select>
+   </div>
+   <label class="tt-switch-label">
+    <span>السماح بالتعليقات</span>
+    <input type="checkbox" id="dertAllowComments" checked>
+   </label>
+   <label class="tt-switch-label">
+    <span>السماح بالمشاركة وحفظ الرابط</span>
+    <input type="checkbox" id="dertAllowShare" checked>
+   </label>
   </div>
 
   <button id="dertPublishButton" class="full tt-publish-main" type="button">نشر الآن</button>
@@ -852,6 +896,8 @@ let activeChannel=null,alertsChannel=null,pendingPhone=null,chatCache=[];
 let activeCommentPost=null;
 let videoObserver=null;
 let videoPostsCache=[];
+let videoFeedMode="foryou";
+let followedIdsSet=new Set();
 let selectedImages=[];
 let selectedVideo=null;
 let selectedSong=null;
@@ -859,6 +905,8 @@ let tabHistory=["videos"];
 let previewAudio=new Audio();
 let playingSongId=null;
 let activeProfileMediaTab="posts";
+let liveStream=null;
+let liveChatMessages=["أهلاً بالجميع في بث DERT المباشر! 🎉"];
 
 const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
@@ -868,12 +916,19 @@ function getDirectRoomId(u1,u2){
  return "dm_"+[String(u1),String(u2)].sort().join("_");
 }
 
+function updateDescCounter(){
+ const ta=el("dertDescription");
+ if(ta && el("dertDescCounter"))el("dertDescCounter").textContent=`${ta.value.length} / 400`;
+}
+
 function appendHashtag(tag){
  const ta=el("dertDescription");
  if(!ta)return;
  const cur=ta.value.trim();
  if(cur.includes(tag))return;
- ta.value=cur?`${cur} ${tag}`:tag;
+ const next=cur?`${cur} ${tag}`:tag;
+ ta.value=next.slice(0,400);
+ updateDescCounter();
  ta.focus();
 }
 
@@ -884,6 +939,118 @@ function updateMediaPickLabels(){
  if(el("videoPickSub")){
   el("videoPickSub").textContent=selectedVideo?(selectedVideo.name||"فيديو مختار"):"مقطع فيديو قصير";
  }
+}
+
+function getDertState(){
+ try{
+  return JSON.parse(localStorage.getItem("dert_user_state_"+(currentUser?.id||"guest"))||"{}");
+ }catch(e){return {}}
+}
+function saveDertState(patch){
+ const next={...getDertState(),...patch};
+ localStorage.setItem("dert_user_state_"+(currentUser?.id||"guest"),JSON.stringify(next));
+ return next;
+}
+
+function isPostLiked(postId){
+ const st=getDertState();
+ return Array.isArray(st.likedPosts) && st.likedPosts.includes(String(postId));
+}
+function isPostSaved(postId){
+ const st=getDertState();
+ return Array.isArray(st.savedPosts) && st.savedPosts.some(x=>String(x.id)===String(postId));
+}
+function toggleLikePost(postId,btn,lbl){
+ const st=getDertState();
+ const liked=new Set((st.likedPosts||[]).map(String));
+ const idStr=String(postId);
+ let nowLiked=false;
+ if(liked.has(idStr)){liked.delete(idStr);nowLiked=false}
+ else{liked.add(idStr);nowLiked=true}
+ saveDertState({likedPosts:[...liked]});
+ if(btn)btn.classList.toggle("active",nowLiked);
+ if(lbl)lbl.textContent=nowLiked?"أعجبني":"إعجاب";
+}
+function toggleSavePost(post,btn,lbl){
+ const st=getDertState();
+ const saved=Array.isArray(st.savedPosts)?[...st.savedPosts]:[];
+ const idStr=String(post.id);
+ const idx=saved.findIndex(x=>String(x.id)===idStr);
+ let nowSaved=false;
+ if(idx>=0){saved.splice(idx,1);nowSaved=false}
+ else{saved.unshift(post);nowSaved=true}
+ saveDertState({savedPosts:saved.slice(0,50)});
+ if(btn)btn.classList.toggle("active",nowSaved);
+ if(lbl)lbl.textContent=nowSaved?"محفوظ":"حفظ";
+}
+
+function stopLiveCamera(){
+ if(liveStream){
+  liveStream.getTracks().forEach(t=>t.stop());
+  liveStream=null;
+ }
+}
+
+async function openLiveRoom(){
+ closeAllStandaloneScreens();
+ el("toolScreenTitle").textContent="غرفة البث المباشر LIVE";
+ const body=el("toolScreenBody");
+ el("toolScreen").classList.remove("hidden");
+ body.innerHTML=`
+  <div class="tt-live-stage">
+   <div class="tt-live-screen" id="liveScreenBox">
+    <span class="tt-live-badge-top">● LIVE مباشر</span>
+    <strong id="liveRoomHeading">بث DERT المباشر</strong>
+    <div class="small" id="liveViewersCount" style="margin-top:4px">👁️ 128 مشاهد</div>
+   </div>
+   <div class="user-row-actions" style="justify-content:center;margin-top:10px">
+    <button type="button" class="green" id="startCamLiveBtn">تشغيل الكاميرا</button>
+    <button type="button" class="gray" id="stopCamLiveBtn">إيقاف الكاميرا</button>
+   </div>
+   <div class="tt-live-gifts">
+    <button type="button" onclick="sendLiveGift('❤️ قلب')">❤️ قلب</button>
+    <button type="button" onclick="sendLiveGift('🌹 وردة')">🌹 وردة</button>
+    <button type="button" onclick="sendLiveGift('🔥 نار')">🔥 نار</button>
+    <button type="button" onclick="sendLiveGift('💎 ماسة')">💎 ماسة</button>
+   </div>
+   <div class="tt-live-chat" id="liveChatBox"></div>
+   <div style="display:flex;gap:8px;margin-top:8px">
+    <input id="liveMsgInput" placeholder="اكتب تعليقاً في البث..." style="margin:0;flex:1">
+    <button type="button" id="sendLiveMsgBtn">إرسال</button>
+   </div>
+  </div>
+ `;
+ renderLiveChat();
+ el("startCamLiveBtn").onclick=async()=>{
+  try{
+   stopLiveCamera();
+   liveStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+   const box=el("liveScreenBox");
+   const oldVid=box.querySelector("video");if(oldVid)oldVid.remove();
+   const v=document.createElement("video");v.srcObject=liveStream;v.autoplay=true;v.playsInline=true;v.muted=true;
+   box.prepend(v);
+  }catch(e){alert("تعذر تشغيل الكاميرا: "+e.message)}
+ };
+ el("stopCamLiveBtn").onclick=()=>{
+  stopLiveCamera();
+  const box=el("liveScreenBox");
+  const oldVid=box?.querySelector("video");if(oldVid)oldVid.remove();
+ };
+ el("sendLiveMsgBtn").onclick=()=>{
+  const inp=el("liveMsgInput");const t=inp.value.trim();if(!t)return;
+  const sender=currentProfile?.full_name||currentProfile?.username||"أنت";
+  liveChatMessages.push(`${sender}: ${t}`);inp.value="";renderLiveChat();
+ };
+}
+function sendLiveGift(gift){
+ const sender=currentProfile?.full_name||currentProfile?.username||"أنت";
+ liveChatMessages.push(`🎁 أرسل ${sender} هدية ${gift}`);
+ renderLiveChat();
+}
+function renderLiveChat(){
+ const box=el("liveChatBox");if(!box)return;
+ box.innerHTML=liveChatMessages.map(m=>`<div class="small" style="padding:4px 0;color:#fff">${m}</div>`).join("");
+ box.scrollTop=box.scrollHeight;
 }
 
 async function enforceMandatoryFollow(){
@@ -951,18 +1118,8 @@ async function enforceMandatoryFollow(){
  }
 }
 
-function getDertState(){
- try{
-  return JSON.parse(localStorage.getItem("dert_user_state_"+(currentUser?.id||"guest"))||"{}");
- }catch(e){return {}}
-}
-function saveDertState(patch){
- const next={...getDertState(),...patch};
- localStorage.setItem("dert_user_state_"+(currentUser?.id||"guest"),JSON.stringify(next));
- return next;
-}
-
 function closeAllStandaloneScreens(){
+ stopLiveCamera();
  el("menuScreen")?.classList.add("hidden");
  el("settingsScreen")?.classList.add("hidden");
  el("toolScreen")?.classList.add("hidden");
@@ -984,6 +1141,7 @@ function closeSettingsScreen(){
  el("menuScreen").classList.remove("hidden");
 }
 function closeToolScreen(){
+ stopLiveCamera();
  el("toolScreen").classList.add("hidden");
  el("menuScreen").classList.remove("hidden");
 }
@@ -1026,12 +1184,14 @@ async function openStandaloneTool(tool){
    client.from("post_comments").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),
    client.from("follows").select("*",{count:"exact",head:true}).eq("follower_id",currentUser.id)
   ]);
+  const likedCnt=(st.likedPosts||[]).length;
+  const savedCnt=(st.savedPosts||[]).length;
   body.innerHTML=`
    <div class="tt-stat-grid">
     <div class="tt-stat-tile"><strong>${pCnt||0}</strong><span>منشوراتك</span></div>
     <div class="tt-stat-tile"><strong>${cCnt||0}</strong><span>تعليقاتك</span></div>
-    <div class="tt-stat-tile"><strong>${fCnt||0}</strong><span>متابعاتك</span></div>
-    <div class="tt-stat-tile"><strong>نشط</strong><span>حالة الحساب</span></div>
+    <div class="tt-stat-tile"><strong>${likedCnt}</strong><span>إعجاباتك</span></div>
+    <div class="tt-stat-tile"><strong>${savedCnt}</strong><span>محفوظاتك</span></div>
    </div>
    <button type="button" class="full gray" onclick="closeAllStandaloneScreens();openTab('feed')">الانتقال إلى منشوراتي</button>
   `;
@@ -1172,6 +1332,7 @@ async function switchProfileMediaTab(mode){
  activeProfileMediaTab=mode;
  el("profTabPosts")?.classList.toggle("active",mode==="posts");
  el("profTabVideos")?.classList.toggle("active",mode==="videos");
+ el("profTabSaved")?.classList.toggle("active",mode==="saved");
  await loadProfileMediaGrid();
 }
 
@@ -1185,17 +1346,23 @@ async function loadProfileMediaGrid(){
  loading.textContent="جارٍ التحميل...";
  grid.appendChild(loading);
  try{
-  let q=client.from("posts").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(30);
-  if(activeProfileMediaTab==="videos")q=q.eq("media_type","video");
-  const {data,error}=await q;
-  if(error)throw error;
+  let rows=[];
+  if(activeProfileMediaTab==="saved"){
+   const st=getDertState();
+   rows=Array.isArray(st.savedPosts)?st.savedPosts:[];
+  }else{
+   let q=client.from("posts").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(30);
+   if(activeProfileMediaTab==="videos")q=q.eq("media_type","video");
+   const {data,error}=await q;
+   if(error)throw error;
+   rows=data||[];
+  }
   grid.replaceChildren();
-  const rows=data||[];
   if(!rows.length){
    const empty=document.createElement("div");
    empty.className="small";
    empty.style.cssText="grid-column:1/-1;text-align:center;padding:24px";
-   empty.textContent=activeProfileMediaTab==="videos"?"لا توجد فيديوهات بعد":"لا توجد منشورات بعد";
+   empty.textContent=activeProfileMediaTab==="saved"?"لا توجد محفوظات بعد":(activeProfileMediaTab==="videos"?"لا توجد فيديوهات بعد":"لا توجد منشورات بعد");
    grid.appendChild(empty);
    return;
   }
@@ -1296,6 +1463,7 @@ el("musicSearchInput").oninput=()=>renderMusicList(el("musicSearchInput").value)
 function openCreateModal(){
  if(!currentUser){alert("سجل الدخول أولاً");return}
  updateMediaPickLabels();
+ updateDescCounter();
  el("dertCreateModal").style.display="flex";
 }
 
@@ -1335,6 +1503,15 @@ function stopVideoPlayback(){
  document.querySelectorAll("#videosList video").forEach(v=>v.pause());
 }
 
+function switchVideoFeedMode(mode){
+ videoFeedMode=mode;
+ el("topTabFollowing")?.classList.toggle("active",mode==="following");
+ openTab("videos",null);
+ el("topTabVideos")?.classList.toggle("active",mode==="foryou");
+ el("topTabFollowing")?.classList.toggle("active",mode==="following");
+ loadVideos();
+}
+
 function openTab(name,button,fromBack=false){
  closeAllStandaloneScreens();
  if(name==="admin"&&!isAdmin()){alert("غير مصرح لك");return}
@@ -1352,7 +1529,11 @@ function openTab(name,button,fromBack=false){
   if(b)b.classList.add("active");
  }
 
- el("topTabVideos")?.classList.toggle("active",name==="videos");
+ document.querySelectorAll(".tt-top-tab").forEach(t=>t.classList.remove("active"));
+ if(name==="videos"){
+  if(videoFeedMode==="following")el("topTabFollowing")?.classList.add("active");
+  else el("topTabVideos")?.classList.add("active");
+ }
 
  if(name==="videos")loadVideos();
  if(name==="chats")loadChats();
@@ -1736,6 +1917,15 @@ async function publishNewContent(){
   const tag=`[🎵 ${selectedSong.title}]`;
   content=content ? `${content}\n${tag}` : tag;
  }
+ const privacy=el("dertPrivacySelect")?.value||"public";
+ const allowComments=el("dertAllowComments")?.checked!==false;
+ const allowShare=el("dertAllowShare")?.checked!==false;
+ const metaNote=[];
+ if(privacy==="followers")metaNote.push("[🔒 للمتابعين]");
+ if(privacy==="private")metaNote.push("[🔐 خاص]");
+ if(!allowComments)metaNote.push("[🔇 بدون تعليقات]");
+ if(metaNote.length)content=(content?content+"\n":"")+metaNote.join(" ");
+
  const btn=el("dertPublishButton");
  const topBtn=el("dertTopPublishBtn");
  btn.disabled=true;
@@ -1761,6 +1951,7 @@ async function publishNewContent(){
   msg("dertCreateStatus","تم النشر بنجاح");
   selectedImages=[];selectedVideo=null;clearSelectedMusic();
   el("dertImagesInput").value="";el("dertVideoInput").value="";el("dertDescription").value="";
+  updateDescCounter();
   renderMediaPreview();
   await loadVideos();await loadPosts();await loadStats();await loadProfileMediaGrid();
   setTimeout(()=>{el("dertCreateModal").style.display="none";msg("dertCreateStatus","")},700);
@@ -1783,20 +1974,32 @@ async function loadVideos(){
  try{
   const {data,error}=await client.from("posts").select("*").eq("media_type","video").not("image_url","is",null).order("created_at",{ascending:false}).limit(100);
   if(error)throw error;
-  list.replaceChildren();videoPostsCache=data||[];
+  list.replaceChildren();
+  const {data:myFollows,error:followError}=await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
+  if(followError)throw followError;
+  followedIdsSet=new Set((myFollows||[]).map(x=>x.following_id));
+
+  let allVids=data||[];
+  if(videoFeedMode==="following"){
+   allVids=allVids.filter(p=>p.user_id===currentUser.id || followedIdsSet.has(p.user_id));
+  }
+  videoPostsCache=allVids;
+
   if(!videoPostsCache.length){
    const empty=document.createElement("div");empty.className="videos-empty";
-   empty.innerHTML=`<strong>لا توجد فيديوهات حالياً</strong><p class="small">اضغط زر + في الأسفل لرفع أول فيديو.</p>`;
-   const go=document.createElement("button");go.textContent="+ إنشاء فيديو";go.onclick=openCreateModal;
+   empty.innerHTML=videoFeedMode==="following"
+    ? `<strong>لا توجد فيديوهات من الحسابات التي تتابعها</strong><p class="small">تابع حسابات أو انتقل إلى تبويب «لك».</p>`
+    : `<strong>لا توجد فيديوهات حالياً</strong><p class="small">اضغط زر + في الأسفل لرفع أول فيديو.</p>`;
+   const go=document.createElement("button");
+   go.textContent=videoFeedMode==="following"?"العودة إلى «لك»":"+ إنشاء فيديو";
+   go.onclick=videoFeedMode==="following"?()=>switchVideoFeedMode("foryou"):openCreateModal;
    empty.appendChild(go);list.appendChild(empty);return;
   }
+
   const userIds=[...new Set(videoPostsCache.map(p=>p.user_id))];
   const {data:profiles,error:profileError}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified").in("id",userIds);
   if(profileError)throw profileError;
   const names={};(profiles||[]).forEach(p=>names[p.id]=p);
-  const {data:myFollows,error:followError}=await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
-  if(followError)throw followError;
-  const followed=new Set((myFollows||[]).map(x=>x.following_id));
 
   videoPostsCache.forEach(post=>{
    const profile=names[post.user_id]||{};
@@ -1838,11 +2041,20 @@ async function loadVideos(){
    avWrap.appendChild(makeAvatar(profile.avatar_url,profile.full_name||profile.username));
    if(post.user_id!==currentUser.id){
     const badge=document.createElement("span");badge.className="tt-plus-badge";
-    badge.textContent=followed.has(post.user_id)?"✓":"+";
+    badge.textContent=followedIdsSet.has(post.user_id)?"✓":"+";
     badge.onclick=(e)=>{e.stopPropagation();followUser(post.user_id,badge)};
     avWrap.appendChild(badge);
    }
    avWrap.onclick=()=>openUserProfile(post.user_id);
+
+   const likedNow=isPostLiked(post.id);
+   const likeItem=document.createElement("div");likeItem.className="tt-side-item";
+   const likeBtn=document.createElement("button");likeBtn.className="tt-side-btn";likeBtn.type="button";
+   const likeCircle=document.createElement("span");likeCircle.className="tt-action-circle"+(likedNow?" active":"");likeCircle.textContent="❤️";
+   likeBtn.appendChild(likeCircle);
+   const likeLbl=document.createElement("span");likeLbl.className="tt-side-label";likeLbl.textContent=likedNow?"أعجبني":"إعجاب";
+   likeBtn.onclick=()=>toggleLikePost(post.id,likeCircle,likeLbl);
+   likeItem.append(likeBtn,likeLbl);
 
    const commentItem=document.createElement("div");commentItem.className="tt-side-item";
    const commentBtn=document.createElement("button");commentBtn.className="tt-side-btn";commentBtn.type="button";
@@ -1850,6 +2062,15 @@ async function loadVideos(){
    commentBtn.onclick=()=>openPostComments(post);
    const cLbl=document.createElement("span");cLbl.className="tt-side-label";cLbl.textContent="تعليق";
    commentItem.append(commentBtn,cLbl);
+
+   const savedNow=isPostSaved(post.id);
+   const saveItem=document.createElement("div");saveItem.className="tt-side-item";
+   const saveBtn=document.createElement("button");saveBtn.className="tt-side-btn";saveBtn.type="button";
+   const saveCircle=document.createElement("span");saveCircle.className="tt-action-circle"+(savedNow?" active":"");saveCircle.textContent="🔖";
+   saveBtn.appendChild(saveCircle);
+   const saveLbl=document.createElement("span");saveLbl.className="tt-side-label";saveLbl.textContent=savedNow?"محفوظ":"حفظ";
+   saveBtn.onclick=()=>toggleSavePost(post,saveCircle,saveLbl);
+   saveItem.append(saveBtn,saveLbl);
 
    const shareItem=document.createElement("div");shareItem.className="tt-side-item";
    const shareBtn=document.createElement("button");shareBtn.className="tt-side-btn";shareBtn.type="button";
@@ -1860,7 +2081,7 @@ async function loadVideos(){
 
    const disc=document.createElement("div");disc.className="tt-disc";disc.title="الأغاني";disc.textContent="♫";disc.onclick=openMusicPicker;
 
-   actions.append(avWrap,commentItem,shareItem,disc);
+   actions.append(avWrap,likeItem,commentItem,saveItem,shareItem,disc);
    card.append(video,overlay,sound,actions);list.appendChild(card);
   });
 
@@ -1921,9 +2142,25 @@ async function loadPosts(){
   card.appendChild(date);
 
   const bottom=document.createElement("div");bottom.className="post-bottom";
+  const likePostBtn=document.createElement("button");
+  likePostBtn.textContent=isPostLiked(post.id)?"❤️ أعجبني":"🤍 إعجاب";
+  likePostBtn.onclick=()=>{
+   toggleLikePost(post.id,null,null);
+   likePostBtn.textContent=isPostLiked(post.id)?"❤️ أعجبني":"🤍 إعجاب";
+  };
+  bottom.appendChild(likePostBtn);
+
   const commentBtn=document.createElement("button");commentBtn.className="comment-open";commentBtn.textContent="التعليقات";
   const count=document.createElement("span");count.className="small";count.textContent="...";
   commentBtn.appendChild(count);commentBtn.onclick=()=>openPostComments(post);bottom.appendChild(commentBtn);
+
+  const savePostBtn=document.createElement("button");
+  savePostBtn.textContent=isPostSaved(post.id)?"🔖 محفوظ":"🔖 حفظ";
+  savePostBtn.onclick=()=>{
+   toggleSavePost(post,null,null);
+   savePostBtn.textContent=isPostSaved(post.id)?"🔖 محفوظ":"🔖 حفظ";
+  };
+  bottom.appendChild(savePostBtn);
 
   const menuWrap=document.createElement("div");menuWrap.className="post-menu-wrap";
   const menuBtn=document.createElement("button");menuBtn.textContent="⋮";
@@ -2088,11 +2325,13 @@ async function followUser(id,button){
    if(error)throw error;
    button.textContent=button.classList.contains("tt-plus-badge")?"+":"متابعة";
    button.dataset.following="";
+   followedIdsSet.delete(id);
   }else{
    const {error}=await client.from("follows").insert({follower_id:currentUser.id,following_id:id});
    if(error)throw error;
    button.textContent=button.classList.contains("tt-plus-badge")?"✓":"يتابع";
    button.dataset.following="yes";
+   followedIdsSet.add(id);
   }
   await loadStats();
  }catch(e){alert("تعذرت العملية: "+e.message)}finally{button.disabled=false}

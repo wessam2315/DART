@@ -5,6 +5,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DERT 🌍</title>
+
+<!-- أيقونة التطبيق والمشاركة -->
+<link rel="icon" type="image/png" href="app-icon.png">
+<link rel="apple-touch-icon" href="app-icon.png">
+<meta property="og:title" content="DERT 🌍">
+<meta property="og:description" content="Connect • Share • Explore">
+<meta property="og:image" content="https://wessam2315.github.io/DART/app-icon.png">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
@@ -217,7 +225,8 @@ nav button.active{color:#ffffff;background:transparent}
 /* شاشة الدخول */
 .auth-screen{min-height:100vh;min-height:100dvh;background:radial-gradient(circle at 50% 25%,#1b1c26,#000 72%);display:flex;align-items:center;justify-content:center;padding:22px}
 .auth-inner{width:100%;max-width:390px;text-align:center}
-.brand-mark{width:150px;height:150px;margin:0 auto 14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:82px;border:2px solid #2e303c;background:#111218}
+.brand-mark{width:150px;height:150px;margin:0 auto 14px;border-radius:36px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid #8b5cf6;background:#111218;box-shadow:0 12px 32px #6d28d955}
+.brand-mark img{width:100%;height:100%;object-fit:cover;display:block}
 .brand-name{font-size:48px;font-weight:900;letter-spacing:6px}
 .auth-tag{color:var(--muted);font-size:12px;letter-spacing:3px;margin:8px 0 28px}
 .auth-actions{display:grid;gap:12px}
@@ -379,16 +388,16 @@ nav button.active{color:#ffffff;background:transparent}
 <section id="auth" class="auth-screen">
 <div class="auth-inner">
 <div id="welcomeScreen">
-<div class="brand-mark">🌍</div>
+<div class="brand-mark"><img src="app-icon.png" alt="DERT"></div>
 <div class="brand-name">DERT</div>
-<div class="auth-tag">WORLD SOCIAL NETWORK</div>
+<div class="auth-tag">CONNECT • SHARE • EXPLORE</div>
 <div class="auth-actions">
 <button class="auth-primary" id="openSignup">إنشاء حساب</button>
 <button class="auth-purple" id="openLogin">تسجيل الدخول</button>
 </div>
 </div>
 <div id="authForm" class="hidden">
-<div class="brand-name" style="font-size:34px">DERT 🌍</div>
+<div class="brand-name" style="font-size:34px">DERT</div>
 <p class="small">مرحباً بك في عالم DERT</p>
 <div class="auth-panel">
 <button id="backWelcome" class="gray full">← رجوع</button>
@@ -527,7 +536,7 @@ nav button.active{color:#ffffff;background:transparent}
   <input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp">
   <h2 id="displayName" class="tt-ig-name">مستخدم DERT</h2>
   <div id="displayUsername" class="small" style="margin-top:2px">@user</div>
-  <p id="displayBio" class="tt-ig-bio">مرحباً بك في DERT 🌍</p>
+  <p id="displayBio" class="tt-ig-bio">مرحباً بك في DERT</p>
  </div>
 
  <div class="tt-ig-stats">
@@ -783,6 +792,7 @@ nav button.active{color:#ffffff;background:transparent}
 const SUPABASE_URL="https://forwefmjghgcybiccdxz.supabase.co";
 const SUPABASE_KEY="sb_publishable_xsXMr3yr2yJXOgRn9ZjMtQ_sfoS0OIR";
 const DERT_SITE_URL="https://wessam2315.github.io/DART/";
+const APP_ICON_URL="https://wessam2315.github.io/DART/app-icon.png";
 
 const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
  auth:{
@@ -794,7 +804,6 @@ const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
 });
 
 const ADMIN_ID="221ecf80-7f89-4172-b61a-304369cbe870";
-// معرّف حسابك الإجباري متابعته عند الدخول
 const MANDATORY_FOLLOW_USER_ID="221ecf80-7f89-4172-b61a-304369cbe870";
 
 const DERT_SONGS=[
@@ -821,7 +830,6 @@ const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
 
-/* التحقق من المتابعة الإجبارية لحسابك عند تسجيل الدخول */
 async function enforceMandatoryFollow(){
  if(!currentUser || !MANDATORY_FOLLOW_USER_ID || currentUser.id===MANDATORY_FOLLOW_USER_ID){
   el("mandatoryFollowModal")?.classList.add("hidden");
@@ -1419,7 +1427,7 @@ async function loadProfile(){
  addVerifiedName(el("displayName"),data.full_name||"مستخدم DERT",data.is_verified===true);
  addVerifiedName(el("displayUsernameTop"),"@"+(data.username||"user"),data.is_verified===true);
  el("displayUsername").textContent="@"+(data.username||"user");
- el("displayBio").textContent=data.bio||"مرحباً بك في DERT 🌍";
+ el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
  showAvatar(data.avatar_url,data.full_name||data.username);
  el("adminNav").classList.toggle("hidden",!isAdmin());
  el("mainNav").classList.toggle("has-admin",isAdmin());

@@ -4,16 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
-  <title>DERT — تيك توك</title>
+  <title>DERT</title>
   <style>
     :root {
-      --bg-light: #ffffff;
       --bg-dark: #000000;
-      --surface: #f4f4f6;
-      --text-light: #161823;
-      --text-dark: #ffffff;
-      --muted: #737685;
-      --border: #ebebef;
+      --bg-light: #ffffff;
+      --surface: #f1f1f2;
+      --text-dark: #161823;
+      --text-muted: #737685;
+      --border: #e8e8eb;
       --tt-red: #fe2c55;
       --tt-cyan: #25f4ee;
       --tt-yellow: #face15;
@@ -31,11 +30,12 @@
 
     input, textarea {
       user-select: text;
+      font-family: inherit;
     }
 
     html, body {
       height: 100%;
-      background: #111318;
+      background: #0a0a0c;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Kufi Arabic", "Cairo", sans-serif;
       overflow: hidden;
     }
@@ -45,45 +45,44 @@
       justify-content: center;
     }
 
-    .app-container {
+    .app {
       width: 100%;
-      max-width: 450px;
+      max-width: 440px;
       height: 100dvh;
-      background: var(--bg-dark);
+      background: #000;
       position: relative;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
     }
 
-    .scroll-viewport {
+    /* التمرير العمودي للفيديوهات */
+    .feed-container {
       flex: 1;
       height: 100%;
       overflow-y: auto;
       scroll-snap-type: y mandatory;
       scrollbar-width: none;
-      padding-bottom: calc(56px + var(--safe-bottom));
+      padding-bottom: calc(54px + var(--safe-bottom));
     }
 
-    .scroll-viewport::-webkit-scrollbar {
+    .feed-container::-webkit-scrollbar {
       display: none;
     }
 
-    .scroll-viewport.light-mode {
+    .feed-container.page-mode {
       background: var(--bg-light);
-      color: var(--text-light);
+      color: var(--text-dark);
       scroll-snap-type: none;
     }
 
-    /* بطاقة الفيديو الكاملة (For You / Following) */
-    .tt-feed-item {
+    .video-slide {
       position: relative;
       width: 100%;
-      height: calc(100dvh - 56px - var(--safe-bottom));
+      height: calc(100dvh - 54px - var(--safe-bottom));
       scroll-snap-align: start;
       scroll-snap-stop: always;
-      background: #090a0e;
+      background: #050507;
       color: #fff;
       overflow: hidden;
       display: flex;
@@ -91,53 +90,95 @@
       justify-content: flex-end;
     }
 
-    .tt-media-bg {
+    .video-element {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      background: #050507;
     }
 
-    .tt-scrim {
+    .video-gradient {
       position: absolute;
       inset: 0;
       background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.48) 0%,
-        rgba(0, 0, 0, 0.04) 35%,
-        rgba(0, 0, 0, 0.16) 60%,
-        rgba(0, 0, 0, 0.88) 100%
+        rgba(0, 0, 0, 0.5) 0%,
+        rgba(0, 0, 0, 0) 28%,
+        rgba(0, 0, 0, 0) 62%,
+        rgba(0, 0, 0, 0.85) 100%
       );
       pointer-events: none;
     }
 
-    /* قلب النقر المزدوج (Double Tap Heart) */
-    .double-tap-heart {
+    /* زر الإيقاف المؤقت وسط الشاشة */
+    .pause-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.45);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 8;
+    }
+
+    .video-slide.paused .pause-indicator {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* شريط تقدم الفيديو السفلي الرقيق */
+    .video-progress-track {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.22);
+      z-index: 12;
+    }
+
+    .video-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #ffffff;
+      transition: width 0.1s linear;
+    }
+
+    /* القلب المنبثق عند النقر المزدوج */
+    .burst-heart {
       position: absolute;
       width: 96px;
       height: 96px;
       pointer-events: none;
-      z-index: 20;
+      z-index: 25;
       transform: translate(-50%, -50%) scale(0);
-      animation: burstHeart 0.75s cubic-bezier(0.17, 0.89, 0.32, 1.28) forwards;
-      filter: drop-shadow(0 6px 18px rgba(254, 44, 85, 0.55));
+      animation: ttHeartPop 0.75s cubic-bezier(0.17, 0.89, 0.32, 1.28) forwards;
+      filter: drop-shadow(0 6px 16px rgba(254, 44, 85, 0.55));
     }
 
-    @keyframes burstHeart {
+    @keyframes ttHeartPop {
       0% { transform: translate(-50%, -50%) scale(0.2) rotate(-14deg); opacity: 0; }
-      25% { transform: translate(-50%, -50%) scale(1.18) rotate(8deg); opacity: 1; }
+      25% { transform: translate(-50%, -50%) scale(1.2) rotate(8deg); opacity: 1; }
       55% { transform: translate(-50%, -50%) scale(1) rotate(-4deg); opacity: 1; }
-      100% { transform: translate(-50%, -75%) scale(1.25) rotate(0deg); opacity: 0; }
+      100% { transform: translate(-50%, -80%) scale(1.25) rotate(0deg); opacity: 0; }
     }
 
-    /* الشريط العلوي في الرئيسية */
-    .tt-top-bar {
+    /* الشريط العلوي في الرئيسية (LIVE - أتابعه - لك - بحث) */
+    .tt-header {
       position: fixed;
       top: calc(10px + var(--safe-top));
       width: 100%;
-      max-width: 450px;
-      z-index: 18;
+      max-width: 440px;
+      z-index: 20;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -146,62 +187,70 @@
       pointer-events: none;
     }
 
-    .tt-top-bar > * {
+    .tt-header > * {
       pointer-events: auto;
     }
 
-    .tt-top-btn {
+    .live-badge-btn {
       background: none;
-      border: none;
+      border: 1.5px solid rgba(255, 255, 255, 0.85);
       color: #fff;
-      font-size: 21px;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 5px;
+      letter-spacing: 0.5px;
       cursor: pointer;
-      width: 36px;
-      height: 36px;
-      display: grid;
-      place-items: center;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     }
 
-    .tt-top-tabs {
+    .top-tabs {
       display: flex;
       align-items: center;
       gap: 18px;
     }
 
-    .tt-tab-btn {
+    .top-tab {
       background: none;
       border: none;
-      color: rgba(255, 255, 255, 0.68);
-      font-size: 16px;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 16.5px;
       font-weight: 700;
       cursor: pointer;
       position: relative;
       padding: 4px 2px;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-      transition: color 0.15s ease, transform 0.15s ease;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     }
 
-    .tt-tab-btn.active {
+    .top-tab.active {
       color: #ffffff;
-      transform: scale(1.04);
     }
 
-    .tt-tab-btn.active::after {
+    .top-tab.active::after {
       content: "";
       position: absolute;
       bottom: -4px;
-      left: 18%;
-      right: 18%;
+      left: 20%;
+      right: 20%;
       height: 3px;
       border-radius: 99px;
       background: #ffffff;
     }
 
-    /* شريط التفاعل الجانبي المطابق لتيك توك */
-    .tt-overlay-row {
+    .top-icon-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    /* معلومات الفيديو وشريط التفاعل الجانبي */
+    .slide-bottom-ui {
       position: relative;
-      z-index: 6;
+      z-index: 10;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -210,61 +259,58 @@
       pointer-events: none;
     }
 
-    .tt-meta-col,
-    .tt-rail {
+    .slide-info,
+    .side-actions {
       pointer-events: auto;
     }
 
-    .tt-meta-col {
+    .slide-info {
       flex: 1;
       min-width: 0;
       padding-left: 8px;
     }
 
-    .tt-author {
+    .slide-username {
       font-size: 15.5px;
       font-weight: 800;
       margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
     }
 
-    .tt-caption {
+    .slide-desc {
       font-size: 13.5px;
-      line-height: 1.48;
-      color: rgba(255, 255, 255, 0.96);
+      line-height: 1.45;
+      color: rgba(255, 255, 255, 0.95);
       margin-bottom: 8px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
     }
 
-    .tt-sound-line {
+    .slide-music {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 12.5px;
-      color: #fff;
       font-weight: 600;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      color: #fff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
     }
 
-    .tt-rail {
+    .side-actions {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
+      gap: 15px;
       flex-shrink: 0;
     }
 
-    .tt-avatar-wrap {
+    .creator-avatar-box {
       position: relative;
       width: 48px;
       height: 48px;
       margin-bottom: 6px;
     }
 
-    .tt-avatar-img {
+    .creator-avatar {
       width: 48px;
       height: 48px;
       border-radius: 50%;
@@ -273,7 +319,7 @@
       display: block;
     }
 
-    .tt-plus-badge {
+    .follow-dot {
       position: absolute;
       bottom: -8px;
       left: 50%;
@@ -286,149 +332,143 @@
       border: none;
       font-size: 14px;
       font-weight: 900;
-      line-height: 1;
       cursor: pointer;
       display: grid;
       place-items: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-      transition: transform 0.16s ease, background 0.16s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
     }
 
-    .tt-plus-badge.followed {
-      background: #ffffff;
+    .follow-dot.done {
+      background: #fff;
       color: var(--tt-red);
       font-size: 11px;
     }
 
-    .tt-rail-btn {
+    .rail-item {
+      background: none;
+      border: none;
+      color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 3px;
-      background: none;
-      border: none;
-      color: #fff;
       cursor: pointer;
       min-width: 46px;
     }
 
-    .tt-rail-svg {
+    .rail-svg {
       width: 34px;
       height: 34px;
       display: grid;
       place-items: center;
-      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.55));
-      transition: transform 0.18s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6));
+      transition: transform 0.16s cubic-bezier(0.17, 0.89, 0.32, 1.49);
     }
 
-    .tt-rail-btn:active .tt-rail-svg {
+    .rail-item:active .rail-svg {
       transform: scale(0.84);
     }
 
-    .tt-rail-btn.pop .tt-rail-svg {
-      animation: iconPop 0.32s cubic-bezier(0.17, 0.89, 0.32, 1.49);
-    }
-
-    @keyframes iconPop {
-      0% { transform: scale(0.75); }
-      55% { transform: scale(1.26); }
-      100% { transform: scale(1); }
-    }
-
-    .tt-rail-count {
+    .rail-num {
       font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.2px;
-      color: #ffffff;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
       direction: ltr;
     }
 
-    .tt-disc {
+    .sound-disc {
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      background: radial-gradient(circle, #222 25%, #0a0a0a 26%, #2b2b2b 65%, #000 66%);
-      border: 6px solid #1d1f26;
+      background: radial-gradient(circle, #222 25%, #090909 26%, #2a2a2a 65%, #000 66%);
+      border: 6px solid #1c1d24;
       display: grid;
       place-items: center;
       overflow: hidden;
       margin-top: 2px;
-      animation: spinDisc 6s linear infinite;
+      animation: discSpin 6s linear infinite;
     }
 
-    .tt-disc img {
+    .video-slide.paused .sound-disc {
+      animation-play-state: paused;
+    }
+
+    .sound-disc img {
       width: 20px;
       height: 20px;
       border-radius: 50%;
       object-fit: cover;
     }
 
-    @keyframes spinDisc {
+    @keyframes discSpin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
 
-    /* شاشة الأصدقاء (Friends) */
-    .light-header {
+    /* الصفحات البيضاء (الأصدقاء، صندوق الوارد، الملف الشخصي) */
+    .white-topbar {
       position: sticky;
       top: 0;
-      z-index: 12;
-      height: 52px;
+      z-index: 15;
+      height: 50px;
       padding: var(--safe-top) 16px 0;
       background: #fff;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: var(--text-light);
     }
 
-    .light-title {
-      font-size: 17px;
+    .white-title {
+      font-size: 16.5px;
       font-weight: 800;
     }
 
-    .friend-card {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
+    .friend-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
     }
 
-    .friend-left {
+    .friend-info {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .friend-avatar {
+    .avatar-50 {
       width: 50px;
       height: 50px;
       border-radius: 50%;
       object-fit: cover;
     }
 
-    .btn-follow-pill {
+    .tt-btn-red {
       background: var(--tt-red);
       color: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       padding: 8px 16px;
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
     }
 
-    .btn-follow-pill.muted-pill {
+    .tt-btn-gray {
       background: var(--surface);
-      color: var(--text-light);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
-    /* صندوق الوارد (Inbox) */
-    .stories-row {
+    /* صندوق الوارد */
+    .stories-bar {
       display: flex;
       gap: 14px;
       padding: 12px 16px;
@@ -436,44 +476,42 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .stories-row::-webkit-scrollbar { display: none; }
+    .stories-bar::-webkit-scrollbar { display: none; }
 
-    .story-bubble {
+    .story-cell {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 5px;
-      min-width: 62px;
+      min-width: 60px;
       font-size: 11.5px;
       cursor: pointer;
     }
 
-    .story-circle {
-      width: 58px;
-      height: 58px;
+    .story-ring {
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
       border: 2px solid #00c48c;
       padding: 2px;
       position: relative;
-      display: grid;
-      place-items: center;
     }
 
-    .story-circle img {
+    .story-ring img {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       object-fit: cover;
     }
 
-    .story-create-badge {
+    .story-plus {
       position: absolute;
       bottom: -2px;
       right: -2px;
-      width: 20px;
-      height: 20px;
+      width: 19px;
+      height: 19px;
       border-radius: 50%;
-      background: #25f4ee;
+      background: var(--tt-cyan);
       color: #000;
       font-size: 14px;
       font-weight: 900;
@@ -482,7 +520,7 @@
       border: 2px solid #fff;
     }
 
-    .inbox-item {
+    .inbox-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -491,25 +529,18 @@
       cursor: pointer;
     }
 
-    .inbox-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .inbox-icon-circle {
+    .inbox-badge-icon {
       width: 48px;
       height: 48px;
       border-radius: 50%;
       display: grid;
       place-items: center;
-      font-size: 20px;
       color: #fff;
+      font-size: 20px;
       flex-shrink: 0;
     }
 
-    .red-dot {
+    .unread-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
@@ -517,27 +548,21 @@
       display: inline-block;
     }
 
-    /* الملف الشخصي (Profile) */
-    .profile-top {
-      padding: calc(12px + var(--safe-top)) 16px 14px;
+    /* الملف الشخصي */
+    .profile-box {
+      padding: calc(10px + var(--safe-top)) 16px 14px;
+      text-align: center;
       border-bottom: 1px solid var(--border);
     }
 
-    .profile-header-bar {
+    .profile-nav-row {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
-    }
-
-    .profile-center {
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      text-align: center;
+      margin-bottom: 12px;
     }
 
-    .profile-pic {
+    .profile-img-lg {
       width: 88px;
       height: 88px;
       border-radius: 50%;
@@ -546,156 +571,119 @@
       margin-bottom: 8px;
     }
 
-    .profile-name {
-      font-size: 17px;
-      font-weight: 800;
-    }
-
-    .profile-handle {
-      font-size: 12.5px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    .profile-metrics {
+    .profile-counters {
       display: flex;
       justify-content: center;
       gap: 28px;
       margin: 14px 0;
     }
 
-    .metric-val {
+    .counter-num {
       font-size: 16.5px;
       font-weight: 800;
       direction: ltr;
     }
 
-    .metric-lbl {
+    .counter-lbl {
       font-size: 12px;
-      color: var(--muted);
+      color: var(--text-muted);
     }
 
-    .profile-btns {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
-    .p-btn {
-      border: none;
-      background: var(--surface);
-      color: var(--text-light);
-      font-size: 13.5px;
-      font-weight: 700;
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .p-btn.primary {
-      background: var(--tt-red);
-      color: #fff;
-    }
-
-    .profile-bio {
+    .profile-bio-txt {
       margin-top: 12px;
       font-size: 13px;
       line-height: 1.5;
-      color: var(--text-light);
       white-space: pre-line;
-      text-align: center;
     }
 
-    .profile-tabs {
+    .profile-subtabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       border-bottom: 1px solid var(--border);
     }
 
-    .p-tab {
+    .subtab-btn {
       background: none;
       border: none;
-      padding: 12px 0;
+      padding: 11px 0;
       font-size: 16px;
-      color: var(--muted);
+      color: var(--text-muted);
       cursor: pointer;
       position: relative;
     }
 
-    .p-tab.active {
-      color: var(--text-light);
+    .subtab-btn.active {
+      color: var(--text-dark);
       font-weight: 800;
     }
 
-    .p-tab.active::after {
+    .subtab-btn.active::after {
       content: "";
       position: absolute;
       bottom: 0;
       left: 25%;
       right: 25%;
       height: 2.5px;
-      background: var(--text-light);
+      background: var(--text-dark);
     }
 
-    .video-grid-3 {
+    .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 2px;
       padding-top: 2px;
     }
 
-    .v-tile {
+    .grid-cell {
       aspect-ratio: 3 / 4;
       position: relative;
-      background: #1c1e26;
+      background: #14151a;
       cursor: pointer;
       overflow: hidden;
     }
 
-    .v-tile img {
+    .grid-cell img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
     }
 
-    .v-plays {
+    .grid-views {
       position: absolute;
       bottom: 5px;
       right: 6px;
       color: #fff;
       font-size: 11px;
       font-weight: 700;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
       direction: ltr;
     }
 
-    /* الشريط السفلي بأسلوب تيك توك */
-    .tt-bottom-nav {
+    /* الشريط السفلي */
+    .bottom-bar {
       position: fixed;
       bottom: 0;
       width: 100%;
-      max-width: 450px;
-      height: calc(56px + var(--safe-bottom));
+      max-width: 440px;
+      height: calc(54px + var(--safe-bottom));
       padding-bottom: var(--safe-bottom);
-      background: var(--bg-dark);
-      color: #fff;
+      background: #000000;
+      color: #ffffff;
       border-top: 1px solid rgba(255, 255, 255, 0.12);
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       align-items: center;
       z-index: 25;
-      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     }
 
-    .tt-bottom-nav.light-nav {
+    .bottom-bar.light {
       background: #ffffff;
-      color: var(--text-light);
+      color: var(--text-dark);
       border-top-color: var(--border);
     }
 
-    .tt-nav-btn {
+    .b-tab {
       background: none;
       border: none;
       color: inherit;
@@ -710,18 +698,17 @@
       position: relative;
     }
 
-    .tt-nav-btn.active {
+    .b-tab.active {
       opacity: 1;
       font-weight: 800;
     }
 
-    .tt-create-box {
-      position: relative;
+    .tt-plus-btn {
       width: 44px;
       height: 28px;
       border-radius: 8px;
-      background: #fff;
-      color: #000;
+      background: #ffffff;
+      color: #000000;
       display: grid;
       place-items: center;
       font-size: 20px;
@@ -729,12 +716,12 @@
       box-shadow: -3px 0 0 var(--tt-cyan), 3px 0 0 var(--tt-red);
     }
 
-    .tt-bottom-nav.light-nav .tt-create-box {
+    .bottom-bar.light .tt-plus-btn {
       background: #161823;
-      color: #fff;
+      color: #ffffff;
     }
 
-    .nav-badge-num {
+    .badge-count {
       position: absolute;
       top: -3px;
       left: 22%;
@@ -746,59 +733,58 @@
       border-radius: 999px;
     }
 
-    /* القائمة الجانبية والنافذة السفلية */
-    .drawer-overlay {
+    /* القائمة الجانبية والنوافذ */
+    .drawer-bg {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.45);
       display: none;
       justify-content: flex-start;
-      align-items: stretch;
       z-index: 50;
     }
 
-    .drawer-overlay.open {
+    .drawer-bg.open {
       display: flex;
     }
 
-    .side-drawer {
+    .drawer-panel {
       width: 82%;
-      max-width: 340px;
+      max-width: 330px;
       background: #fff;
-      color: var(--text-light);
+      color: var(--text-dark);
       height: 100%;
       padding-top: calc(14px + var(--safe-top));
       padding-bottom: calc(16px + var(--safe-bottom));
       overflow-y: auto;
     }
 
-    .drawer-group-title {
-      font-size: 12.5px;
+    .drawer-sec {
+      font-size: 12px;
       font-weight: 600;
-      color: var(--muted);
+      color: var(--text-muted);
       padding: 14px 18px 6px;
     }
 
-    .drawer-row {
+    .drawer-btn {
       width: 100%;
       border: none;
       background: #fff;
-      color: var(--text-light);
+      color: var(--text-dark);
       padding: 13px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 14.5px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
       text-align: right;
     }
 
-    .drawer-row:hover {
+    .drawer-btn:hover {
       background: var(--surface);
     }
 
-    .modal-overlay {
+    .sheet-bg {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.5);
@@ -808,24 +794,24 @@
       z-index: 60;
     }
 
-    .modal-overlay.open {
+    .sheet-bg.open {
       display: flex;
     }
 
-    .modal-card {
+    .sheet-box {
       width: 100%;
-      max-width: 450px;
-      max-height: 82dvh;
+      max-width: 440px;
+      max-height: 80dvh;
       background: #fff;
-      color: var(--text-light);
-      border-radius: 18px 18px 0 0;
+      color: var(--text-dark);
+      border-radius: 16px 16px 0 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
-    .modal-top {
-      padding: 14px 16px;
+    .sheet-head {
+      padding: 13px 16px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -834,13 +820,12 @@
       font-size: 14.5px;
     }
 
-    .modal-content {
+    .sheet-body {
       padding: 14px 16px;
       overflow-y: auto;
     }
 
-    /* تعليقات مطابقة لتيك توك */
-    .cmt-item {
+    .cmt-row {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
@@ -849,14 +834,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .cmt-left {
-      display: flex;
-      gap: 10px;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .cmt-avatar {
+    .cmt-av {
       width: 34px;
       height: 34px;
       border-radius: 50%;
@@ -864,52 +842,15 @@
       flex-shrink: 0;
     }
 
-    .cmt-user {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .cmt-text {
-      font-size: 13.5px;
-      color: var(--text-light);
-      margin-top: 2px;
-      line-height: 1.45;
-    }
-
-    .cmt-meta {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    .cmt-like-btn {
-      background: none;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      font-size: 11px;
-      color: var(--muted);
-      cursor: pointer;
-      padding: 2px 4px;
-    }
-
-    .cmt-like-btn.liked {
-      color: var(--tt-red);
-    }
-
-    /* نافذة المشاركة بأسلوب تيك توك */
-    .share-grid {
+    .share-options {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      padding: 6px 0 12px;
+      padding: 8px 0;
       text-align: center;
     }
 
-    .share-opt {
+    .share-item {
       background: none;
       border: none;
       display: flex;
@@ -918,11 +859,11 @@
       gap: 6px;
       font-size: 11.5px;
       font-weight: 600;
-      color: var(--text-light);
+      color: var(--text-dark);
       cursor: pointer;
     }
 
-    .share-circle {
+    .share-icon {
       width: 48px;
       height: 48px;
       border-radius: 50%;
@@ -932,17 +873,16 @@
       color: #fff;
     }
 
-    .m-input {
+    .txt-input {
       width: 100%;
-      border: 1px solid #d5d8e0;
+      border: 1px solid #d8dae2;
       border-radius: 10px;
       padding: 10px 12px;
       font-size: 14px;
       margin-top: 8px;
-      font-family: inherit;
     }
 
-    .m-btn {
+    .action-submit {
       width: 100%;
       background: var(--tt-red);
       color: #fff;
@@ -955,15 +895,15 @@
       cursor: pointer;
     }
 
-    .gw-row {
+    .gw-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
       margin-top: 10px;
     }
 
-    .gw-opt {
-      border: 1px solid #d5d8e0;
+    .gw-btn {
+      border: 1px solid #d8dae2;
       background: #fff;
       border-radius: 9px;
       padding: 9px;
@@ -972,7 +912,7 @@
       cursor: pointer;
     }
 
-    .gw-opt.active {
+    .gw-btn.active {
       border-color: var(--tt-red);
       background: #fff0f3;
       color: var(--tt-red);
@@ -980,7 +920,7 @@
 
     .toast {
       position: fixed;
-      bottom: calc(68px + var(--safe-bottom));
+      bottom: calc(66px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
       background: rgba(22, 24, 35, 0.92);
@@ -1001,88 +941,89 @@
   </style>
 </head>
 <body>
-  <div class="app-container">
-    <div class="scroll-viewport" id="viewport"></div>
+  <div class="app">
+    <div class="feed-container" id="feedContainer"></div>
 
-    <nav class="tt-bottom-nav" id="bottomNav">
-      <button class="tt-nav-btn active" data-nav="home" type="button">
+    <!-- الشريط السفلي المطابق لتيك توك (الصفحة الرئيسية - الأصدقاء - + - صندوق الوارد - الملف الشخصي) -->
+    <nav class="bottom-bar" id="bottomBar">
+      <button class="b-tab active" data-page="home" type="button">
         <span>🏠</span>
         <span>الصفحة الرئيسية</span>
       </button>
-      <button class="tt-nav-btn" data-nav="friends" type="button">
+      <button class="b-tab" data-page="friends" type="button">
         <span>👥</span>
         <span>الأصدقاء</span>
       </button>
-      <button class="tt-nav-btn" id="createPostBtn" type="button">
-        <span class="tt-create-box">+</span>
+      <button class="b-tab" id="openUploadBtn" type="button">
+        <span class="tt-plus-btn">+</span>
       </button>
-      <button class="tt-nav-btn" data-nav="inbox" type="button">
-        <span class="nav-badge-num" id="inboxBadge">2</span>
+      <button class="b-tab" data-page="inbox" type="button">
+        <span class="badge-count" id="inboxCountBadge">2</span>
         <span>💬</span>
         <span>صندوق الوارد</span>
       </button>
-      <button class="tt-nav-btn" data-nav="profile" type="button">
+      <button class="b-tab" data-page="profile" type="button">
         <span>👤</span>
         <span>الملف الشخصي</span>
       </button>
     </nav>
   </div>
 
-  <!-- قائمة الاختصارات الجانبية -->
-  <div class="drawer-overlay" id="drawerOverlay">
-    <aside class="side-drawer" id="sideDrawer">
+  <!-- قائمة الإعدادات والاختصارات الجانبية -->
+  <div class="drawer-bg" id="drawerBg">
+    <aside class="drawer-panel">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:0 18px 8px;">
-        <strong>الاختصارات</strong>
-        <button class="tt-top-btn" style="color:#161823;" id="closeDrawerBtn" type="button">✕</button>
+        <strong>الإعدادات والاختصارات</strong>
+        <button class="top-icon-btn" style="color:#161823;" id="closeDrawerBtn" type="button">✕</button>
       </div>
 
-      <div class="drawer-group-title">الأصول</div>
-      <button class="drawer-row" onclick="openWalletModal()" type="button">
+      <div class="drawer-sec">الأصول</div>
+      <button class="drawer-btn" onclick="openBalanceModal()" type="button">
         <span>💳 الرصيد</span>
-        <span id="drawerCoinsTxt">500 عملة ‹</span>
+        <span id="lblCoins">500 عملة ‹</span>
       </button>
 
-      <div class="drawer-group-title">الأدوات الشخصية</div>
-      <button class="drawer-row" onclick="toast('مركز الأنشطة')" type="button"><span>🕒 مركز الأنشطة</span><span>‹</span></button>
-      <button class="drawer-row" onclick="addOfflineVideo()" type="button"><span>☁️ فيديوهات دون اتصال بالإنترنت</span><span id="drawerOfflineTxt">3 ‹</span></button>
-      <button class="drawer-row" onclick="toast('رمز QR الخاص بك')" type="button"><span>🔳 رمز QR لديك</span><span>‹</span></button>
-      <button class="drawer-row" onclick="toast('DERT Minis')" type="button"><span>🧊 DERT Minis</span><span>‹</span></button>
+      <div class="drawer-sec">الأدوات الشخصية</div>
+      <button class="drawer-btn" onclick="toast('مركز الأنشطة')" type="button"><span>🕒 مركز الأنشطة</span><span>‹</span></button>
+      <button class="drawer-btn" onclick="saveOfflineItem()" type="button"><span>☁️ فيديوهات دون اتصال بالإنترنت</span><span id="lblOffline">3 ‹</span></button>
+      <button class="drawer-btn" onclick="toast('رمز QR لديك: @w20xw')" type="button"><span>🔳 رمز QR لديك</span><span>‹</span></button>
+      <button class="drawer-btn" onclick="toast('DERT Minis')" type="button"><span>🧊 DERT Minis</span><span>‹</span></button>
 
-      <div class="drawer-group-title">أدوات الإبداع والأعمال</div>
-      <button class="drawer-row" onclick="toast('المجموعة التجارية')" type="button"><span>🛍️ المجموعة التجارية</span><span>‹</span></button>
-      <button class="drawer-row" onclick="toast('DERT Studio')" type="button"><span>👤✨ DERT Studio</span><span>‹</span></button>
-      <button class="drawer-row" onclick="addPromoCampaign()" type="button"><span>🔥 الترويج</span><span id="drawerPromoTxt">1 نشط ‹</span></button>
+      <div class="drawer-sec">أدوات الإبداع والأعمال</div>
+      <button class="drawer-btn" onclick="toast('المجموعة التجارية')" type="button"><span>🛍️ المجموعة التجارية</span><span>‹</span></button>
+      <button class="drawer-btn" onclick="toast('DERT Studio')" type="button"><span>👤✨ DERT Studio</span><span>‹</span></button>
+      <button class="drawer-btn" onclick="addPromotion()" type="button"><span>🔥 الترويج</span><span id="lblPromo">1 نشط ‹</span></button>
 
-      <div class="drawer-group-title">الإعدادات والخصوصية</div>
-      <button class="drawer-row" onclick="togglePrivateAccount()" type="button"><span>⚙️ الإعدادات والخصوصية</span><span id="drawerPrivTxt">عام ‹</span></button>
+      <div class="drawer-sec">الإعدادات والخصوصية</div>
+      <button class="drawer-btn" onclick="togglePrivacy()" type="button"><span>⚙️ الإعدادات والخصوصية</span><span id="lblPrivacy">عام ‹</span></button>
     </aside>
   </div>
 
-  <!-- نافذة منبثقة -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-card">
-      <div class="modal-top">
-        <span id="modalTitle"></span>
-        <button class="tt-top-btn" style="color:#161823;" id="closeModalBtn" type="button">✕</button>
+  <!-- نافذة سفلية للتعليقات والمشاركة والرصيد والنشر -->
+  <div class="sheet-bg" id="sheetBg">
+    <div class="sheet-box">
+      <div class="sheet-head">
+        <span id="sheetTitle"></span>
+        <button class="top-icon-btn" style="color:#161823;" id="closeSheetBtn" type="button">✕</button>
       </div>
-      <div class="modal-content" id="modalContent"></div>
+      <div class="sheet-body" id="sheetBody"></div>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-    const STORAGE_KEY = "dert_tiktok_exact_interactions_v2";
+    const DB_KEY = "dert_100_tiktok_v1";
 
-    const initialState = {
-      nav: "home",
-      homeTab: "foryou",
-      profileTab: "videos",
-      profile: {
+    const defaultData = {
+      page: "home",
+      feedFilter: "foryou",
+      profileFilter: "videos",
+      user: {
         name: "وسام | wessam",
         handle: "@w20xw",
         bio: "الرمادي\nأصنع لنفسك تاريخ و أجعل غيرك يتعلمة 🦅.\nDERT Creator",
-        avatar: "https://picsum.photos/200/200?random=101",
+        avatar: "https://picsum.photos/200/200?random=11",
         following: 85,
         followers: 14900,
         likes: 82900,
@@ -1098,8 +1039,9 @@
           id: "v1",
           author: "وسام | wessam",
           handle: "@w20xw",
-          avatar: "https://picsum.photos/200/200?random=101",
-          media: "https://picsum.photos/480/850?random=201",
+          avatar: "https://picsum.photos/200/200?random=11",
+          videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
+          poster: "https://picsum.photos/480/850?random=51",
           caption: "محتوى جديد على DERT 🔥 #تيك_توك #DERT",
           sound: "الصوت الأصلي - w20xw",
           plays: "12.4K",
@@ -1110,16 +1052,17 @@
           saved: false,
           following: true,
           comments: [
-            { id: "cm1", user: "علي رشيد", avatar: "https://picsum.photos/100/100?random=102", text: "رهيب جداً 👏", time: "منذ 2 س", likes: 48, liked: false },
-            { id: "cm2", user: "عبدالله آل فهد", avatar: "https://picsum.photos/100/100?random=103", text: "استمر يا بطل 🔥", time: "منذ 45 د", likes: 19, liked: true }
+            { id: "c1", user: "علي رشيد", avatar: "https://picsum.photos/100/100?random=12", text: "رهيب جداً 👏", time: "منذ 2 س", likes: 48, liked: false },
+            { id: "c2", user: "عبدالله آل فهد", avatar: "https://picsum.photos/100/100?random=13", text: "استمر يا بطل 🔥", time: "منذ 45 د", likes: 19, liked: true }
           ]
         },
         {
           id: "v2",
           author: "علي رشيد",
           handle: "@ali_rasheed",
-          avatar: "https://picsum.photos/200/200?random=102",
-          media: "https://picsum.photos/480/850?random=202",
+          avatar: "https://picsum.photos/200/200?random=12",
+          videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4",
+          poster: "https://picsum.photos/480/850?random=52",
           caption: "لقطات سريعة ومقاطع يومية ✨ #محتوى",
           sound: "موسيقى ترند - DERT",
           plays: "4226",
@@ -1130,15 +1073,16 @@
           saved: true,
           following: false,
           comments: [
-            { id: "cm3", user: "وسام | wessam", avatar: "https://picsum.photos/100/100?random=101", text: "تصوير ومونتاج روعة", time: "منذ 1 س", likes: 12, liked: false }
+            { id: "c3", user: "وسام | wessam", avatar: "https://picsum.photos/100/100?random=11", text: "تصوير ومونتاج روعة", time: "منذ 1 س", likes: 12, liked: false }
           ]
         },
         {
           id: "v3",
           author: "عبدالله آل فهد",
           handle: "@abdullah_f",
-          avatar: "https://picsum.photos/200/200?random=103",
-          media: "https://picsum.photos/480/850?random=203",
+          avatar: "https://picsum.photos/200/200?random=13",
+          videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4",
+          poster: "https://picsum.photos/480/850?random=53",
           caption: "بث مباشر وتفاعل مستمر على DERT",
           sound: "بث مباشر - DERT Live",
           plays: "19.8K",
@@ -1149,23 +1093,23 @@
           saved: false,
           following: true,
           comments: [
-            { id: "cm4", user: "حساب تجريبي", avatar: "https://picsum.photos/100/100?random=104", text: "متابعينك من البداية 🔥", time: "الآن", likes: 7, liked: false }
+            { id: "c4", user: "متابع DERT", avatar: "https://picsum.photos/100/100?random=14", text: "متابعينك من البداية 🔥", time: "الآن", likes: 7, liked: false }
           ]
         }
       ],
       inbox: [
         { id: "i1", title: "النشاط والمتابعون الجدد", sub: "أعجب بالمقطع الخاص بك", time: "الآن", color: "#fe2c55", dot: true },
-        { id: "i2", title: "علي رشيد", sub: "شارك فيديو • منذ 3 س", time: "3 س", color: "#161823", avatar: "https://picsum.photos/100/100?random=102", dot: true },
+        { id: "i2", title: "علي رشيد", sub: "شارك فيديو • منذ 3 س", time: "3 س", color: "#161823", avatar: "https://picsum.photos/100/100?random=12", dot: true },
         { id: "i3", title: "إشعارات النظام", sub: "تم تفعيل المحفظة وتقسيم الأرباح 60% / 40%", time: "1 ي", color: "#0095f6", dot: false }
       ]
     };
 
-    let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || JSON.parse(JSON.stringify(initialState));
-    let lastPopId = null;
+    let state = JSON.parse(localStorage.getItem(DB_KEY) || "null") || JSON.parse(JSON.stringify(defaultData));
+    let clickTimer = null;
 
     function save() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      syncDrawerLabels();
+      localStorage.setItem(DB_KEY, JSON.stringify(state));
+      updateBadges();
     }
 
     function toast(msg) {
@@ -1180,256 +1124,297 @@
       return String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
     }
 
-    // تنسيق الأرقام بأسلوب تيك توك (14.2K / 1.5M)
-    function formatTikTokCount(num) {
+    function fmtNum(num) {
       const n = Number(num) || 0;
       if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
       if (n >= 10000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
       return String(n);
     }
 
-    const svgIcons = {
-      heart: (liked) => `
-        <svg width="33" height="33" viewBox="0 0 24 24" fill="${liked ? "#fe2c55" : "#ffffff"}">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-        </svg>`,
-      comment: `
-        <svg width="31" height="31" viewBox="0 0 24 24" fill="#ffffff">
-          <path d="M12 3C6.48 3 2 6.92 2 11.75c0 2.66 1.37 5.04 3.53 6.64-.17 1.38-.78 2.68-1.45 3.47-.22.26-.04.66.3.63 1.72-.16 3.55-.84 4.74-1.69.92.22 1.89.35 2.88.35 5.52 0 10-3.92 10-8.75S17.52 3 12 3z"/>
-        </svg>`,
-      bookmark: (saved) => `
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="${saved ? "#face15" : "#ffffff"}">
-          <path d="M6 3h12a1 1 0 0 1 1 1v16.38a.6.6 0 0 1-.96.48L12 16.2l-6.04 4.66A.6.6 0 0 1 5 20.38V4a1 1 0 0 1 1-1z"/>
-        </svg>`,
-      share: `
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="#ffffff">
-          <path d="M14 5v4.06C7.95 9.65 4.28 13.45 3 19c2.52-3.48 6.13-5.12 11-5.12V18l7-6.5L14 5z"/>
-        </svg>`
+    const icons = {
+      heart: (liked) => `<svg width="33" height="33" viewBox="0 0 24 24" fill="${liked ? "#fe2c55" : "#ffffff"}"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`,
+      comment: `<svg width="31" height="31" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 3C6.48 3 2 6.92 2 11.75c0 2.66 1.37 5.04 3.53 6.64-.17 1.38-.78 2.68-1.45 3.47-.22.26-.04.66.3.63 1.72-.16 3.55-.84 4.74-1.69.92.22 1.89.35 2.88.35 5.52 0 10-3.92 10-8.75S17.52 3 12 3z"/></svg>`,
+      save: (saved) => `<svg width="30" height="30" viewBox="0 0 24 24" fill="${saved ? "#face15" : "#ffffff"}"><path d="M6 3h12a1 1 0 0 1 1 1v16.38a.6.6 0 0 1-.96.48L12 16.2l-6.04 4.66A.6.6 0 0 1 5 20.38V4a1 1 0 0 1 1-1z"/></svg>`,
+      share: `<svg width="32" height="32" viewBox="0 0 24 24" fill="#ffffff"><path d="M14 5v4.06C7.95 9.65 4.28 13.45 3 19c2.52-3.48 6.13-5.12 11-5.12V18l7-6.5L14 5z"/></svg>`
     };
 
-    function syncDrawerLabels() {
-      document.getElementById("drawerCoinsTxt").textContent = `${state.profile.coins} عملة ‹`;
-      document.getElementById("drawerOfflineTxt").textContent = `${state.profile.offlineCount} ‹`;
-      document.getElementById("drawerPromoTxt").textContent = `${state.profile.promoCount} نشط ‹`;
-      document.getElementById("drawerPrivTxt").textContent = `${state.profile.privateAcc ? "خاص" : "عام"} ‹`;
+    function updateBadges() {
+      document.getElementById("lblCoins").textContent = `${state.user.coins} عملة ‹`;
+      document.getElementById("lblOffline").textContent = `${state.user.offlineCount} ‹`;
+      document.getElementById("lblPromo").textContent = `${state.user.promoCount} نشط ‹`;
+      document.getElementById("lblPrivacy").textContent = `${state.user.privateAcc ? "خاص" : "عام"} ‹`;
       const unread = state.inbox.filter(x => x.dot).length;
-      const badge = document.getElementById("inboxBadge");
-      badge.textContent = unread;
-      badge.style.display = unread ? "inline-block" : "none";
+      const b = document.getElementById("inboxCountBadge");
+      b.textContent = unread;
+      b.style.display = unread ? "inline-block" : "none";
     }
 
     function render() {
-      const vp = document.getElementById("viewport");
-      const bNav = document.getElementById("bottomNav");
+      const container = document.getElementById("feedContainer");
+      const bottomBar = document.getElementById("bottomBar");
 
-      document.querySelectorAll(".tt-nav-btn[data-nav]").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.nav === state.nav);
+      document.querySelectorAll(".b-tab[data-page]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.page === state.page);
       });
 
-      const isDark = state.nav === "home";
-      bNav.classList.toggle("light-nav", !isDark);
-      vp.classList.toggle("light-mode", !isDark);
+      const isHome = state.page === "home";
+      bottomBar.classList.toggle("light", !isHome);
+      container.classList.toggle("page-mode", !isHome);
 
-      if (state.nav === "home") {
-        const list = state.homeTab === "following" ? state.videos.filter(v => v.following) : state.videos;
+      if (isHome) {
+        const list = state.feedFilter === "following" ? state.videos.filter(v => v.following) : state.videos;
         const items = list.length ? list : state.videos;
 
-        vp.innerHTML = `
-          <div class="tt-top-bar">
-            <button class="tt-top-btn" onclick="openDrawer()" type="button">☰</button>
-            <div class="tt-top-tabs">
-              <button class="tt-tab-btn ${state.homeTab === "following" ? "active" : ""}" onclick="setHomeTab('following')" type="button">أتابعه</button>
-              <button class="tt-tab-btn ${state.homeTab === "foryou" ? "active" : ""}" onclick="setHomeTab('foryou')" type="button">لك</button>
+        container.innerHTML = `
+          <div class="tt-header">
+            <button class="live-badge-btn" onclick="openLivePreview()" type="button">LIVE</button>
+            <div class="top-tabs">
+              <button class="top-tab ${state.feedFilter === "following" ? "active" : ""}" onclick="setFeedFilter('following')" type="button">أتابعه</button>
+              <button class="top-tab ${state.feedFilter === "foryou" ? "active" : ""}" onclick="setFeedFilter('foryou')" type="button">لك</button>
             </div>
-            <button class="tt-top-btn" onclick="openSearchModal()" type="button">🔍</button>
+            <button class="top-icon-btn" onclick="openSearch()" type="button">🔍</button>
           </div>
           ${items.map(v => `
-            <section class="tt-feed-item" data-vid="${v.id}" ondblclick="handleDoubleTap(event, '${v.id}')">
-              <img class="tt-media-bg" src="${esc(v.media)}" alt="" />
-              <div class="tt-scrim"></div>
-              <div class="tt-overlay-row">
-                <div class="tt-meta-col">
-                  <div class="tt-author">${esc(v.handle)}</div>
-                  <div class="tt-caption">${esc(v.caption)}</div>
-                  <div class="tt-sound-line"><span>🎵</span><span>${esc(v.sound)}</span></div>
+            <section class="video-slide" data-vid="${v.id}" onclick="handleSlideTap(event, '${v.id}')">
+              <video class="video-element" src="${esc(v.videoUrl)}" poster="${esc(v.poster)}" loop muted playsinline preload="metadata"></video>
+              <div class="video-gradient"></div>
+              <div class="pause-indicator">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="#ffffff"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <div class="video-progress-track"><div class="video-progress-bar"></div></div>
+
+              <div class="slide-bottom-ui" onclick="event.stopPropagation()">
+                <div class="slide-info">
+                  <div class="slide-username">${esc(v.handle)}</div>
+                  <div class="slide-desc">${esc(v.caption)}</div>
+                  <div class="slide-music"><span>🎵</span><span>${esc(v.sound)}</span></div>
                 </div>
-                <div class="tt-rail">
-                  <div class="tt-avatar-wrap">
-                    <img class="tt-avatar-img" src="${esc(v.avatar)}" alt="" />
-                    <button class="tt-plus-badge ${v.following ? "followed" : ""}" onclick="toggleFollow('${v.id}')" type="button">
+
+                <div class="side-actions">
+                  <div class="creator-avatar-box">
+                    <img class="creator-avatar" src="${esc(v.avatar)}" alt="" />
+                    <button class="follow-dot ${v.following ? "done" : ""}" onclick="toggleFollow('${v.id}')" type="button">
                       ${v.following ? "✓" : "+"}
                     </button>
                   </div>
 
-                  <!-- زر اللايك وعدد اللايكات -->
-                  <button class="tt-rail-btn ${lastPopId === "like-" + v.id ? "pop" : ""}" onclick="toggleLike('${v.id}')" type="button">
-                    <span class="tt-rail-svg">${svgIcons.heart(v.liked)}</span>
-                    <span class="tt-rail-count">${formatTikTokCount(v.likes)}</span>
+                  <button class="rail-item" onclick="toggleLike('${v.id}')" type="button">
+                    <span class="rail-svg">${icons.heart(v.liked)}</span>
+                    <span class="rail-num">${fmtNum(v.likes)}</span>
                   </button>
 
-                  <!-- زر التعليقات وعدد التعليقات -->
-                  <button class="tt-rail-btn" onclick="openComments('${v.id}')" type="button">
-                    <span class="tt-rail-svg">${svgIcons.comment}</span>
-                    <span class="tt-rail-count">${formatTikTokCount(v.comments.length)}</span>
+                  <button class="rail-item" onclick="openComments('${v.id}')" type="button">
+                    <span class="rail-svg">${icons.comment}</span>
+                    <span class="rail-num">${fmtNum(v.comments.length)}</span>
                   </button>
 
-                  <!-- زر المفضلة / الحفظ وعدد الحفظ -->
-                  <button class="tt-rail-btn ${lastPopId === "save-" + v.id ? "pop" : ""}" onclick="toggleSave('${v.id}')" type="button">
-                    <span class="tt-rail-svg">${svgIcons.bookmark(v.saved)}</span>
-                    <span class="tt-rail-count">${formatTikTokCount(v.saves || 0)}</span>
+                  <button class="rail-item" onclick="toggleSave('${v.id}')" type="button">
+                    <span class="rail-svg">${icons.save(v.saved)}</span>
+                    <span class="rail-num">${fmtNum(v.saves || 0)}</span>
                   </button>
 
-                  <!-- زر المشاركة وعدد المشاركات -->
-                  <button class="tt-rail-btn" onclick="openShareSheet('${v.id}')" type="button">
-                    <span class="tt-rail-svg">${svgIcons.share}</span>
-                    <span class="tt-rail-count">${formatTikTokCount(v.shares || 0)}</span>
+                  <button class="rail-item" onclick="openShare('${v.id}')" type="button">
+                    <span class="rail-svg">${icons.share}</span>
+                    <span class="rail-num">${fmtNum(v.shares || 0)}</span>
                   </button>
 
-                  <div class="tt-disc"><img src="${esc(v.avatar)}" alt="" /></div>
+                  <div class="sound-disc"><img src="${esc(v.avatar)}" alt="" /></div>
                 </div>
               </div>
             </section>
           `).join("")}
         `;
-        lastPopId = null;
-      } else if (state.nav === "friends") {
-        vp.innerHTML = `
-          <div class="light-header">
-            <span class="light-title">الأصدقاء</span>
-            <button class="tt-top-btn" style="color:#161823;" onclick="openSearchModal()" type="button">🔍</button>
+        setupVideoPlayback();
+      } else if (state.page === "friends") {
+        container.innerHTML = `
+          <div class="white-topbar">
+            <span class="white-title">الأصدقاء</span>
+            <button class="top-icon-btn" style="color:#161823;" onclick="openSearch()" type="button">🔍</button>
           </div>
           ${state.videos.map(v => `
-            <div class="friend-card">
-              <div class="friend-left">
-                <img class="friend-avatar" src="${esc(v.avatar)}" alt="" />
+            <div class="friend-row">
+              <div class="friend-info">
+                <img class="avatar-50" src="${esc(v.avatar)}" alt="" />
                 <div>
                   <div style="font-weight:700;font-size:14.5px;">${esc(v.author)}</div>
-                  <div style="font-size:12px;color:var(--muted);">${esc(v.handle)}</div>
+                  <div style="font-size:12px;color:var(--text-muted);">${esc(v.handle)}</div>
                 </div>
               </div>
-              <button class="btn-follow-pill ${v.following ? "muted-pill" : ""}" onclick="toggleFollow('${v.id}')" type="button">
+              <button class="${v.following ? "tt-btn-gray" : "tt-btn-red"}" onclick="toggleFollow('${v.id}')" type="button">
                 ${v.following ? "متابَع" : "متابعة"}
               </button>
             </div>
           `).join("")}
         `;
-      } else if (state.nav === "inbox") {
-        vp.innerHTML = `
-          <div class="light-header">
-            <span class="light-title">صندوق الوارد</span>
-            <button class="tt-top-btn" style="color:#161823;" onclick="openDrawer()" type="button">☰</button>
+      } else if (state.page === "inbox") {
+        container.innerHTML = `
+          <div class="white-topbar">
+            <span class="white-title">صندوق الوارد</span>
+            <button class="top-icon-btn" style="color:#161823;" onclick="openDrawer()" type="button">☰</button>
           </div>
-          <div class="stories-row">
-            <div class="story-bubble" onclick="openCreateModal()">
-              <div class="story-circle">
-                <img src="${esc(state.profile.avatar)}" alt="" />
-                <span class="story-create-badge">+</span>
+          <div class="stories-bar">
+            <div class="story-cell" onclick="openUploadModal()">
+              <div class="story-ring">
+                <img src="${esc(state.user.avatar)}" alt="" />
+                <span class="story-plus">+</span>
               </div>
               <span>إنشاء</span>
             </div>
             ${state.videos.map(v => `
-              <div class="story-bubble" onclick="toast('حالة ${esc(v.author)}')">
-                <div class="story-circle"><img src="${esc(v.avatar)}" alt="" /></div>
+              <div class="story-cell" onclick="toast('حالة ${esc(v.author)}')">
+                <div class="story-ring"><img src="${esc(v.avatar)}" alt="" /></div>
                 <span>${esc(v.author.split(" ")[0])}</span>
               </div>
             `).join("")}
           </div>
           ${state.inbox.map(item => `
-            <div class="inbox-item" onclick="openInboxItem('${item.id}')">
-              <div class="inbox-left">
+            <div class="inbox-row" onclick="openInboxChat('${item.id}')">
+              <div class="friend-info">
                 ${item.avatar
-                  ? `<img class="friend-avatar" src="${esc(item.avatar)}" alt="" />`
-                  : `<div class="inbox-icon-circle" style="background:${item.color};">${item.id === "i1" ? "⚡" : "💳"}</div>`
+                  ? `<img class="avatar-50" src="${esc(item.avatar)}" alt="" />`
+                  : `<div class="inbox-badge-icon" style="background:${item.color};">${item.id === "i1" ? "⚡" : "💳"}</div>`
                 }
                 <div>
                   <div style="font-weight:700;font-size:14.5px;">${esc(item.title)}</div>
-                  <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">${esc(item.sub)}</div>
+                  <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">${esc(item.sub)}</div>
                 </div>
               </div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-muted);">
                 <span>${esc(item.time)}</span>
-                ${item.dot ? `<span class="red-dot"></span>` : ""}
+                ${item.dot ? `<span class="unread-dot"></span>` : ""}
               </div>
             </div>
           `).join("")}
         `;
-      } else if (state.nav === "profile") {
-        const gridList = state.profileTab === "saved"
+      } else if (state.page === "profile") {
+        const list = state.profileFilter === "saved"
           ? state.videos.filter(v => v.saved)
-          : state.profileTab === "liked"
+          : state.profileFilter === "liked"
             ? state.videos.filter(v => v.liked)
             : state.videos;
 
-        vp.innerHTML = `
-          <div class="profile-top">
-            <div class="profile-header-bar">
-              <button class="tt-top-btn" style="color:#161823;" onclick="openDrawer()" type="button">☰</button>
-              <strong>${esc(state.profile.name)}</strong>
-              <button class="tt-top-btn" style="color:#161823;" onclick="openWalletModal()" type="button">💳</button>
+        container.innerHTML = `
+          <div class="profile-box">
+            <div class="profile-nav-row">
+              <button class="top-icon-btn" style="color:#161823;" onclick="openDrawer()" type="button">☰</button>
+              <strong>${esc(state.user.name)}</strong>
+              <button class="top-icon-btn" style="color:#161823;" onclick="openBalanceModal()" type="button">💳</button>
             </div>
-            <div class="profile-center">
-              <img class="profile-pic" src="${esc(state.profile.avatar)}" alt="" />
-              <div class="profile-name">${esc(state.profile.name)}</div>
-              <div class="profile-handle">${esc(state.profile.handle)}</div>
-              <div class="profile-metrics">
-                <div><div class="metric-val">${formatTikTokCount(state.profile.following)}</div><div class="metric-lbl">أتابعه</div></div>
-                <div><div class="metric-val">${formatTikTokCount(state.profile.followers)}</div><div class="metric-lbl">متابعون</div></div>
-                <div><div class="metric-val">${formatTikTokCount(state.profile.likes)}</div><div class="metric-lbl">تسجيلات الإعجاب</div></div>
-              </div>
-              <div class="profile-btns">
-                <button class="p-btn" onclick="openEditProfileModal()" type="button">تعديل الملف الشخصي</button>
-                <button class="p-btn primary" onclick="openWalletModal()" type="button">الرصيد (${state.profile.coins})</button>
-              </div>
-              <div class="profile-bio">${esc(state.profile.bio)}</div>
+            <img class="profile-img-lg" src="${esc(state.user.avatar)}" alt="" />
+            <div style="font-size:17px;font-weight:800;">${esc(state.user.name)}</div>
+            <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">${esc(state.user.handle)}</div>
+
+            <div class="profile-counters">
+              <div><div class="counter-num">${fmtNum(state.user.following)}</div><div class="counter-lbl">أتابعه</div></div>
+              <div><div class="counter-num">${fmtNum(state.user.followers)}</div><div class="counter-lbl">متابعون</div></div>
+              <div><div class="counter-num">${fmtNum(state.user.likes)}</div><div class="counter-lbl">تسجيلات الإعجاب</div></div>
             </div>
+
+            <div style="display:flex;gap:8px;justify-content:center;">
+              <button class="tt-btn-gray" onclick="openEditProfile()" type="button">تعديل الملف الشخصي</button>
+              <button class="tt-btn-red" onclick="openBalanceModal()" type="button">الرصيد (${state.user.coins})</button>
+            </div>
+
+            <div class="profile-bio-txt">${esc(state.user.bio)}</div>
           </div>
-          <div class="profile-tabs">
-            <button class="p-tab ${state.profileTab === "videos" ? "active" : ""}" onclick="setProfileTab('videos')" type="button">⋮⋮⋮</button>
-            <button class="p-tab ${state.profileTab === "saved" ? "active" : ""}" onclick="setProfileTab('saved')" type="button">🔖</button>
-            <button class="p-tab ${state.profileTab === "liked" ? "active" : ""}" onclick="setProfileTab('liked')" type="button">♥</button>
+
+          <div class="profile-subtabs">
+            <button class="subtab-btn ${state.profileFilter === "videos" ? "active" : ""}" onclick="setProfileFilter('videos')" type="button">⋮⋮⋮</button>
+            <button class="subtab-btn ${state.profileFilter === "saved" ? "active" : ""}" onclick="setProfileFilter('saved')" type="button">🔖</button>
+            <button class="subtab-btn ${state.profileFilter === "liked" ? "active" : ""}" onclick="setProfileFilter('liked')" type="button">♥</button>
           </div>
-          <div class="video-grid-3">
-            ${gridList.map(v => `
-              <div class="v-tile" onclick="openComments('${v.id}')">
-                <img src="${esc(v.media)}" alt="" />
-                <span class="v-plays">▷ ${esc(v.plays)}</span>
+
+          <div class="grid-3">
+            ${list.map(v => `
+              <div class="grid-cell" onclick="openComments('${v.id}')">
+                <img src="${esc(v.poster)}" alt="" />
+                <span class="grid-views">▷ ${esc(v.plays)}</span>
               </div>
             `).join("")}
           </div>
         `;
       }
 
-      syncDrawerLabels();
+      updateBadges();
     }
 
-    function setHomeTab(t) { state.homeTab = t; save(); render(); }
-    function setProfileTab(t) { state.profileTab = t; save(); render(); }
+    // تشغيل الفيديو التلقائي عند التمرير وشريط التقدم
+    function setupVideoPlayback() {
+      const slides = document.querySelectorAll(".video-slide");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const slide = entry.target;
+          const vid = slide.querySelector("video");
+          if (!vid) return;
+          if (entry.isIntersecting) {
+            slide.classList.remove("paused");
+            vid.play().catch(() => {});
+          } else {
+            vid.pause();
+            vid.currentTime = 0;
+          }
+        });
+      }, { threshold: 0.65 });
 
-    // نقرتين متتاليتين على الفيديو تعطي لايك مثل تيك توك
-    function handleDoubleTap(e, id) {
-      const card = e.currentTarget;
-      const rect = card.getBoundingClientRect();
+      slides.forEach(slide => {
+        const vid = slide.querySelector("video");
+        const bar = slide.querySelector(".video-progress-bar");
+        if (vid && bar) {
+          vid.addEventListener("timeupdate", () => {
+            if (vid.duration) {
+              bar.style.width = ((vid.currentTime / vid.duration) * 100) + "%";
+            }
+          });
+        }
+        observer.observe(slide);
+      });
+    }
+
+    // نقرة واحدة = إيقاف/تشغيل الفيديو، نقرتان = لايك مع القلب المنبثق
+    function handleSlideTap(e, id) {
+      const slide = e.currentTarget;
+      if (clickTimer) {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+        spawnBurstHeart(slide, e);
+        const v = state.videos.find(x => x.id === id);
+        if (v && !v.liked) toggleLike(id);
+      } else {
+        clickTimer = setTimeout(() => {
+          clickTimer = null;
+          const vid = slide.querySelector("video");
+          if (!vid) return;
+          if (vid.paused) {
+            vid.play().catch(() => {});
+            slide.classList.remove("paused");
+          } else {
+            vid.pause();
+            slide.classList.add("paused");
+          }
+        }, 230);
+      }
+    }
+
+    function spawnBurstHeart(slide, e) {
+      const rect = slide.getBoundingClientRect();
       const heart = document.createElement("div");
-      heart.className = "double-tap-heart";
+      heart.className = "burst-heart";
       heart.style.left = (e.clientX - rect.left) + "px";
       heart.style.top = (e.clientY - rect.top) + "px";
       heart.innerHTML = `<svg width="96" height="96" viewBox="0 0 24 24" fill="#fe2c55"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-      card.appendChild(heart);
-      setTimeout(() => heart.remove(), 780);
-
-      const v = state.videos.find(x => x.id === id);
-      if (v && !v.liked) {
-        toggleLike(id);
-      }
+      slide.appendChild(heart);
+      setTimeout(() => heart.remove(), 760);
     }
+
+    function setFeedFilter(f) { state.feedFilter = f; save(); render(); }
+    function setProfileFilter(f) { state.profileFilter = f; save(); render(); }
 
     function toggleLike(id) {
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
       v.liked = !v.liked;
       v.likes += v.liked ? 1 : -1;
-      state.profile.likes += v.liked ? 1 : -1;
-      lastPopId = "like-" + id;
+      state.user.likes += v.liked ? 1 : -1;
       save(); render();
     }
 
@@ -1438,7 +1423,6 @@
       if (!v) return;
       v.saved = !v.saved;
       v.saves = (v.saves || 0) + (v.saved ? 1 : -1);
-      lastPopId = "save-" + id;
       save(); render();
       toast(v.saved ? "تمت الإضافة إلى المفضلة" : "تمت الإزالة من المفضلة");
     }
@@ -1447,65 +1431,59 @@
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
       v.following = !v.following;
-      state.profile.following += v.following ? 1 : -1;
+      state.user.following += v.following ? 1 : -1;
       save(); render();
       toast(v.following ? "تمت المتابعة" : "تم إلغاء المتابعة");
     }
 
-    function openDrawer() { document.getElementById("drawerOverlay").classList.add("open"); }
-    function closeDrawer() { document.getElementById("drawerOverlay").classList.remove("open"); }
+    function openDrawer() { document.getElementById("drawerBg").classList.add("open"); }
+    function closeDrawer() { document.getElementById("drawerBg").classList.remove("open"); }
 
-    function openModal(title, html) {
-      document.getElementById("modalTitle").textContent = title;
-      document.getElementById("modalContent").innerHTML = html;
-      document.getElementById("modalOverlay").classList.add("open");
+    function openSheet(title, html) {
+      document.getElementById("sheetTitle").textContent = title;
+      document.getElementById("sheetBody").innerHTML = html;
+      document.getElementById("sheetBg").classList.add("open");
     }
 
-    function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); }
+    function closeSheet() { document.getElementById("sheetBg").classList.remove("open"); }
 
-    // نافذة التعليقات الكاملة مع عداد التعليقات ولايك على كل تعليق
     function openComments(id) {
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
-      openModal(`${formatTikTokCount(v.comments.length)} تعليق`, `
+      openSheet(`${fmtNum(v.comments.length)} تعليق`, `
         <div>
-          ${v.comments.map(c => {
-            const cObj = typeof c === "string"
-              ? { id: "c_legacy", user: "مستخدم", avatar: state.profile.avatar, text: c, time: "الآن", likes: 0, liked: false }
-              : c;
-            return `
-              <div class="cmt-item">
-                <div class="cmt-left">
-                  <img class="cmt-avatar" src="${esc(cObj.avatar)}" alt="" />
-                  <div>
-                    <div class="cmt-user">${esc(cObj.user)}</div>
-                    <div class="cmt-text">${esc(cObj.text)}</div>
-                    <div class="cmt-meta">${esc(cObj.time)} • رد</div>
-                  </div>
+          ${v.comments.map(c => `
+            <div class="cmt-row">
+              <div style="display:flex;gap:10px;flex:1;min-width:0;">
+                <img class="cmt-av" src="${esc(c.avatar)}" alt="" />
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:var(--text-muted);">${esc(c.user)}</div>
+                  <div style="font-size:13.5px;margin-top:2px;">${esc(c.text)}</div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">${esc(c.time)} • رد</div>
                 </div>
-                <button class="cmt-like-btn ${cObj.liked ? "liked" : ""}" onclick="toggleCommentLike('${id}', '${cObj.id}')" type="button">
-                  <span>${cObj.liked ? "♥" : "♡"}</span>
-                  <span>${formatTikTokCount(cObj.likes || 0)}</span>
-                </button>
               </div>
-            `;
-          }).join("") || `<div style="text-align:center;color:var(--muted);padding:20px 0;">كن أول من يعلّق</div>`}
+              <button style="background:none;border:none;color:${c.liked ? "#fe2c55" : "#737685"};font-size:11.5px;cursor:pointer;" onclick="likeComment('${id}','${c.id}')" type="button">
+                <div>${c.liked ? "♥" : "♡"}</div>
+                <div>${fmtNum(c.likes || 0)}</div>
+              </button>
+            </div>
+          `).join("") || `<div style="text-align:center;color:var(--text-muted);padding:18px 0;">كن أول من يعلّق</div>`}
         </div>
         <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
-          <input class="m-input" style="margin-top:0;" id="cInp" placeholder="إضافة تعليق..." />
-          <button class="m-btn" style="margin-top:0;width:auto;padding:10px 16px;" onclick="submitComment('${id}')" type="button">نشر</button>
+          <input class="txt-input" style="margin-top:0;" id="newCmtInp" placeholder="إضافة تعليق..." />
+          <button class="action-submit" style="margin-top:0;width:auto;padding:10px 16px;" onclick="postComment('${id}')" type="button">نشر</button>
         </div>
       `);
     }
 
-    function submitComment(id) {
-      const val = document.getElementById("cInp").value.trim();
+    function postComment(id) {
+      const val = document.getElementById("newCmtInp").value.trim();
       if (!val) return;
       const v = state.videos.find(x => x.id === id);
       v.comments.push({
-        id: "cm_" + Date.now(),
-        user: state.profile.name,
-        avatar: state.profile.avatar,
+        id: "c_" + Date.now(),
+        user: state.user.name,
+        avatar: state.user.avatar,
         text: val,
         time: "الآن",
         likes: 0,
@@ -1514,150 +1492,161 @@
       save(); render(); openComments(id);
     }
 
-    function toggleCommentLike(vidId, cmtId) {
+    function likeComment(vidId, cmtId) {
       const v = state.videos.find(x => x.id === vidId);
-      if (!v) return;
-      const c = v.comments.find(x => x.id === cmtId);
+      const c = v?.comments.find(x => x.id === cmtId);
       if (!c) return;
       c.liked = !c.liked;
       c.likes = (c.likes || 0) + (c.liked ? 1 : -1);
       save(); openComments(vidId);
     }
 
-    // نافذة المشاركة مع زيادة عدد المشاركات مباشرة
-    function openShareSheet(id) {
+    function openShare(id) {
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
-      openModal(`مشاركة (${formatTikTokCount(v.shares || 0)})`, `
-        <div class="share-grid">
-          <button class="share-opt" onclick="confirmShare('${id}', 'إعادة النشر')" type="button">
-            <span class="share-circle" style="background:#face15;color:#000;">🔁</span>
+      openSheet(`مشاركة (${fmtNum(v.shares || 0)})`, `
+        <div class="share-options">
+          <button class="share-item" onclick="doShare('${id}', 'إعادة النشر')" type="button">
+            <span class="share-icon" style="background:#face15;color:#000;">🔁</span>
             <span>إعادة النشر</span>
           </button>
-          <button class="share-opt" onclick="confirmShare('${id}', 'نسخ الرابط')" type="button">
-            <span class="share-circle" style="background:#25f4ee;color:#000;">🔗</span>
+          <button class="share-item" onclick="doShare('${id}', 'نسخ الرابط')" type="button">
+            <span class="share-icon" style="background:#25f4ee;color:#000;">🔗</span>
             <span>نسخ الرابط</span>
           </button>
-          <button class="share-opt" onclick="confirmShare('${id}', 'واتساب')" type="button">
-            <span class="share-circle" style="background:#25d366;">💬</span>
+          <button class="share-item" onclick="doShare('${id}', 'واتساب')" type="button">
+            <span class="share-icon" style="background:#25d366;">💬</span>
             <span>واتساب</span>
           </button>
-          <button class="share-opt" onclick="confirmShare('${id}', 'إرسال لصديق')" type="button">
-            <span class="share-circle" style="background:#fe2c55;">✈️</span>
+          <button class="share-item" onclick="doShare('${id}', 'إرسال لصديق')" type="button">
+            <span class="share-icon" style="background:#fe2c55;">✈️</span>
             <span>إرسال</span>
           </button>
         </div>
       `);
     }
 
-    function confirmShare(id, method) {
+    function doShare(id, label) {
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
       v.shares = (v.shares || 0) + 1;
-      save(); render(); closeModal();
-      toast(`تمت المشاركة عبر ${method}`);
+      save(); render(); closeSheet();
+      toast(`تمت المشاركة عبر ${label}`);
     }
 
-    function openWalletModal() {
+    function openBalanceModal() {
       closeDrawer();
       const gws = ["زين كاش", "سوبر كي", "زين العراق", "آسياسيل"];
-      const mShare = Math.round(state.profile.grossCoins * 0.6);
-      const pShare = Math.round(state.profile.grossCoins * 0.4);
-      openModal("الرصيد", `
-        <div style="font-size:24px;font-weight:800;">${state.profile.coins} عملة</div>
-        <div style="font-size:12.5px;color:var(--muted);margin-top:4px;">حصة المذيع (60%): ${mShare} • حصة المنصة (40%): ${pShare}</div>
-        <div class="gw-row">
-          ${gws.map(g => `<button class="gw-opt ${state.profile.gateway === g ? "active" : ""}" onclick="pickGateway('${g}')" type="button">${g}</button>`).join("")}
+      const mShare = Math.round(state.user.grossCoins * 0.6);
+      const pShare = Math.round(state.user.grossCoins * 0.4);
+      openSheet("الرصيد", `
+        <div style="font-size:24px;font-weight:800;">${state.user.coins} عملة</div>
+        <div style="font-size:12.5px;color:var(--text-muted);margin-top:4px;">حصة المذيع (60%): ${mShare} • حصة المنصة (40%): ${pShare}</div>
+        <div class="gw-grid">
+          ${gws.map(g => `<button class="gw-btn ${state.user.gateway === g ? "active" : ""}" onclick="setGateway('${g}')" type="button">${g}</button>`).join("")}
         </div>
-        <button class="m-btn" onclick="topupWallet()" type="button">+ شحن 200 عملة (${esc(state.profile.gateway)})</button>
+        <button class="action-submit" onclick="chargeCoins()" type="button">+ شحن 200 عملة (${esc(state.user.gateway)})</button>
       `);
     }
 
-    function pickGateway(g) { state.profile.gateway = g; save(); openWalletModal(); }
-    function topupWallet() {
-      state.profile.coins += 200;
-      state.profile.grossCoins += 200;
-      save(); render(); openWalletModal(); toast("تم شحن 200 عملة");
+    function setGateway(g) { state.user.gateway = g; save(); openBalanceModal(); }
+    function chargeCoins() {
+      state.user.coins += 200;
+      state.user.grossCoins += 200;
+      save(); render(); openBalanceModal(); toast("تم شحن 200 عملة");
     }
 
-    function addOfflineVideo() { state.profile.offlineCount += 1; save(); toast("تم حفظ فيديو دون اتصال"); }
-    function addPromoCampaign() { state.profile.promoCount += 1; save(); toast("تمت إضافة حملة ترويج"); }
-    function togglePrivateAccount() { state.profile.privateAcc = !state.profile.privateAcc; save(); toast("تم تحديث الخصوصية"); }
+    function saveOfflineItem() { state.user.offlineCount += 1; save(); toast("تم حفظ فيديو دون اتصال"); }
+    function addPromotion() { state.user.promoCount += 1; save(); toast("تم تفعيل حملة ترويج"); }
+    function togglePrivacy() { state.user.privateAcc = !state.user.privateAcc; save(); toast("تم تحديث الخصوصية"); }
 
-    function openEditProfileModal() {
-      openModal("تعديل الملف الشخصي", `
-        <input class="m-input" id="eName" value="${esc(state.profile.name)}" placeholder="الاسم" />
-        <input class="m-input" id="eHandle" value="${esc(state.profile.handle)}" placeholder="@username" />
-        <textarea class="m-input" id="eBio" rows="3" placeholder="النبذة التعريفية">${esc(state.profile.bio)}</textarea>
-        <button class="m-btn" onclick="saveProfileEdits()" type="button">حفظ</button>
+    function openEditProfile() {
+      openSheet("تعديل الملف الشخصي", `
+        <input class="txt-input" id="inName" value="${esc(state.user.name)}" placeholder="الاسم" />
+        <input class="txt-input" id="inHandle" value="${esc(state.user.handle)}" placeholder="@username" />
+        <textarea class="txt-input" id="inBio" rows="3" placeholder="النبذة التعريفية">${esc(state.user.bio)}</textarea>
+        <button class="action-submit" onclick="saveProfileData()" type="button">حفظ</button>
       `);
     }
 
-    function saveProfileEdits() {
-      state.profile.name = document.getElementById("eName").value.trim() || state.profile.name;
-      const h = document.getElementById("eHandle").value.trim();
-      if (h) state.profile.handle = h.startsWith("@") ? h : "@" + h;
-      state.profile.bio = document.getElementById("eBio").value;
-      save(); render(); closeModal(); toast("تم الحفظ");
+    function saveProfileData() {
+      state.user.name = document.getElementById("inName").value.trim() || state.user.name;
+      const h = document.getElementById("inHandle").value.trim();
+      if (h) state.user.handle = h.startsWith("@") ? h : "@" + h;
+      state.user.bio = document.getElementById("inBio").value;
+      save(); render(); closeSheet(); toast("تم حفظ الملف الشخصي");
     }
 
-    function openInboxItem(id) {
+    function openInboxChat(id) {
       const item = state.inbox.find(x => x.id === id);
       if (!item) return;
       item.dot = false;
       save(); render();
-      openModal(item.title, `
+      openSheet(item.title, `
         <p style="font-size:14px;line-height:1.6;">${esc(item.sub)}</p>
-        <input class="m-input" id="rInp" placeholder="اكتب رداً..." />
-        <button class="m-btn" onclick="replyInbox('${id}')" type="button">إرسال</button>
+        <input class="txt-input" id="chatReplyInp" placeholder="اكتب رسالة..." />
+        <button class="action-submit" onclick="sendReply('${id}')" type="button">إرسال</button>
       `);
     }
 
-    function replyInbox(id) {
-      const val = document.getElementById("rInp").value.trim();
+    function sendReply(id) {
+      const val = document.getElementById("chatReplyInp").value.trim();
       if (!val) return;
       const item = state.inbox.find(x => x.id === id);
       item.sub = val;
       item.time = "الآن";
-      save(); render(); openInboxItem(id);
+      save(); render(); openInboxChat(id);
     }
 
-    function openSearchModal() {
-      openModal("بحث", `
-        <input class="m-input" id="sInp" placeholder="ابحث عن حساب أو هاشتاغ..." oninput="filterSearchResults(this.value)" />
-        <div id="sRes" style="margin-top:12px;"></div>
+    function openSearch() {
+      openSheet("بحث", `
+        <input class="txt-input" id="searchBoxInp" placeholder="ابحث عن حساب أو مقطع..." oninput="runSearch(this.value)" />
+        <div id="searchResultsBox" style="margin-top:10px;"></div>
       `);
-      filterSearchResults("");
+      runSearch("");
     }
 
-    function filterSearchResults(q) {
+    function runSearch(q) {
       const term = q.trim().toLowerCase();
       const res = state.videos.filter(v => !term || v.author.toLowerCase().includes(term) || v.caption.toLowerCase().includes(term));
-      document.getElementById("sRes").innerHTML = res.map(v => `
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;cursor:pointer;" onclick="closeModal();openComments('${v.id}')">
+      document.getElementById("searchResultsBox").innerHTML = res.map(v => `
+        <div style="padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px;cursor:pointer;" onclick="closeSheet();openComments('${v.id}')">
           <strong>${esc(v.author)}</strong> — ${esc(v.caption)}
         </div>
       `).join("");
     }
 
-    function openCreateModal() {
-      openModal("نشر فيديو جديد", `
-        <input class="m-input" id="vCap" placeholder="اكتب وصف المقطع والهاشتاغات..." />
-        <button class="m-btn" onclick="publishVideo()" type="button">نشر الآن</button>
+    function openLivePreview() {
+      openSheet("البث المباشر (LIVE)", `
+        <div style="text-align:center;padding:12px 0;">
+          <div style="font-size:15px;font-weight:800;">بدء بث مباشر على DERT</div>
+          <div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">نسبة أرباح الهدايا: 60% للمذيع • 40% للمنصة</div>
+          <button class="action-submit" onclick="closeSheet();toast('تم الدخول إلى وضع البث المباشر')" type="button">ابدأ البث المباشر الآن</button>
+        </div>
       `);
     }
 
-    function publishVideo() {
-      const cap = document.getElementById("vCap").value.trim() || "مقطع جديد على DERT 🔥";
-      const rnd = Math.floor(210 + Math.random() * 70);
+    function openUploadModal() {
+      openSheet("نشر مقطع جديد", `
+        <input class="txt-input" id="newVidCap" placeholder="اكتب وصف المقطع والهاشتاغات..." />
+        <input class="txt-input" id="newVidUrl" placeholder="رابط فيديو MP4 مباشر (اختياري)" />
+        <button class="action-submit" onclick="publishNewVideo()" type="button">نشر الآن</button>
+      `);
+    }
+
+    function publishNewVideo() {
+      const cap = document.getElementById("newVidCap").value.trim() || "مقطع جديد على DERT 🔥";
+      const customUrl = document.getElementById("newVidUrl").value.trim();
+      const rnd = Math.floor(60 + Math.random() * 40);
       state.videos.unshift({
         id: "v_" + Date.now(),
-        author: state.profile.name,
-        handle: state.profile.handle,
-        avatar: state.profile.avatar,
-        media: `https://picsum.photos/480/850?random=${rnd}`,
+        author: state.user.name,
+        handle: state.user.handle,
+        avatar: state.user.avatar,
+        videoUrl: customUrl || "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
+        poster: `https://picsum.photos/480/850?random=${rnd}`,
         caption: cap,
-        sound: "الصوت الأصلي - " + state.profile.handle,
+        sound: "الصوت الأصلي - " + state.user.handle,
         plays: "1",
         likes: 0,
         saves: 0,
@@ -1667,25 +1656,25 @@
         following: true,
         comments: []
       });
-      save(); closeModal(); state.nav = "home"; state.homeTab = "foryou"; render(); toast("تم نشر المقطع");
+      save(); closeSheet(); state.page = "home"; state.feedFilter = "foryou"; render(); toast("تم نشر المقطع");
     }
 
-    document.querySelectorAll(".tt-nav-btn[data-nav]").forEach(btn => {
+    document.querySelectorAll(".b-tab[data-page]").forEach(btn => {
       btn.addEventListener("click", () => {
-        state.nav = btn.dataset.nav;
+        state.page = btn.dataset.page;
         save();
         render();
       });
     });
 
-    document.getElementById("createPostBtn").addEventListener("click", openCreateModal);
+    document.getElementById("openUploadBtn").addEventListener("click", openUploadModal);
     document.getElementById("closeDrawerBtn").addEventListener("click", closeDrawer);
-    document.getElementById("drawerOverlay").addEventListener("click", e => {
-      if (e.target.id === "drawerOverlay") closeDrawer();
+    document.getElementById("drawerBg").addEventListener("click", e => {
+      if (e.target.id === "drawerBg") closeDrawer();
     });
-    document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-    document.getElementById("modalOverlay").addEventListener("click", e => {
-      if (e.target.id === "modalOverlay") closeModal();
+    document.getElementById("closeSheetBtn").addEventListener("click", closeSheet);
+    document.getElementById("sheetBg").addEventListener("click", e => {
+      if (e.target.id === "sheetBg") closeSheet();
     });
 
     render();

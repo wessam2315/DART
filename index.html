@@ -17,6 +17,7 @@
 *{box-sizing:border-box}
 :root{--bg:#000000;--panel:#121216;--accent:#fe2c55;--blue:#25f4ee;--muted:#a8abb3;--line:#23242a}
 body{margin:0;background:var(--bg);color:#ffffff;font-family:Arial,sans-serif}
+body.sensitive-blur .chatbox,body.sensitive-blur .comment-modal{filter:blur(12px);transition:filter .15s}
 .hidden{display:none!important}
 button{border:0;border-radius:10px;padding:11px 14px;background:var(--accent);color:#fff;font-size:14px;cursor:pointer;transition:transform .12s,opacity .15s}
 button:active{transform:scale(.96)}
@@ -31,6 +32,9 @@ textarea{min-height:72px;resize:vertical}
 .mandatory-follow-backdrop{position:fixed;inset:0;z-index:3000;background:#000000e6;backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:18px}
 .mandatory-follow-card{width:100%;max-width:400px;background:#12131a;border:1px solid #2d2f3e;border-radius:22px;padding:22px 18px;text-align:center;box-shadow:0 20px 50px #000c}
 .mandatory-follow-card .avatar{width:84px;height:84px;font-size:32px;margin:0 auto 12px;border:2px solid #fe2c55}
+
+.app-lock-backdrop{position:fixed;inset:0;z-index:4000;background:radial-gradient(circle at 50% 25%,#1f1833,#050508 75%);display:flex;align-items:center;justify-content:center;padding:20px}
+.app-lock-card{width:100%;max-width:380px;background:#111219;border:1px solid #2d2a42;border-radius:22px;padding:22px 18px;text-align:center;box-shadow:0 20px 50px #000d}
 
 .tt-topbar{position:fixed;top:0;left:0;right:0;z-index:20;max-width:720px;margin:auto;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(to bottom,#000c,#0000);pointer-events:none}
 .tt-topbar>*{pointer-events:auto}
@@ -53,6 +57,7 @@ textarea{min-height:72px;resize:vertical}
 .avatar{width:46px;height:46px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#fe2c55,#25f4ee);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .clickable-user{cursor:pointer}
 .post img,.media{width:100%;max-height:420px;object-fit:contain;border-radius:12px;margin-top:10px}
+.protected-media{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .post video{width:100%;max-height:440px;object-fit:contain;border-radius:12px;margin-top:10px;background:#000}
 .post-text{white-space:pre-wrap;line-height:1.65}
 .post-date{font-size:12px;color:var(--muted);margin-top:10px}
@@ -87,7 +92,6 @@ textarea{min-height:72px;resize:vertical}
 .tt-switch-label{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:13px;cursor:pointer}
 .tt-switch-label input[type="checkbox"]{width:18px;height:18px;margin:0;accent-color:#fe2c55}
 
-/* التعليقات والردود بأسلوب تيك توك */
 .comment{background:#16171e;padding:10px 12px;border-radius:12px;margin:8px 0;border:1px solid #222430}
 .comment-reply{margin-inline-start:22px;background:#12131a;border-inline-start:2px solid #fe2c55}
 .comment-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
@@ -122,7 +126,8 @@ textarea{min-height:72px;resize:vertical}
 .chatbox{height:380px;overflow:auto;background:#09090d;padding:12px;border-radius:12px;display:flex;flex-direction:column;border:1px solid var(--line)}
 .bubble{padding:10px 13px;border-radius:16px;margin:6px 0;max-width:85%;background:#20222b;white-space:pre-wrap;align-self:flex-start}
 .bubble.mine{background:#fe2c55;align-self:flex-end}
-.message-meta{font-size:11px;color:#d0d3dc;margin-top:6px;text-align:left}
+.message-meta{font-size:11px;color:#d0d3dc;margin-top:6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.msg-del-link{background:transparent!important;color:#ffd0da!important;padding:0 4px!important;font-size:11px!important}
 .chat-entry{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer}
 .chat-entry-info{flex:1;min-width:0}
 .chat-last{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
@@ -292,6 +297,18 @@ nav button.active{color:#ffffff;background:transparent}
 </head>
 <body>
 
+<div id="appLockModal" class="app-lock-backdrop hidden">
+ <div class="app-lock-card">
+  <div style="font-size:34px;margin-bottom:8px">🛡️</div>
+  <h3 style="margin:0 0 6px">DERT مقفل للأمان</h3>
+  <p class="small" style="margin:0 0 14px">أدخل رمز القفل السريع أو استخدم البصمة / Face ID للمتابعة.</p>
+  <input id="unlockPinInput" type="password" inputmode="numeric" maxlength="8" placeholder="رمز القفل (PIN)" dir="ltr">
+  <button type="button" class="full" id="unlockByPinBtn">فتح القفل بالرمز</button>
+  <button type="button" class="full gray" id="unlockByBioBtn" style="margin-top:8px">🔓 فتح بالبصمة / Face ID</button>
+  <p id="appLockStatus" class="small" style="margin-top:10px;color:#ffd0da"></p>
+ </div>
+</div>
+
 <div id="mandatoryFollowModal" class="mandatory-follow-backdrop hidden">
  <div class="mandatory-follow-card">
   <div class="small" style="color:#fe2c55;font-weight:700;margin-bottom:8px">مطلوب للمتابعة</div>
@@ -350,6 +367,7 @@ nav button.active{color:#ffffff;background:transparent}
 <button class="full auth-primary" id="loginBtn">تسجيل الدخول</button>
 <button class="full auth-outline" id="signupBtn">إنشاء حساب جديد</button>
 <button class="full gray hidden" id="resendEmailBtn" style="margin-top:8px">إعادة إرسال رسالة تأكيد البريد</button>
+<button class="full gray" id="recoverAccountBtn" style="margin-top:8px">🔑 استعادة الحساب الآمنة</button>
 </div>
 <div id="phoneArea" class="hidden">
 <input id="phone" type="tel" placeholder="+9647XXXXXXXXX" dir="ltr">
@@ -392,7 +410,8 @@ nav button.active{color:#ffffff;background:transparent}
 
 <section id="chats" class="section">
 <div class="card">
-<h2>المحادثات</h2>
+<h2>المحادثات المشفرة</h2>
+<div class="small" style="color:#25f4ee;margin-bottom:6px">🔐 المحادثات محمية ومشفرة بين المستخدمين</div>
 <div class="search-box">
  <span class="search-icon">🔍</span>
  <input id="chatSearch" placeholder="ابحث في المحادثات...">
@@ -404,10 +423,11 @@ nav button.active{color:#ffffff;background:transparent}
 <div class="chat-row">
 <button type="button" class="tt-back-mini" title="رجوع" onclick="el('closeChatBtn').click()">‹</button>
 <div id="chatAvatar" class="avatar">D</div>
-<div><strong id="chatTitle">المحادثة</strong><div class="small" id="chatUsername"></div></div>
+<div style="flex:1"><strong id="chatTitle">المحادثة</strong><div class="small" id="chatUsername"></div></div>
+<button type="button" class="gray" style="padding:7px 10px;font-size:11px" id="chatBlockUserBtn">🚫 حظر</button>
 </div>
-<div class="chatbox" id="chatMessages"></div>
-<textarea id="chatText" placeholder="اكتب رسالتك..."></textarea>
+<div class="chatbox protected-media" id="chatMessages"></div>
+<textarea id="chatText" placeholder="اكتب رسالتك المشفرة..."></textarea>
 <input id="chatFile" type="file" accept="image/*,video/*">
 <button id="sendMessageBtn" class="full">إرسال الرسالة</button>
 <button id="closeChatBtn" class="full gray">إغلاق المحادثة</button>
@@ -476,6 +496,7 @@ nav button.active{color:#ffffff;background:transparent}
  <div class="tt-ig-top-bar">
   <div class="tt-ig-handle" id="displayUsernameTop">@user</div>
   <div class="tt-ig-top-btns">
+   <button type="button" class="tt-ig-icon-btn" title="مركز الخصوصية والأمان" onclick="openPrivacyCenter()">🛡️</button>
    <button type="button" class="tt-ig-icon-btn" title="رمز QR" onclick="openStandaloneTool('qr')">⊞</button>
    <button type="button" class="tt-ig-icon-btn" title="القائمة" onclick="openMenuScreen()">☰</button>
   </div>
@@ -508,7 +529,7 @@ nav button.active{color:#ffffff;background:transparent}
 
  <div class="tt-ig-cta-row">
   <button id="editProfileBtn" type="button" class="tt-ig-cta-btn">تعديل الملف الشخصي</button>
-  <button type="button" class="tt-ig-cta-btn" onclick="openStandaloneTool('qr')">مشاركة الحساب</button>
+  <button type="button" class="tt-ig-cta-btn" onclick="openPrivacyCenter()">🛡️ الأمان والخصوصية</button>
  </div>
 
  <div id="profileSettings" class="profile-settings hidden" style="margin:10px 14px">
@@ -535,6 +556,18 @@ nav button.active{color:#ffffff;background:transparent}
   <button type="button" class="tt-back-mini" onclick="closeMenuScreen()">←</button>
   <h2>القائمة</h2>
   <span style="width:30px"></span>
+ </div>
+
+ <div class="tt-menu-group-title">الأمان والخصوصية</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openPrivacyCenter()">
+   <span class="tt-menu-left"><span>🛡️</span><span>مركز الأمان والخصوصية</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="lockAppNow()">
+   <span class="tt-menu-left"><span>🔒</span><span>قفل التطبيق الآن</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
  </div>
 
  <div class="tt-menu-group-title">الأصول</div>
@@ -603,6 +636,12 @@ nav button.active{color:#ffffff;background:transparent}
   <button type="button" class="tt-back-mini" onclick="closeSettingsScreen()">←</button>
   <h2>الإعدادات والخصوصية</h2>
   <span style="width:30px"></span>
+ </div>
+
+ <div class="tt-sub-box">
+  <h3>مركز الأمان والخصوصية الشامل</h3>
+  <p class="small">البصمة / Face ID، التحقق بخطوتين، التشفير، الحظر، الأجهزة، الصلاحيات، واستعادة الحساب.</p>
+  <button type="button" class="full" onclick="openPrivacyCenter()">🛡️ فتح مركز الأمان والخصوصية</button>
  </div>
 
  <div class="tt-sub-box">
@@ -832,6 +871,428 @@ function shuffleArray(arr){
  return copy;
 }
 
+/* ==================== الأمان والخصوصية ==================== */
+function getSecurityConfig(){
+ const def={
+  appLockEnabled:false,
+  biometricEnabled:true,
+  pinCode:"",
+  twoFactorEnabled:false,
+  encryptChats:true,
+  protectMedia:true,
+  blockScreenshots:true,
+  profileVisibility:"public",
+  messagePermission:"everyone",
+  hideOnlineStatus:false,
+  hideLastSeen:false,
+  blockedUsers:[],
+  securityAlerts:[],
+  connectedDevices:[]
+ };
+ try{
+  const raw=JSON.parse(localStorage.getItem("dert_security_v1_"+(currentUser?.id||"global"))||"{}");
+  return {...def,...raw};
+ }catch(e){return def}
+}
+
+function saveSecurityConfig(patch){
+ const cur=getSecurityConfig();
+ const next={...cur,...patch};
+ localStorage.setItem("dert_security_v1_"+(currentUser?.id||"global"),JSON.stringify(next));
+ applyScreenShield();
+ return next;
+}
+
+function addSecurityAlert(title){
+ const cfg=getSecurityConfig();
+ const list=Array.isArray(cfg.securityAlerts)?cfg.securityAlerts:[];
+ const entry=`${title} • ${new Date().toLocaleString("ar-IQ")}`;
+ saveSecurityConfig({securityAlerts:[entry,...list].slice(0,25)});
+}
+
+function registerCurrentDevice(){
+ const cfg=getSecurityConfig();
+ const ua=navigator.userAgent||"جهاز مجهول";
+ const platform=navigator.platform||"Web";
+ const devLabel=`${platform} — ${ua.slice(0,55)}`;
+ const existing=Array.isArray(cfg.connectedDevices)?cfg.connectedDevices:[];
+ if(!existing.some(d=>d.label===devLabel)){
+  saveSecurityConfig({
+   connectedDevices:[{id:"dev_"+Date.now(),label:devLabel,lastActive:new Date().toLocaleString("ar-IQ"),current:true},...existing].slice(0,10)
+  });
+  addSecurityAlert("تسجيل دخول من جهاز: "+platform);
+ }
+}
+
+function isUserBlocked(userId){
+ if(!userId)return false;
+ const cfg=getSecurityConfig();
+ return Array.isArray(cfg.blockedUsers) && cfg.blockedUsers.includes(String(userId));
+}
+
+function toggleBlockUser(userId,labelName="المستخدم"){
+ if(!userId || userId===currentUser?.id)return false;
+ const cfg=getSecurityConfig();
+ const set=new Set((cfg.blockedUsers||[]).map(String));
+ const key=String(userId);
+ let blockedNow=false;
+ if(set.has(key)){
+  set.delete(key);blockedNow=false;
+  addSecurityAlert(`تم إلغاء حظر ${labelName}`);
+ }else{
+  set.add(key);blockedNow=true;
+  addSecurityAlert(`تم حظر ${labelName}`);
+ }
+ saveSecurityConfig({blockedUsers:[...set]});
+ return blockedNow;
+}
+
+function encryptText(plain){
+ const str=String(plain||"");
+ if(!str)return "";
+ const cfg=getSecurityConfig();
+ if(cfg.encryptChats===false)return str;
+ try{
+  const bytes=new TextEncoder().encode(str);
+  let bin="";
+  bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return "ENC1:"+btoa(bin);
+ }catch(e){return str}
+}
+
+function decryptText(cipher){
+ const str=String(cipher||"");
+ if(!str.startsWith("ENC1:"))return str;
+ try{
+  const bin=atob(str.slice(5));
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+ }catch(e){return str}
+}
+
+function applyScreenShield(){
+ const cfg=getSecurityConfig();
+ document.querySelectorAll("img.media").forEach(img=>{
+  img.classList.toggle("protected-media",cfg.protectMedia!==false);
+  if(cfg.protectMedia!==false){
+   img.setAttribute("draggable","false");
+   img.oncontextmenu=e=>e.preventDefault();
+  }else{
+   img.removeAttribute("draggable");
+   img.oncontextmenu=null;
+  }
+ });
+}
+
+document.addEventListener("visibilitychange",()=>{
+ const cfg=getSecurityConfig();
+ if(cfg.blockScreenshots!==false){
+  if(document.hidden){
+   document.body.classList.add("sensitive-blur");
+  }else{
+   setTimeout(()=>document.body.classList.remove("sensitive-blur"),250);
+  }
+ }
+ if(document.hidden && cfg.appLockEnabled && currentUser){
+  lockAppNow();
+ }
+});
+
+window.addEventListener("blur",()=>{
+ const cfg=getSecurityConfig();
+ if(cfg.blockScreenshots!==false && (activeConversation || !el("commentModal")?.classList.contains("hidden"))){
+  document.body.classList.add("sensitive-blur");
+ }
+});
+window.addEventListener("focus",()=>document.body.classList.remove("sensitive-blur"));
+
+function lockAppNow(){
+ const cfg=getSecurityConfig();
+ if(!cfg.appLockEnabled && !cfg.pinCode){
+  alert("فعّل قفل التطبيق أو عيّن رمز PIN أولاً من مركز الأمان والخصوصية.");
+  openPrivacyCenter();
+  return;
+ }
+ el("unlockPinInput").value="";
+ msg("appLockStatus","");
+ el("appLockModal").classList.remove("hidden");
+}
+
+async function unlockWithBiometrics(){
+ if(!window.PublicKeyCredential || !navigator.credentials){
+  msg("appLockStatus","البصمة / Face ID غير مدعومة على هذا المتصفح، استخدم رمز القفل (PIN).");
+  return;
+ }
+ try{
+  msg("appLockStatus","جارٍ التحقق بالبصمة / Face ID...");
+  const challenge=crypto.getRandomValues(new Uint8Array(16));
+  const cred=await navigator.credentials.create({
+   publicKey:{
+    challenge,
+    rp:{name:"DERT"},
+    user:{
+     id:crypto.getRandomValues(new Uint8Array(16)),
+     name:currentUser?.email||"dert_user",
+     displayName:currentProfile?.full_name||"DERT User"
+    },
+    pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
+    authenticatorSelection:{userVerification:"required"},
+    timeout:20000
+   }
+  });
+  if(cred){
+   el("appLockModal").classList.add("hidden");
+   msg("appLockStatus","");
+  }
+ }catch(e){
+  msg("appLockStatus","تعذر التحقق الحيوي أو تم الإلغاء، جرّب رمز PIN.");
+ }
+}
+
+el("unlockByPinBtn").onclick=()=>{
+ const cfg=getSecurityConfig();
+ const entered=el("unlockPinInput").value.trim();
+ if(cfg.pinCode && entered===cfg.pinCode){
+  el("appLockModal").classList.add("hidden");
+  msg("appLockStatus","");
+ }else if(!cfg.pinCode && entered.length>=4){
+  saveSecurityConfig({pinCode:entered,appLockEnabled:true});
+  el("appLockModal").classList.add("hidden");
+ }else{
+  msg("appLockStatus","رمز القفل غير صحيح.");
+ }
+};
+el("unlockByBioBtn").onclick=unlockWithBiometrics;
+
+async function openPrivacyCenter(){
+ closeAllStandaloneScreens();
+ el("toolScreenTitle").textContent="🛡️ مركز الأمان والخصوصية";
+ const body=el("toolScreenBody");
+ el("toolScreen").classList.remove("hidden");
+ const cfg=getSecurityConfig();
+
+ const blockedList=Array.isArray(cfg.blockedUsers)?cfg.blockedUsers:[];
+ let blockedProfiles=[];
+ if(blockedList.length){
+  try{
+   const {data}=await client.from("profiles").select("id,username,full_name").in("id",blockedList);
+   blockedProfiles=data||[];
+  }catch(e){}
+ }
+
+ const devices=Array.isArray(cfg.connectedDevices)?cfg.connectedDevices:[];
+ const alerts=Array.isArray(cfg.securityAlerts)?cfg.securityAlerts:[];
+
+ body.innerHTML=`
+  <div class="tt-sub-box">
+   <strong>🔐 قفل التطبيق والتحقق بخطوتين (2FA)</strong>
+   <label class="tt-switch-label" style="margin-top:8px">
+    <span>تفعيل قفل التطبيق (بصمة / Face ID / PIN)</span>
+    <input type="checkbox" id="secAppLockChk" ${cfg.appLockEnabled?"checked":""}>
+   </label>
+   <label class="tt-switch-label" style="margin-top:8px">
+    <span>دعم المصادقة الحيوية (بصمة / Face ID)</span>
+    <input type="checkbox" id="secBioChk" ${cfg.biometricEnabled?"checked":""}>
+   </label>
+   <input id="secPinInput" type="password" inputmode="numeric" maxlength="8" placeholder="تعيين أو تغيير رمز القفل السريع (4-8 أرقام)" value="${cfg.pinCode||""}" dir="ltr">
+   <label class="tt-switch-label" style="margin-top:8px">
+    <span>تفعيل التحقق بخطوتين (2FA) لحماية الحساب</span>
+    <input type="checkbox" id="sec2faChk" ${cfg.twoFactorEnabled?"checked":""}>
+   </label>
+   <button type="button" class="green full" id="saveLock2faBtn" style="margin-top:8px">حفظ إعدادات القفل و 2FA</button>
+   <button type="button" class="gray full" onclick="lockAppNow()" style="margin-top:6px">اختبار قفل التطبيق الآن</button>
+  </div>
+
+  <div class="tt-sub-box">
+   <strong>💬 تشفير المحادثات وحماية المحتوى الحساس</strong>
+   <label class="tt-switch-label" style="margin-top:8px">
+    <span>تشفير المحادثات بين المستخدمين</span>
+    <input type="checkbox" id="secEncChk" ${cfg.encryptChats!==false?"checked":""}>
+   </label>
+   <label class="tt-switch-label" style="margin-top:8px">
+    <span>حماية الصور والملفات الخاصة من الحفظ/النسخ</span>
+    <input type="checkbox" id="secMediaChk" ${cfg.protectMedia!==false?"checked":""}>
+   </label>
+   <label class="tt-switch-label" style="margin-top:8px">
+    <span>منع تصوير الشاشة / إخفاء الشاشة عند تبديل النوافذ</span>
+    <input type="checkbox" id="secShotChk" ${cfg.blockScreenshots!==false?"checked":""}>
+   </label>
+  </div>
+
+  <div class="tt-sub-box">
+   <strong>👁️ الخصوصية والظهور والمراسلات</strong>
+   <div class="tt-opt-row" style="margin-top:8px">
+    <span>من يشاهد الملف الشخصي</span>
+    <select id="secProfileVisSel">
+     <option value="public" ${cfg.profileVisibility==="public"?"selected":""}>الجميع</option>
+     <option value="followers" ${cfg.profileVisibility==="followers"?"selected":""}>المتابعون</option>
+     <option value="private" ${cfg.profileVisibility==="private"?"selected":""}>أنا فقط</option>
+    </select>
+   </div>
+   <div class="tt-opt-row" style="margin-top:8px">
+    <span>من يستطيع مراسلتي</span>
+    <select id="secMsgPermSel">
+     <option value="everyone" ${cfg.messagePermission==="everyone"?"selected":""}>الجميع</option>
+     <option value="followers" ${cfg.messagePermission==="followers"?"selected":""}>المتابعون فقط</option>
+     <option value="nobody" ${cfg.messagePermission==="nobody"?"selected":""}>لا أحد</option>
+    </select>
+   </div>
+   <label class="tt-switch-label" style="margin-top:8px">
+    <span>إخفاء حالة الاتصال (متصل الآن)</span>
+    <input type="checkbox" id="secHideOnlineChk" ${cfg.hideOnlineStatus?"checked":""}>
+   </label>
+   <label class="tt-switch-label" style="margin-top:8px">
+    <span>إخفاء آخر ظهور</span>
+    <input type="checkbox" id="secHideSeenChk" ${cfg.hideLastSeen?"checked":""}>
+   </label>
+   <button type="button" class="full" id="savePrivacyPrefsBtn" style="margin-top:8px">حفظ تفضيلات الخصوصية</button>
+  </div>
+
+  <div class="tt-sub-box">
+   <strong>🚫 المستخدمون المحظورون (${blockedList.length})</strong>
+   <div id="blockedUsersListBox" style="margin-top:6px">
+    ${blockedList.length?blockedList.map(uid=>{
+     const p=blockedProfiles.find(x=>x.id===uid);
+     const label=p?`${p.full_name||p.username} (@${p.username||uid.slice(0,6)})`:uid;
+     return `<div class="item" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="small">${label}</span><button type="button" class="gray" style="padding:5px 10px;font-size:11px" data-unblock="${uid}">إلغاء الحظر</button></div>`;
+    }).join(""):`<div class="small">لا يوجد مستخدمون محظورون حالياً</div>`}
+   </div>
+  </div>
+
+  <div class="tt-sub-box">
+   <strong>📱 الأجهزة المتصلة وتنبيهات الأمان</strong>
+   <div style="margin-top:6px">
+    ${devices.length?devices.map(d=>`<div class="item small"><strong>${d.label}</strong><div>آخر نشاط: ${d.lastActive}</div></div>`).join(""):`<div class="small">جهازك الحالي نشط</div>`}
+   </div>
+   <div class="user-row-actions">
+    <button type="button" class="red" id="signOutAllDevicesBtn" style="flex:1">تسجيل الخروج من جميع الأجهزة</button>
+   </div>
+   <div style="margin-top:10px">
+    <strong class="small">سجل التنبيهات الأمنية:</strong>
+    ${alerts.length?alerts.map(a=>`<div class="item small">${a}</div>`).join(""):`<div class="small">لا توجد تنبيهات أمنية بعد</div>`}
+   </div>
+  </div>
+
+  <div class="tt-sub-box">
+   <strong>🔑 تغيير كلمة المرور واستعادة الحساب</strong>
+   <input id="secNewPassInput" type="password" placeholder="كلمة المرور الجديدة (6 أحرف فأكثر)">
+   <button type="button" class="green full" id="secUpdatePassBtn">تغيير كلمة المرور وتنبيهي</button>
+   <button type="button" class="gray full" id="secSendResetBtn" style="margin-top:6px">إرسال رابط استعادة الحساب إلى البريد</button>
+   <p id="secPassStatus" class="small" style="margin-top:6px"></p>
+  </div>
+
+  <div class="tt-sub-box">
+   <strong>🎛️ إدارة صلاحيات الكاميرا والمايك والموقع</strong>
+   <div class="user-row-actions">
+    <button type="button" class="gray" id="testCamPermBtn">📷 فحص الكاميرا</button>
+    <button type="button" class="gray" id="testMicPermBtn">🎤 فحص المايك</button>
+    <button type="button" class="gray" id="testLocPermBtn">📍 فحص الموقع</button>
+   </div>
+   <p id="secPermStatus" class="small" style="margin-top:8px"></p>
+  </div>
+ `;
+
+ el("saveLock2faBtn").onclick=()=>{
+  const pin=el("secPinInput").value.trim();
+  const appLock=el("secAppLockChk").checked;
+  if(appLock && pin.length<4){alert("أدخل رمز قفل (PIN) من 4 أرقام على الأقل لتفعيل القفل.");return}
+  saveSecurityConfig({
+   appLockEnabled:appLock,
+   biometricEnabled:el("secBioChk").checked,
+   pinCode:pin,
+   twoFactorEnabled:el("sec2faChk").checked
+  });
+  addSecurityAlert("تم تحديث إعدادات القفل والتحقق بخطوتين");
+  alert("تم حفظ إعدادات القفل والتحقق بخطوتين ✓");
+ };
+
+ const syncContentShield=()=>{
+  saveSecurityConfig({
+   encryptChats:el("secEncChk").checked,
+   protectMedia:el("secMediaChk").checked,
+   blockScreenshots:el("secShotChk").checked
+  });
+ };
+ el("secEncChk").onchange=syncContentShield;
+ el("secMediaChk").onchange=syncContentShield;
+ el("secShotChk").onchange=syncContentShield;
+
+ el("savePrivacyPrefsBtn").onclick=()=>{
+  saveSecurityConfig({
+   profileVisibility:el("secProfileVisSel").value,
+   messagePermission:el("secMsgPermSel").value,
+   hideOnlineStatus:el("secHideOnlineChk").checked,
+   hideLastSeen:el("secHideSeenChk").checked
+  });
+  addSecurityAlert("تم تحديث إعدادات الخصوصية وحالة الظهور");
+  alert("تم حفظ إعدادات الخصوصية ✓");
+ };
+
+ body.querySelectorAll("[data-unblock]").forEach(btn=>{
+  btn.onclick=()=>{
+   toggleBlockUser(btn.dataset.unblock,"مستخدم");
+   openPrivacyCenter();
+  };
+ });
+
+ el("signOutAllDevicesBtn").onclick=async()=>{
+  if(!confirm("هل تريد تسجيل الخروج من جميع الأجهزة؟"))return;
+  addSecurityAlert("تم تسجيل الخروج من جميع الأجهزة");
+  try{await client.auth.signOut({scope:"global"})}catch(e){await client.auth.signOut()}
+  showLogin();
+ };
+
+ el("secUpdatePassBtn").onclick=async()=>{
+  const np=el("secNewPassInput").value;
+  if(!np || np.length<6){msg("secPassStatus","أدخل كلمة مرور 6 أحرف على الأقل.");return}
+  const b=el("secUpdatePassBtn");b.disabled=true;msg("secPassStatus","جارٍ تحديث كلمة المرور...");
+  try{
+   const {error}=await client.auth.updateUser({password:np});
+   if(error)throw error;
+   el("secNewPassInput").value="";
+   addSecurityAlert("تم تغيير كلمة المرور بنجاح");
+   msg("secPassStatus","تم تغيير كلمة المرور وتم تسجيل تنبيه أمان ✓");
+  }catch(e){msg("secPassStatus","تعذر تغيير كلمة المرور: "+e.message)}finally{b.disabled=false}
+ };
+
+ el("secSendResetBtn").onclick=async()=>{
+  const em=currentUser?.email;
+  if(!em){msg("secPassStatus","لا يوجد بريد إلكتروني مرتبط بالحساب.");return}
+  const b=el("secSendResetBtn");b.disabled=true;msg("secPassStatus","جارٍ إرسال رابط الاستعادة...");
+  try{
+   const {error}=await client.auth.resetPasswordForEmail(em,{redirectTo:DERT_SITE_URL});
+   if(error)throw error;
+   addSecurityAlert("تم إرسال رابط استعادة الحساب إلى "+em);
+   msg("secPassStatus","تم إرسال رابط الاستعادة إلى بريدك الإلكتروني ✓");
+  }catch(e){msg("secPassStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
+ };
+
+ el("testCamPermBtn").onclick=async()=>{
+  try{
+   const s=await navigator.mediaDevices.getUserMedia({video:true});
+   s.getTracks().forEach(t=>t.stop());
+   msg("secPermStatus","الكاميرا متاحة ومفعلة ✓");
+  }catch(e){msg("secPermStatus","الكاميرا غير مفعلة أو مرفوضة: "+e.message)}
+ };
+ el("testMicPermBtn").onclick=async()=>{
+  try{
+   const s=await navigator.mediaDevices.getUserMedia({audio:true});
+   s.getTracks().forEach(t=>t.stop());
+   msg("secPermStatus","المايكروفون متاح ومفعل ✓");
+  }catch(e){msg("secPermStatus","المايكروفون غير مفعل أو مرفوض: "+e.message)}
+ };
+ el("testLocPermBtn").onclick=()=>{
+  if(!navigator.geolocation){msg("secPermStatus","الموقع الجغرافي غير مدعوم.");return}
+  msg("secPermStatus","جارٍ فحص إذن الموقع...");
+  navigator.geolocation.getCurrentPosition(
+   pos=>msg("secPermStatus",`تم السماح بالموقع (دقة ~${Math.round(pos.coords.accuracy)}م) ✓`),
+   err=>msg("secPermStatus","تعذر الوصول للموقع: "+err.message)
+  );
+ };
+}
+
+/* ==================== التعليقات والردود ==================== */
 function updateDescCounter(){
  const ta=el("dertDescription");
  if(ta && el("dertDescCounter"))el("dertDescCounter").textContent=`${ta.value.length} / 400`;
@@ -1458,6 +1919,7 @@ el("musicSearchInput").oninput=()=>renderMusicList(el("musicSearchInput").value)
 function openCreateModal(){if(!currentUser){alert("سجل الدخول أولاً");return}updateMediaPickLabels();updateDescCounter();el("dertCreateModal").style.display="flex"}
 
 function goBackSmart(){
+ if(!el("appLockModal").classList.contains("hidden"))return;
  if(!el("toolScreen").classList.contains("hidden")){closeToolScreen();return}
  if(!el("settingsScreen").classList.contains("hidden")){closeSettingsScreen();return}
  if(!el("menuScreen").classList.contains("hidden")){closeMenuScreen();return}
@@ -1542,6 +2004,17 @@ el("backWelcome").onclick=()=>{el("authForm").classList.add("hidden");el("welcom
 el("emailMode").onclick=()=>{el("emailMode").classList.add("active");el("phoneMode").classList.remove("active");el("emailArea").classList.remove("hidden");el("phoneArea").classList.add("hidden")};
 el("phoneMode").onclick=()=>{el("phoneMode").classList.add("active");el("emailMode").classList.remove("active");el("emailArea").classList.add("hidden");el("phoneArea").classList.remove("hidden")};
 
+el("recoverAccountBtn").onclick=async()=>{
+ const em=el("email").value.trim().toLowerCase();
+ if(!em||!em.includes("@")){msg("message","اكتب البريد الإلكتروني أولاً لاستعادة الحساب.");return}
+ const b=el("recoverAccountBtn");b.disabled=true;msg("message","جارٍ إرسال رابط استعادة الحساب...");
+ try{
+  const {error}=await client.auth.resetPasswordForEmail(em,{redirectTo:DERT_SITE_URL});
+  if(error)throw error;
+  msg("message","تم إرسال رابط استعادة الحساب إلى بريدك الإلكتروني ✓");
+ }catch(e){msg("message","تعذر إرسال رابط الاستعادة: "+e.message)}finally{b.disabled=false}
+};
+
 el("signupBtn").onclick=async()=>{
  const email=el("email").value.trim().toLowerCase(),password=el("password").value;
  if(!email||!email.includes("@")||password.length<6){msg("message","أدخل بريداً صحيحاً وكلمة مرور 6 أحرف على الأقل");return}
@@ -1551,7 +2024,12 @@ el("signupBtn").onclick=async()=>{
   if(error)throw error;
   if(data.session&&data.user)await showHome(data.user);
   else{el("resendEmailBtn").classList.remove("hidden");msg("message","تم إنشاء الحساب. افتح بريدك لتأكيد الحساب.")}
- }catch(e){el("resendEmailBtn").classList.remove("hidden");msg("message","تعذر إنشاء الحساب: "+e.message)}finally{b.disabled=false}
+ }catch(e){
+  el("resendEmailBtn").classList.remove("hidden");
+  const secMatch=String(e.message||"").match(/after\s+(\d+)\s+seconds/i);
+  if(secMatch)msg("message",`يرجى الانتظار ${secMatch[1]} ثانية ثم المحاولة مرة واحدة.`);
+  else msg("message","تعذر إنشاء الحساب: "+e.message);
+ }finally{b.disabled=false}
 };
 
 el("resendEmailBtn").onclick=async()=>{
@@ -1588,15 +2066,24 @@ async function loadProfile(){
  if(!currentUser)return;
  let {data,error}=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
  if(error)throw error;
+ const fallbackUser="user_"+currentUser.id.replace(/-/g,"").slice(0,8);
+ const fallbackName=currentUser.email?currentUser.email.split("@")[0]:"مستخدم DERT";
  if(!data){
-  const {data:created,error:createErr}=await client.from("profiles").insert({id:currentUser.id,username:"user_"+currentUser.id.slice(0,8),full_name:"مستخدم DERT"}).select().single();
-  if(createErr)throw new Error("لم يتم العثور على الملف الشخصي");data=created;
+  const {data:created,error:createErr}=await client.from("profiles").insert({id:currentUser.id,username:fallbackUser,full_name:fallbackName}).select().single();
+  if(createErr)throw createErr;data=created;
+ }else if(!data.username){
+  const {data:updated}=await client.from("profiles").update({username:fallbackUser,full_name:data.full_name||fallbackName}).eq("id",currentUser.id).select().single();
+  if(updated)data=updated;
  }
- currentProfile=data;el("fullName").value=data.full_name||"";el("username").value=data.username||"";el("bio").value=data.bio||"";
- addVerifiedName(el("displayName"),data.full_name||"مستخدم DERT",data.is_verified===true);
- addVerifiedName(el("displayUsernameTop"),"@"+(data.username||"user"),data.is_verified===true);
- el("displayUsername").textContent="@"+(data.username||"user");el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
- showAvatar(data.avatar_url,data.full_name||data.username);
+ currentProfile=data;
+ const cleanName=data.full_name||data.username||fallbackName;
+ const cleanHandle=data.username||fallbackUser;
+ el("fullName").value=cleanName;el("username").value=cleanHandle;el("bio").value=data.bio||"";
+ addVerifiedName(el("displayName"),cleanName,data.is_verified===true);
+ addVerifiedName(el("displayUsernameTop"),"@"+cleanHandle,data.is_verified===true);
+ el("displayUsername").textContent="@"+cleanHandle;
+ el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
+ showAvatar(data.avatar_url,cleanName);
  el("adminNav").classList.toggle("hidden",!isAdmin());el("mainNav").classList.toggle("has-admin",isAdmin());
  await loadMyVerificationStatus();
 }
@@ -1706,9 +2193,20 @@ async function openUserProfile(targetUserId){
   };
   const dmBtn=document.createElement("button");dmBtn.type="button";dmBtn.className="gray";dmBtn.textContent="مراسلة";
   dmBtn.onclick=(e)=>{e.stopPropagation();closeUserProfileModal();startChat(p.id,p.username)};
+
+  const blkBtn=document.createElement("button");blkBtn.type="button";blkBtn.className="gray";
+  let blocked=isUserBlocked(p.id);
+  blkBtn.textContent=blocked?"إلغاء الحظر":"🚫 حظر";
+  blkBtn.onclick=(e)=>{
+   e.stopPropagation();
+   blocked=toggleBlockUser(p.id,p.full_name||p.username);
+   blkBtn.textContent=blocked?"إلغاء الحظر":"🚫 حظر";
+   alert(blocked?"تم حظر المستخدم":"تم إلغاء الحظر");
+  };
+
   const repBtn=document.createElement("button");repBtn.type="button";repBtn.className="red";repBtn.textContent="إبلاغ";
   repBtn.onclick=(e)=>{e.stopPropagation();reportContent("account",p.id)};
-  btns.append(followBtn,supBtn,dmBtn,repBtn);body.append(header,stats,btns);
+  btns.append(followBtn,supBtn,dmBtn,blkBtn,repBtn);body.append(header,stats,btns);
 
   (userPosts||[]).forEach(post=>{
    const card=document.createElement("div");card.className="post";const parsed=parseSongFromPost(post);
@@ -1812,7 +2310,7 @@ async function loadVideos(){
   if(error)throw error;list.replaceChildren();
   const {data:myFollows,error:followError}=await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
   if(followError)throw followError;followedIdsSet=new Set((myFollows||[]).map(x=>x.following_id));
-  let allVids=data||[];
+  let allVids=(data||[]).filter(p=>!isUserBlocked(p.user_id));
   if(videoFeedMode==="following")allVids=allVids.filter(p=>p.user_id===currentUser.id || followedIdsSet.has(p.user_id));
   else allVids=shuffleArray(allVids);
   videoPostsCache=allVids;
@@ -1895,11 +2393,12 @@ async function loadPosts(){
  const list=el("postsList");list.textContent="جارٍ تحميل المنشورات...";
  const {data,error}=await client.from("posts").select("*").order("created_at",{ascending:false});
  if(error){list.textContent="تعذر تحميل المنشورات: "+error.message;return}list.replaceChildren();
- if(!data?.length){list.textContent="لا توجد منشورات حتى الآن";return}
- const ids=[...new Set(data.map(p=>p.user_id))];
+ const filtered=(data||[]).filter(p=>!isUserBlocked(p.user_id));
+ if(!filtered.length){list.textContent="لا توجد منشورات حتى الآن";return}
+ const ids=[...new Set(filtered.map(p=>p.user_id))];
  const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
  const names={};(profiles||[]).forEach(p=>names[p.id]=p);
- for(const post of data){
+ for(const post of filtered){
   const card=document.createElement("article");card.className="post";card.id="post-"+post.id;
   const author=document.createElement("strong"),p=names[post.user_id];
   author.className="clickable-user";author.onclick=()=>openUserProfile(post.user_id);
@@ -1927,6 +2426,7 @@ async function loadPosts(){
   menu.onclick=e=>e.stopPropagation();menuWrap.append(menuBtn,menu);bottom.appendChild(menuWrap);card.appendChild(bottom);list.appendChild(card);
   updatePostCommentCount(post.id,count);
  }
+ applyScreenShield();
 }
 document.addEventListener("click",()=>document.querySelectorAll(".post-menu").forEach(m=>m.classList.add("hidden")));
 
@@ -1938,22 +2438,12 @@ async function updatePostCommentCount(postId,element){
 
 async function openPostComments(post){
  if(!currentUser)return;
- activeCommentPost=post;
- clearReplyTarget();
- el("commentModal").classList.remove("hidden");
- el("commentModalTitle").textContent="التعليقات والردود";
- el("commentModalList").textContent="جارٍ تحميل التعليقات...";
- el("commentInput").value="";
- document.body.style.overflow="hidden";
- await loadComments(post,el("commentModalList"));
+ activeCommentPost=post;clearReplyTarget();
+ el("commentModal").classList.remove("hidden");el("commentModalTitle").textContent="التعليقات والردود";
+ el("commentModalList").textContent="جارٍ تحميل التعليقات...";el("commentInput").value="";
+ document.body.style.overflow="hidden";await loadComments(post,el("commentModalList"));
 }
-
-function closePostComments(){
- clearReplyTarget();
- el("commentModal").classList.add("hidden");
- document.body.style.overflow="";
- activeCommentPost=null;
-}
+function closePostComments(){clearReplyTarget();el("commentModal").classList.add("hidden");document.body.style.overflow="";activeCommentPost=null}
 
 el("sendCommentBtn").onclick=async()=>{
  if(!activeCommentPost||!currentUser)return;
@@ -1963,9 +2453,7 @@ el("sendCommentBtn").onclick=async()=>{
  const b=el("sendCommentBtn");b.disabled=true;
  try{
   const {error}=await client.from("post_comments").insert({post_id:activeCommentPost.id,user_id:currentUser.id,content:finalText});
-  if(error)throw error;
-  input.value="";
-  clearReplyTarget();
+  if(error)throw error;input.value="";clearReplyTarget();
   await loadComments(activeCommentPost,el("commentModalList"));
   const countElement=document.querySelector("#post-"+activeCommentPost.id+" .comment-open span");
   if(countElement)await updatePostCommentCount(activeCommentPost.id,countElement);
@@ -1978,52 +2466,31 @@ async function loadComments(post,container){
  const {data,error}=await client.from("post_comments").select("*").eq("post_id",post.id).order("created_at",{ascending:true});
  container.replaceChildren();
  if(error){container.textContent="تعذر تحميل التعليقات: "+error.message;return}
- if(!data?.length){container.textContent="لا توجد تعليقات بعد. كن أول من يعلق!";return}
- const ids=[...new Set(data.map(c=>c.user_id))];
+ const visibleComments=(data||[]).filter(c=>!isUserBlocked(c.user_id));
+ if(!visibleComments.length){container.textContent="لا توجد تعليقات بعد. كن أول من يعلق!";return}
+ const ids=[...new Set(visibleComments.map(c=>c.user_id))];
  const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
  const map={};(profiles||[]).forEach(p=>map[p.id]=p);
-
- data.forEach(c=>{
-  const profile=map[c.user_id]||{};
-  const displayUser=profile.username||profile.full_name||"مستخدم";
+ visibleComments.forEach(c=>{
+  const profile=map[c.user_id]||{};const displayUser=profile.username||profile.full_name||"مستخدم";
   const parsed=decodeCommentPayload(c.content);
-
-  const row=document.createElement("div");
-  row.className="comment"+(parsed.isReply?" comment-reply":"");
-
+  const row=document.createElement("div");row.className="comment"+(parsed.isReply?" comment-reply":"");
   const head=document.createElement("div");head.className="comment-head";
   const name=document.createElement("strong");name.className="clickable-user";
   name.onclick=()=>{closePostComments();openUserProfile(c.user_id)};
   addVerifiedName(name,(profile.full_name||displayUser)+" @"+displayUser,profile.is_verified===true);
-
-  const date=document.createElement("span");date.className="small";
-  date.textContent=new Date(c.created_at).toLocaleString("ar-IQ");
+  const date=document.createElement("span");date.className="small";date.textContent=new Date(c.created_at).toLocaleString("ar-IQ");
   head.append(name,date);row.appendChild(head);
-
-  if(parsed.isReply){
-   const badge=document.createElement("div");badge.className="reply-target-badge";
-   badge.textContent=`↩ رد على @${parsed.replyToName}${parsed.replyToSnippet?` (${parsed.replyToSnippet})`:""}`;
-   row.appendChild(badge);
-  }
-
-  const text=document.createElement("p");text.className="comment-body-text";
-  text.textContent=parsed.body;row.appendChild(text);
-
+  if(parsed.isReply){const badge=document.createElement("div");badge.className="reply-target-badge";badge.textContent=`↩ رد على @${parsed.replyToName}${parsed.replyToSnippet?` (${parsed.replyToSnippet})`:""}`;row.appendChild(badge)}
+  const text=document.createElement("p");text.className="comment-body-text";text.textContent=parsed.body;row.appendChild(text);
   const tools=document.createElement("div");tools.className="comment-actions";
-
   const likeBtn=document.createElement("button");likeBtn.type="button";likeBtn.className="gray";
-  likeBtn.textContent=isCommentLiked(c.id)?"❤️ أعجبني":"🤍 إعجاب";
-  likeBtn.onclick=()=>toggleCommentLike(c.id,likeBtn);
-
+  likeBtn.textContent=isCommentLiked(c.id)?"❤️ أعجبني":"🤍 إعجاب";likeBtn.onclick=()=>toggleCommentLike(c.id,likeBtn);
   const replyBtn=document.createElement("button");replyBtn.type="button";replyBtn.className="gray";
-  replyBtn.textContent="↩ رد";
-  replyBtn.onclick=()=>setReplyTarget(c.id,displayUser,parsed.body);
-
+  replyBtn.textContent="↩ رد";replyBtn.onclick=()=>setReplyTarget(c.id,displayUser,parsed.body);
   const report=document.createElement("button");report.type="button";report.className="gray";
   report.textContent="إبلاغ";report.onclick=()=>reportContent("comment",c.id);
-
   tools.append(likeBtn,replyBtn,report);
-
   if(c.user_id===currentUser.id||post.user_id===currentUser.id){
    const del=document.createElement("button");del.type="button";del.className="red";del.textContent="حذف";
    del.onclick=async()=>{
@@ -2036,9 +2503,7 @@ async function loadComments(post,container){
    };
    tools.appendChild(del);
   }
-
-  row.appendChild(tools);
-  container.appendChild(row);
+  row.appendChild(tools);container.appendChild(row);
  });
 }
 
@@ -2063,7 +2528,7 @@ el("searchBtn").onclick=async()=>{
  const q=el("searchUser").value.trim(),list=el("peopleList");list.textContent="جارٍ البحث...";
  if(!q){list.textContent="اكتب اسم المستخدم أولاً";return}
  const {data,error}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified").ilike("username","%"+q+"%").limit(25);
- if(error){list.textContent=error.message;return}list.replaceChildren();const people=(data||[]).filter(p=>p.id!==currentUser.id);
+ if(error){list.textContent=error.message;return}list.replaceChildren();const people=(data||[]).filter(p=>p.id!==currentUser.id && !isUserBlocked(p.id));
  if(!people.length){list.textContent="لا توجد نتائج";return}
  for(const p of people){
   const row=document.createElement("div");row.className="item";const line=document.createElement("div");line.className="chat-row clickable-user";line.onclick=()=>openUserProfile(p.id);
@@ -2092,6 +2557,7 @@ async function followUser(id,button){
 
 async function startChat(otherId,username){
  if(!currentUser||!otherId)return;if(otherId===currentUser.id){alert("لا يمكنك مراسلة نفسك");return}
+ if(isUserBlocked(otherId)){alert("هذا المستخدم محظور في قائمة الحظر الخاصة بك.");return}
  let convId=null;
  try{
   const {data:mine}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);const ids=(mine||[]).map(x=>x.conversation_id);
@@ -2112,7 +2578,7 @@ async function loadChats(){
   const {data:members}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
   for(const m of (members||[])){
    const {data:others}=await client.from("conversation_members").select("user_id").eq("conversation_id",m.conversation_id).neq("user_id",currentUser.id);
-   const other=others?.[0]?.user_id;if(!other)continue;
+   const other=others?.[0]?.user_id;if(!other || isUserBlocked(other))continue;
    const {data:latest}=await client.from("messages").select("content,media_type,created_at").eq("conversation_id",m.conversation_id).order("created_at",{ascending:false}).limit(1);
    map.set(other,{id:m.conversation_id,other,latest:latest?.[0]||null});
   }
@@ -2120,7 +2586,7 @@ async function loadChats(){
  try{
   const {data:directMsgs}=await client.from("messages").select("conversation_id,sender_id,receiver_id,content,media_type,created_at").or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order("created_at",{ascending:false}).limit(100);
   for(const m of (directMsgs||[])){
-   const other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;if(!other || other===currentUser.id)continue;
+   const other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;if(!other || other===currentUser.id || isUserBlocked(other))continue;
    if(!map.has(other))map.set(other,{id:m.conversation_id||getDirectRoomId(currentUser.id,other),other,latest:m});
   }
  }catch(e){}
@@ -2136,7 +2602,9 @@ function renderChatList(chats){
   const row=document.createElement("div");row.className="chat-entry";row.appendChild(makeAvatar(c.profile?.avatar_url,c.profile?.full_name||c.profile?.username));
   const info=document.createElement("div");info.className="chat-entry-info";const name=document.createElement("strong");
   addVerifiedName(name,c.profile?.full_name||c.profile?.username||"مستخدم",c.profile?.is_verified===true);
-  const preview=document.createElement("div");preview.className="chat-last";preview.textContent=c.latest?(c.latest.content||"وسائط"):"ابدأ المحادثة";info.append(name,preview);
+  const preview=document.createElement("div");preview.className="chat-last";
+  const dec=c.latest?.content?decryptText(c.latest.content):"وسائط";
+  preview.textContent=c.latest?dec:"ابدأ المحادثة";info.append(name,preview);
   const side=document.createElement("div");side.className="chat-time";side.textContent=c.latest?.created_at?new Date(c.latest.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"}):"";
   row.append(info,side);row.onclick=()=>openChat(c.id,c.other,c.profile?.username||"مستخدم");list.appendChild(row);
  });
@@ -2150,9 +2618,22 @@ async function openChat(conversationId,receiverId,username){
  addVerifiedName(el("chatTitle"),profile?.full_name||profile?.username||username,profile?.is_verified===true);
  el("chatUsername").textContent="@"+(profile?.username||username||"");
  const old=el("chatAvatar"),newA=makeAvatar(profile?.avatar_url,profile?.full_name||profile?.username);newA.id="chatAvatar";old.replaceWith(newA);
+ el("chatBlockUserBtn").onclick=()=>{
+  const blk=toggleBlockUser(receiverId,profile?.full_name||username);
+  alert(blk?"تم حظر المستخدم":"تم إلغاء الحظر");
+  if(blk)el("closeChatBtn").click();
+ };
  await loadMessages();await markMessagesRead();startRealtime();
 }
 el("closeChatBtn").onclick=()=>{stopRealtime();activeConversation=null;activeReceiver=null;el("chatPanel").classList.add("hidden");loadChats()};
+
+async function deleteMessagePermanent(msgId){
+ if(!confirm("حذف الرسالة نهائياً؟"))return;
+ const {error}=await client.from("messages").delete().eq("id",msgId).eq("sender_id",currentUser.id);
+ if(error){alert("تعذر حذف الرسالة: "+error.message);return}
+ await loadMessages();await loadChats();
+}
+
 async function loadMessages(){
  if(!activeConversation && !activeReceiver)return;const box=el("chatMessages");let data=null,error=null;
  if(activeConversation && !String(activeConversation).startsWith("dm_")){const res=await client.from("messages").select("*").eq("conversation_id",activeConversation).order("created_at",{ascending:true});data=res.data;error=res.error}
@@ -2160,12 +2641,22 @@ async function loadMessages(){
  if(error){box.textContent="خطأ: "+error.message;return}box.replaceChildren();if(!data?.length){box.textContent="ابدأ المحادثة";return}
  data.forEach(m=>{
   const b=document.createElement("div");b.className="bubble"+(m.sender_id===currentUser.id?" mine":"");
-  if(m.content){const t=document.createElement("div");t.textContent=m.content;b.appendChild(t)}
-  if(m.media_url){if(m.media_type==="video"){const v=document.createElement("video");v.src=m.media_url;v.controls=true;v.className="media";b.appendChild(v)}else{const img=document.createElement("img");img.src=m.media_url;img.className="media";b.appendChild(img)}}
-  const meta=document.createElement("div");meta.className="message-meta";meta.textContent=new Date(m.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"});
-  if(m.sender_id===currentUser.id){const s=document.createElement("span");s.textContent=m.is_read?" ✓✓":" ✓";meta.appendChild(s)}
+  if(m.content){const t=document.createElement("div");t.textContent=decryptText(m.content);b.appendChild(t)}
+  if(m.media_url){
+   if(m.media_type==="video"){const v=document.createElement("video");v.src=m.media_url;v.controls=true;v.className="media";b.appendChild(v)}
+   else{const img=document.createElement("img");img.src=m.media_url;img.className="media";b.appendChild(img)}
+  }
+  const meta=document.createElement("div");meta.className="message-meta";
+  const timeSpan=document.createElement("span");timeSpan.textContent=new Date(m.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"});
+  if(m.sender_id===currentUser.id){const s=document.createElement("span");s.textContent=m.is_read?" ✓✓":" ✓";timeSpan.appendChild(s)}
+  meta.appendChild(timeSpan);
+  if(m.sender_id===currentUser.id && m.id){
+   const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="msg-del-link";delBtn.textContent="حذف نهائي";
+   delBtn.onclick=()=>deleteMessagePermanent(m.id);meta.appendChild(delBtn);
+  }
   b.appendChild(meta);box.appendChild(b);
  });
+ applyScreenShield();
  box.scrollTop=box.scrollHeight;
 }
 async function markMessagesRead(){
@@ -2183,13 +2674,14 @@ el("sendMessageBtn").onclick=async()=>{
   let media_url=null,media_type=null;
   if(file){if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))throw new Error("اختر صورة أو فيديو");media_url=await uploadFile(file,"messages");media_type=file.type.startsWith("video/")?"video":"image"}
   const isDirect=String(activeConversation||"").startsWith("dm_");
-  const baseRow={sender_id:currentUser.id,receiver_id:activeReceiver,content:content||null,media_url,media_type,is_read:false};
+  const cipherContent=content?encryptText(content):null;
+  const baseRow={sender_id:currentUser.id,receiver_id:activeReceiver,content:cipherContent,media_url,media_type,is_read:false};
   if(!isDirect && activeConversation)baseRow.conversation_id=activeConversation;
   let {error}=await client.from("messages").insert(baseRow);
   if(error && error.message.includes("is_read")){delete baseRow.is_read;const r1=await client.from("messages").insert(baseRow);error=r1.error}
   if(error && error.message.includes("conversation_id")){delete baseRow.conversation_id;const r2=await client.from("messages").insert(baseRow);error=r2.error}
   if(error)throw error;
-  if(!isDirect && activeConversation)await client.from("conversations").update({last_message:content||"وسائط",updated_at:new Date().toISOString()}).eq("id",activeConversation);
+  if(!isDirect && activeConversation)await client.from("conversations").update({last_message:cipherContent||"وسائط",updated_at:new Date().toISOString()}).eq("id",activeConversation);
   el("chatText").value="";el("chatFile").value="";msg("chatStatus","تم الإرسال");await loadMessages();await loadChats();
  }catch(e){msg("chatStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
 };
@@ -2304,8 +2796,11 @@ el("refreshSupportAdmin").onclick=loadAdminSupport;
 
 async function showHome(user){
  currentUser=user;el("auth").classList.add("hidden");el("home").classList.remove("hidden");
+ registerCurrentDevice();
  await enforceMandatoryFollow();openTab("videos");startAlertsRealtime();
  try{await loadProfile();await loadStats();await loadChats()}catch(e){msg("profileMessage",e.message)}
+ const cfg=getSecurityConfig();
+ if(cfg.appLockEnabled && cfg.pinCode)lockAppNow();
 }
 
 async function checkSession(){

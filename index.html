@@ -4,14 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <title>DERT — الإعدادات والاختصارات</title>
+  <title>DERT — التطبيق المتكامل</title>
   <style>
     :root {
       --bg: #ffffff;
       --surface: #f7f7f9;
-      --surface-2: #f1f2f5;
+      --surface-2: #f0f1f4;
       --text: #161823;
       --muted: #6e7280;
       --section-label: #737685;
@@ -22,10 +20,12 @@
       --accent: #fe2c55;
       --accent-hover: #e52248;
       --accent-soft: #fff0f3;
+      --cyan: #25f4ee;
       --success: #0f9d58;
       --success-soft: #e8f6ef;
       --danger: #d93025;
       --danger-soft: #fff4f3;
+      --gold: #f59e0b;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -35,20 +35,17 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
 
     input, textarea, select {
-      user-select: text;
       font-family: inherit;
     }
 
     html, body {
       height: 100%;
-      background: #eceef2;
+      background: #e9ecf1;
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Kufi Arabic", "Cairo", sans-serif;
-      overscroll-behavior-y: none;
     }
 
     body {
@@ -65,14 +62,16 @@
       display: flex;
       flex-direction: column;
       padding-top: var(--safe-top);
-      padding-bottom: calc(20px + var(--safe-bottom));
-      box-shadow: 0 8px 36px rgba(22, 24, 35, 0.08);
+      padding-bottom: calc(66px + var(--safe-bottom));
+      box-shadow: 0 10px 40px rgba(22, 24, 35, 0.09);
+      overflow-x: hidden;
     }
 
+    /* Topbar */
     .topbar {
       position: sticky;
       top: 0;
-      z-index: 20;
+      z-index: 25;
       height: 54px;
       background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(12px);
@@ -86,8 +85,19 @@
 
     .topbar-title {
       font-size: 16.5px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
     }
 
     .topbar-actions {
@@ -96,64 +106,474 @@
       gap: 6px;
     }
 
-    .topbar-btn {
+    .icon-btn, .chip-btn {
       border: 1px solid var(--divider);
       background: var(--surface);
       color: var(--text);
       font-size: 12px;
-      font-weight: 600;
-      padding: 6px 11px;
+      font-weight: 700;
+      padding: 7px 11px;
       border-radius: 999px;
       cursor: pointer;
-      transition: background 0.14s ease, transform 0.1s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
-    .topbar-btn:active {
+    .icon-btn:active, .chip-btn:active {
       background: var(--active);
-      transform: scale(0.98);
     }
 
-    .search-wrap {
-      padding: 10px 16px;
+    .main-view {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 18px;
+    }
+
+    /* Stories Bar */
+    .stories-bar {
+      display: flex;
+      gap: 12px;
+      padding: 12px 14px;
+      overflow-x: auto;
       border-bottom: 1px solid var(--divider);
       background: var(--bg);
+      scrollbar-width: none;
     }
+    .stories-bar::-webkit-scrollbar { display: none; }
 
-    .search-box {
+    .story-item {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 8px;
-      background: var(--surface);
-      border-radius: 11px;
-      padding: 9px 12px;
-      border: 1px solid transparent;
-      transition: border-color 0.15s ease, background 0.15s ease;
-    }
-
-    .search-box:focus-within {
-      border-color: #c8cdd8;
-      background: #ffffff;
-    }
-
-    .search-input {
-      width: 100%;
+      gap: 5px;
+      min-width: 64px;
+      cursor: pointer;
       border: none;
       background: transparent;
-      font-size: 14px;
       color: var(--text);
-      outline: none;
     }
 
+    .story-ring {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      padding: 2.5px;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .story-ring.seen {
+      background: #d5d8e0;
+    }
+
+    .story-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--text);
+      color: #fff;
+      font-weight: 800;
+      font-size: 15px;
+      display: grid;
+      place-items: center;
+      border: 2px solid #fff;
+    }
+
+    .story-name {
+      font-size: 11px;
+      font-weight: 600;
+      max-width: 68px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Feed Cards */
+    .feed-list {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .post-card {
+      border: 1px solid var(--divider);
+      border-radius: 16px;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(22, 24, 35, 0.03);
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      gap: 10px;
+    }
+
+    .post-author-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mini-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--text);
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .post-author-name {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.4px;
+    }
+
+    .post-sub {
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .follow-btn {
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 13px;
+      border-radius: 999px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .follow-btn.following {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--divider);
+    }
+
+    .media-stage {
+      position: relative;
+      height: 260px;
+      background: linear-gradient(145deg, #161823 0%, #272b3d 55%, #3d1624 100%);
+      color: #fff;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .media-stage.alt-1 {
+      background: linear-gradient(145deg, #0f172a 0%, #1e3a8a 60%, #0e7490 100%);
+    }
+
+    .media-stage.alt-2 {
+      background: linear-gradient(145deg, #1f1629 0%, #4c1d95 60%, #be185d 100%);
+    }
+
+    .stage-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill-dark {
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .stage-caption {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.5;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    }
+
+    .post-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-top: 1px solid var(--divider);
+    }
+
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .act-btn {
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 6px;
+      border-radius: 8px;
+    }
+
+    .act-btn:active { background: var(--surface); }
+    .act-btn.liked { color: var(--accent); }
+
+    /* Filter Pills */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--divider);
+      scrollbar-width: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+
+    .filter-pill {
+      border: 1px solid var(--divider);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .filter-pill.active {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
+    }
+
+    .chat-row {
+      width: 100%;
+      border: none;
+      background: #fff;
+      border-bottom: 1px solid var(--divider);
+      padding: 13px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      text-align: right;
+    }
+
+    .chat-row:active { background: var(--active); }
+
+    .unread-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Profile Screen */
+    .profile-banner {
+      height: 86px;
+      background: linear-gradient(120deg, #161823 0%, #fe2c55 100%);
+      position: relative;
+    }
+
+    .profile-head {
+      padding: 0 16px 14px;
+      border-bottom: 1px solid var(--divider);
+    }
+
+    .profile-avatar-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-top: -36px;
+      margin-bottom: 10px;
+    }
+
+    .profile-avatar-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .profile-avatar {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: var(--text);
+      color: #fff;
+      font-size: 26px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      border: 3px solid #fff;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    }
+
+    .status-bubble {
+      background: var(--surface);
+      border: 1px solid var(--divider);
+      border-radius: 14px;
+      padding: 5px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+
+    .profile-name {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .profile-handle {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .profile-bio {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 22px;
+      margin-bottom: 12px;
+    }
+
+    .stat-box {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-num {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .stat-lbl {
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .profile-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tabs-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--divider);
+      background: #fff;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 12px 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+
+    .tab-btn.active {
+      color: var(--text);
+      border-bottom-color: var(--text);
+    }
+
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--divider);
+      padding: 2px;
+    }
+
+    .grid-tile {
+      aspect-ratio: 3 / 4;
+      background: linear-gradient(150deg, #1d2030, #3a1826);
+      color: #fff;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      cursor: pointer;
+      border: none;
+      text-align: right;
+    }
+
+    .pin-tag {
+      background: var(--accent);
+      color: #fff;
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 5px;
+      align-self: flex-start;
+    }
+
+    .views-tag {
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 2px 6px;
+      border-radius: 6px;
+      align-self: flex-start;
+    }
+
+    /* Settings & Shortcuts Drawer */
     .section {
       padding-top: 14px;
       padding-bottom: 6px;
       border-bottom: 1px solid var(--divider);
     }
 
-    .section:last-of-type {
-      border-bottom: none;
-      padding-bottom: 24px;
-    }
+    .section:last-of-type { border-bottom: none; }
 
     .section-title {
       font-size: 13px;
@@ -170,25 +590,18 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 15px 18px;
+      padding: 14px 18px;
       cursor: pointer;
-      transition: background 0.12s ease;
       text-align: right;
       gap: 10px;
     }
 
-    .menu-item:hover {
-      background: var(--hover);
-    }
-
-    .menu-item:active {
-      background: var(--active);
-    }
+    .menu-item:active { background: var(--active); }
 
     .menu-left {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 13px;
       min-width: 0;
       flex: 1;
     }
@@ -212,25 +625,16 @@
       stroke-linejoin: round;
     }
 
-    .menu-label-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      min-width: 0;
-    }
-
     .menu-label {
-      font-size: 15.5px;
+      font-size: 15px;
       font-weight: 500;
-      color: var(--text);
     }
 
     .menu-meta {
-      font-size: 11.5px;
+      font-size: 11px;
       color: var(--muted);
       background: var(--surface);
-      padding: 2.5px 8px;
+      padding: 2px 8px;
       border-radius: 999px;
       font-weight: 600;
     }
@@ -239,24 +643,17 @@
       color: var(--chevron);
       display: grid;
       place-items: center;
-      flex-shrink: 0;
     }
 
-    .empty-search {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
+    /* Drawer & Subpages */
     .drawer-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.38);
+      background: rgba(0, 0, 0, 0.42);
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s ease;
-      z-index: 40;
+      z-index: 45;
       display: flex;
       justify-content: center;
     }
@@ -266,7 +663,7 @@
       pointer-events: auto;
     }
 
-    .subpage {
+    .drawer-panel {
       width: 100%;
       max-width: 480px;
       background: var(--bg);
@@ -276,14 +673,14 @@
       padding-top: var(--safe-top);
       padding-bottom: calc(14px + var(--safe-bottom));
       transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.22s ease;
     }
 
-    .drawer-backdrop.open .subpage {
+    .drawer-backdrop.open .drawer-panel {
       transform: translateX(0);
     }
 
-    .subpage-header {
+    .panel-header {
       height: 54px;
       padding: 0 14px;
       border-bottom: 1px solid var(--divider);
@@ -293,7 +690,7 @@
       flex-shrink: 0;
     }
 
-    .subpage-title {
+    .panel-title {
       font-size: 16px;
       font-weight: 700;
     }
@@ -311,11 +708,7 @@
       place-items: center;
     }
 
-    .close-btn:active {
-      background: var(--active);
-    }
-
-    .subpage-body {
+    .panel-body {
       padding: 16px;
       overflow-y: auto;
       flex: 1;
@@ -337,21 +730,11 @@
       padding: 11px 0;
       border-bottom: 1px solid var(--divider);
     }
-
     .card-row:first-child { padding-top: 0; }
     .card-row:last-child { border-bottom: none; padding-bottom: 0; }
 
-    .row-title {
-      font-size: 14.5px;
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-
-    .row-desc {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.45;
-    }
+    .row-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .row-desc { font-size: 12px; color: var(--muted); line-height: 1.45; }
 
     .split-grid {
       display: grid;
@@ -367,11 +750,7 @@
       border: 1px solid var(--divider);
     }
 
-    .split-val {
-      font-size: 15px;
-      font-weight: 800;
-      margin-top: 2px;
-    }
+    .split-val { font-size: 15px; font-weight: 800; margin-top: 2px; }
 
     .pill-grid {
       display: grid;
@@ -389,7 +768,6 @@
       font-weight: 700;
       color: var(--text);
       cursor: pointer;
-      transition: all 0.14s ease;
     }
 
     .gateway-btn.active {
@@ -404,13 +782,7 @@
       height: 25px;
       flex-shrink: 0;
     }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
+    .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
       position: absolute;
       inset: 0;
@@ -419,7 +791,6 @@
       transition: 0.2s;
       cursor: pointer;
     }
-
     .slider::before {
       content: "";
       position: absolute;
@@ -431,13 +802,65 @@
       border-radius: 50%;
       transition: 0.2s;
     }
+    input:checked + .slider { background: var(--accent); }
+    input:checked + .slider::before { transform: translateX(21px); }
 
-    input:checked + .slider {
+    .btn-primary {
+      width: 100%;
+      border: none;
       background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 12px 14px;
+      border-radius: 11px;
+      cursor: pointer;
+      margin-top: 8px;
     }
 
-    input:checked + .slider::before {
-      transform: translateX(21px);
+    .btn-secondary {
+      width: 100%;
+      border: 1px solid var(--divider);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13.5px;
+      font-weight: 700;
+      padding: 11px 14px;
+      border-radius: 11px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .btn-danger-outline {
+      width: 100%;
+      border: 1px solid #f3c6c3;
+      background: var(--danger-soft);
+      color: var(--danger);
+      font-size: 13.5px;
+      font-weight: 700;
+      padding: 11px 14px;
+      border-radius: 11px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .input-field, .select-field, .textarea-field {
+      width: 100%;
+      border: 1px solid #d8dbe3;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      margin-top: 6px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+
+    .textarea-field {
+      min-height: 130px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11.5px;
+      line-height: 1.5;
     }
 
     .qr-box {
@@ -461,95 +884,8 @@
       border: 1px solid var(--divider);
     }
 
-    .qr-cell {
-      width: 17px;
-      height: 17px;
-      border-radius: 2px;
-      background: #fff;
-    }
-
-    .qr-cell.on {
-      background: #161823;
-    }
-
-    .btn-primary {
-      width: 100%;
-      border: none;
-      background: var(--accent);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      padding: 12px 14px;
-      border-radius: 11px;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: background 0.14s ease, transform 0.1s ease;
-    }
-
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-primary:active { transform: scale(0.99); }
-
-    .btn-secondary {
-      width: 100%;
-      border: 1px solid var(--divider);
-      background: var(--surface);
-      color: var(--text);
-      font-size: 13.5px;
-      font-weight: 600;
-      padding: 11px 14px;
-      border-radius: 11px;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-
-    .btn-danger-outline {
-      width: 100%;
-      border: 1px solid #f3c6c3;
-      background: var(--danger-soft);
-      color: var(--danger);
-      font-size: 13.5px;
-      font-weight: 700;
-      padding: 11px 14px;
-      border-radius: 11px;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-
-    .mini-del-btn {
-      border: none;
-      background: var(--danger-soft);
-      color: var(--danger);
-      font-size: 11.5px;
-      font-weight: 700;
-      padding: 5px 9px;
-      border-radius: 8px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .input-field, .select-field, .textarea-field {
-      width: 100%;
-      border: 1px solid #d8dbe3;
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 14px;
-      margin-top: 6px;
-      background: #fff;
-      color: var(--text);
-      outline: none;
-    }
-
-    .textarea-field {
-      min-height: 110px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 12px;
-      line-height: 1.5;
-      resize: vertical;
-    }
-
-    .input-field:focus, .select-field:focus, .textarea-field:focus {
-      border-color: var(--text);
-    }
+    .qr-cell { width: 17px; height: 17px; border-radius: 2px; background: #fff; }
+    .qr-cell.on { background: #161823; }
 
     .log-item {
       padding: 9px 0;
@@ -560,13 +896,12 @@
       align-items: center;
       gap: 8px;
     }
-
     .log-item:last-child { border-bottom: none; }
 
     .badge-ok {
       color: var(--success);
       font-weight: 700;
-      font-size: 11.5px;
+      font-size: 11px;
       background: var(--success-soft);
       padding: 2px 7px;
       border-radius: 999px;
@@ -574,9 +909,94 @@
       margin-top: 2px;
     }
 
+    .msg-bubble {
+      max-width: 82%;
+      padding: 9px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+
+    .msg-bubble.me {
+      background: var(--accent);
+      color: #fff;
+      margin-right: auto;
+    }
+
+    .msg-bubble.them {
+      background: var(--surface);
+      color: var(--text);
+      margin-left: auto;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      height: calc(58px + var(--safe-bottom));
+      padding-bottom: var(--safe-bottom);
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--divider);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      z-index: 30;
+    }
+
+    .nav-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      position: relative;
+    }
+
+    .nav-btn.active { color: var(--text); }
+
+    .create-pill {
+      width: 40px;
+      height: 28px;
+      border-radius: 9px;
+      background: var(--text);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      box-shadow: -3px 0 0 var(--cyan), 3px 0 0 var(--accent);
+    }
+
+    .nav-badge {
+      position: absolute;
+      top: 5px;
+      left: 22%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 9.5px;
+      font-weight: 800;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      padding: 0 4px;
+    }
+
     .toast {
       position: fixed;
-      bottom: calc(22px + var(--safe-bottom));
+      bottom: calc(74px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%) translateY(20px);
       background: rgba(22, 24, 35, 0.95);
@@ -600,44 +1020,64 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar">
-      <span class="topbar-title">الإعدادات والاختصارات</span>
-      <div class="topbar-actions">
-        <button class="topbar-btn" id="importStateBtn" type="button">استيراد JSON</button>
-        <button class="topbar-btn" id="exportStateBtn" type="button">تصدير JSON</button>
-        <button class="topbar-btn" id="resetBtn" type="button">إعادة ضبط</button>
-      </div>
-    </header>
-
-    <div class="search-wrap">
-      <div class="search-box">
-        <span>🔍</span>
-        <input class="search-input" id="searchInput" type="search" placeholder="ابحث في الاختصارات والإعدادات..." />
-      </div>
-    </div>
-
-    <main id="menuContainer"></main>
+    <header class="topbar" id="appTopbar"></header>
+    <main class="main-view" id="mainView"></main>
   </div>
 
-  <div class="drawer-backdrop" id="subpageBackdrop" aria-hidden="true">
-    <div class="subpage" id="subpagePanel" role="dialog" aria-modal="true">
-      <div class="subpage-header">
-        <span class="subpage-title" id="subpageTitle"></span>
-        <button class="close-btn" id="closeSubpageBtn" type="button" aria-label="إغلاق">✕</button>
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav" aria-label="التنقل السفلي">
+    <button type="button" class="nav-btn active" data-tab="home">
+      <span>🏠</span>
+      <span>الرئيسية</span>
+    </button>
+    <button type="button" class="nav-btn" data-tab="friends">
+      <span>👥</span>
+      <span>الأصدقاء</span>
+    </button>
+    <button type="button" class="nav-btn" id="openCreateNavBtn" aria-label="إنشاء">
+      <span class="create-pill">+</span>
+    </button>
+    <button type="button" class="nav-btn" data-tab="inbox">
+      <span>💬</span>
+      <span>الوارد</span>
+      <span class="nav-badge" id="inboxBadge">0</span>
+    </button>
+    <button type="button" class="nav-btn" data-tab="profile">
+      <span>👤</span>
+      <span>الملف</span>
+    </button>
+  </nav>
+
+  <!-- Secondary Modal / Subpage Drawer -->
+  <div class="drawer-backdrop" id="modalBackdrop" aria-hidden="true">
+    <div class="drawer-panel" role="dialog" aria-modal="true">
+      <div class="panel-header">
+        <span class="panel-title" id="modalTitle"></span>
+        <button type="button" class="close-btn" id="closeModalBtn" aria-label="إغلاق">✕</button>
       </div>
-      <div class="subpage-body" id="subpageBody"></div>
+      <div class="panel-body" id="modalBody"></div>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-    const STORAGE_KEY = "dert_release_ready_settings_v2";
+    const STORAGE_KEY = "dert_all_in_one_app_v1";
 
     const defaultState = {
       appName: "DERT",
       packageId: "com.dert.app",
       versionName: "1.0.0",
+      currentTab: "home",
+      profile: {
+        displayName: "وسام | wessam",
+        handle: "@w20xw",
+        bio: "مطور وصانع محتوى رقمي • أعمل على إطلاق تطبيق DERT بأعلى جودة وسرعة.",
+        statusBubble: "جاهز للإطلاق 🚀",
+        following: 128,
+        followers: 4920,
+        likes: 38400
+      },
       balanceCoins: 500,
       grossRevenueCoins: 1000,
       selectedGateway: "زين كاش",
@@ -651,8 +1091,6 @@
         { id: "VID-1", title: "مقطع محفوظ #1", size: "18.4 MB" },
         { id: "VID-2", title: "مقطع محفوظ #2", size: "24.1 MB" }
       ],
-      handle: "@w20xw",
-      displayName: "وسام | wessam",
       minis: [
         { id: "M1", name: "المونتاج السريع", desc: "قص وتحويل المقاطع بسرعة", enabled: true },
         { id: "M2", name: "مولد العناوين", desc: "اقتراح عناوين وهاشتاغات للمحتوى", enabled: true }
@@ -675,48 +1113,117 @@
         dataSaver: false,
         language: "العربية (العراق)",
         twoFactorAuth: true
-      }
+      },
+      stories: [
+        { id: "st-1", name: "أحمد", avatar: "أ", text: "بث جديد بعد قليل!", seen: false },
+        { id: "st-2", name: "سارة", avatar: "س", text: "تصميم واجهة DERT", seen: false },
+        { id: "st-3", name: "علي", avatar: "ع", text: "جولة سريعة في الاستوديو", seen: true },
+        { id: "st-4", name: "نور", avatar: "ن", text: "أفضل إعدادات الخصوصية", seen: false }
+      ],
+      posts: [
+        {
+          id: "p-1",
+          author: "أحمد العراقي",
+          handle: "@ahmed_iq",
+          avatar: "أ",
+          isLive: true,
+          views: "19.4K",
+          likes: 1420,
+          liked: false,
+          favorited: true,
+          reposted: false,
+          isPrivate: false,
+          pinned: true,
+          isFriendPost: true,
+          theme: "",
+          caption: "بث مباشر تفاعلي • توزيع الأرباح 60% للمذيع و40% للمنصة #DERT #بث_مباشر",
+          comments: ["بالتوفيق يا بطل!", "واجهة سلسة جداً"]
+        },
+        {
+          id: "p-2",
+          author: "سارة التقنية",
+          handle: "@sara_tech",
+          avatar: "س",
+          isLive: false,
+          views: "8.2K",
+          likes: 690,
+          liked: true,
+          favorited: false,
+          reposted: true,
+          isPrivate: false,
+          pinned: false,
+          isFriendPost: true,
+          theme: "alt-1",
+          caption: "اختصارات الإعدادات والرصيد السريع في تطبيق واحد بدون تعقيد #تقنية #تطبيقات",
+          comments: ["فكرة مرتبة وواضحة"]
+        },
+        {
+          id: "p-3",
+          author: "علي المبدع",
+          handle: "@ali_dev",
+          avatar: "ع",
+          isLive: false,
+          views: "5.1K",
+          likes: 410,
+          liked: false,
+          favorited: false,
+          reposted: false,
+          isPrivate: true,
+          pinned: false,
+          isFriendPost: false,
+          theme: "alt-2",
+          caption: "مسودة خاصة للمراجعة قبل النشر الرسمي على المتجر 🔒",
+          comments: []
+        }
+      ],
+      inboxFilter: "الرئيسي",
+      chats: [
+        {
+          id: "ch-1",
+          name: "أحمد العراقي",
+          handle: "@ahmed_iq",
+          avatar: "أ",
+          unread: true,
+          starred: true,
+          isRequest: false,
+          lastTime: "الآن",
+          messages: [
+            { from: "them", text: "هلا وسام، شلون جاهزية النسخة الجديدة؟" },
+            { from: "me", text: "كل الشاشات صارت مترابطة وجاهزة للاختبار." }
+          ]
+        },
+        {
+          id: "ch-2",
+          name: "سارة التقنية",
+          handle: "@sara_tech",
+          avatar: "س",
+          unread: true,
+          starred: false,
+          isRequest: false,
+          lastTime: "منذ 15 د",
+          messages: [
+            { from: "them", text: "أعجبني ترتيب الإعدادات والاختصارات جداً." }
+          ]
+        },
+        {
+          id: "ch-3",
+          name: "حساب تعاوني",
+          handle: "@collab_iq",
+          avatar: "ت",
+          unread: false,
+          starred: false,
+          isRequest: true,
+          lastTime: "أمس",
+          messages: [
+            { from: "them", text: "مرحباً، نرغب بالتعاون في إطلاق حملة ترويج." }
+          ]
+        }
+      ],
+      profileTab: "posts"
     };
 
     function cloneDefault() {
       return JSON.parse(JSON.stringify(defaultState));
-    }
-
-    function loadState() {
-      try {
-        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        const base = cloneDefault();
-        return {
-          ...base,
-          ...(raw || {}),
-          transactions: Array.isArray(raw?.transactions) ? raw.transactions : base.transactions,
-          searchHistory: Array.isArray(raw?.searchHistory) ? raw.searchHistory : base.searchHistory,
-          offlineVideos: Array.isArray(raw?.offlineVideos) ? raw.offlineVideos : base.offlineVideos,
-          minis: Array.isArray(raw?.minis) ? raw.minis : base.minis,
-          shopItems: Array.isArray(raw?.shopItems) ? raw.shopItems : base.shopItems,
-          studioStats: { ...base.studioStats, ...(raw?.studioStats || {}) },
-          settings: { ...base.settings, ...(raw?.settings || {}) }
-        };
-      } catch {
-        return cloneDefault();
-      }
-    }
-
-    let state = loadState();
-    let currentOpenItem = null;
-    let searchQuery = "";
-
-    function saveState() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      window.dispatchEvent(new CustomEvent("dert:stateUpdated", { detail: state }));
-    }
-
-    function showToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.textContent = msg;
-      toast.classList.add("show");
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => toast.classList.remove("show"), 2100);
     }
 
     function escapeHtml(str) {
@@ -727,7 +1234,638 @@
         .replace(/"/g, "&quot;");
     }
 
-    const icons = {
+    function loadState() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        const base = cloneDefault();
+        return {
+          ...base,
+          ...(raw || {}),
+          profile: { ...base.profile, ...(raw?.profile || {}) },
+          studioStats: { ...base.studioStats, ...(raw?.studioStats || {}) },
+          settings: { ...base.settings, ...(raw?.settings || {}) },
+          stories: Array.isArray(raw?.stories) ? raw.stories : base.stories,
+          posts: Array.isArray(raw?.posts) ? raw.posts : base.posts,
+          chats: Array.isArray(raw?.chats) ? raw.chats : base.chats,
+          transactions: Array.isArray(raw?.transactions) ? raw.transactions : base.transactions,
+          offlineVideos: Array.isArray(raw?.offlineVideos) ? raw.offlineVideos : base.offlineVideos,
+          minis: Array.isArray(raw?.minis) ? raw.minis : base.minis,
+          shopItems: Array.isArray(raw?.shopItems) ? raw.shopItems : base.shopItems,
+          searchHistory: Array.isArray(raw?.searchHistory) ? raw.searchHistory : base.searchHistory
+        };
+      } catch {
+        return cloneDefault();
+      }
+    }
+
+    let state = loadState();
+    let settingsSearch = "";
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateBadges();
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => el.classList.remove("show"), 2100);
+    }
+
+    function updateBadges() {
+      const unreadCount = state.chats.filter(c => c.unread).length;
+      const badge = document.getElementById("inboxBadge");
+      badge.textContent = unreadCount;
+      badge.style.display = unreadCount > 0 ? "grid" : "none";
+
+      document.querySelectorAll(".nav-btn[data-tab]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === state.currentTab);
+      });
+    }
+
+    function openModal(title, renderFn) {
+      document.getElementById("modalTitle").textContent = title;
+      const body = document.getElementById("modalBody");
+      body.innerHTML = "";
+      renderFn(body);
+      const backdrop = document.getElementById("modalBackdrop");
+      backdrop.classList.add("open");
+      backdrop.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal() {
+      const backdrop = document.getElementById("modalBackdrop");
+      backdrop.classList.remove("open");
+      backdrop.setAttribute("aria-hidden", "true");
+    }
+
+    document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+    document.getElementById("modalBackdrop").addEventListener("click", (e) => {
+      if (e.target.id === "modalBackdrop") closeModal();
+    });
+
+    /* SQL / Supabase Schema Generator */
+    function getSqlSchema() {
+      return `-- DERT PostgreSQL / Supabase Schema
+create table if not exists public.profiles (
+  id uuid primary key default gen_random_uuid(),
+  display_name text not null,
+  handle text unique not null,
+  bio text default '',
+  status_bubble text default '',
+  coins_balance integer not null default 0,
+  following_count integer not null default 0,
+  followers_count integer not null default 0,
+  likes_count integer not null default 0,
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.posts (
+  id uuid primary key default gen_random_uuid(),
+  author_id uuid references public.profiles(id) on delete cascade,
+  caption text not null,
+  is_live boolean not null default false,
+  is_private boolean not null default false,
+  pinned boolean not null default false,
+  views_count integer not null default 0,
+  likes_count integer not null default 0,
+  created_at timestamptz default now()
+);
+
+create table if not exists public.wallet_transactions (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid references public.profiles(id) on delete cascade,
+  gateway text not null,
+  coins_delta integer not null,
+  broadcaster_share integer not null,
+  platform_share integer not null,
+  status text not null default 'completed',
+  created_at timestamptz default now()
+);
+
+create table if not exists public.direct_messages (
+  id uuid primary key default gen_random_uuid(),
+  sender_handle text not null,
+  recipient_handle text not null,
+  body text not null,
+  is_read boolean not null default false,
+  is_starred boolean not null default false,
+  created_at timestamptz default now()
+);`;
+    }
+
+    /* Stories Bar Renderer */
+    function renderStoriesHtml() {
+      return `
+        <div class="stories-bar">
+          ${state.stories.map(st => `
+            <button type="button" class="story-item" data-story-id="${escapeHtml(st.id)}">
+              <div class="story-ring ${st.seen ? "seen" : ""}">
+                <div class="story-avatar">${escapeHtml(st.avatar)}</div>
+              </div>
+              <span class="story-name">${escapeHtml(st.name)}</span>
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function bindStoryClicks(container) {
+      container.querySelectorAll("[data-story-id]").forEach(btn => {
+        btn.onclick = () => {
+          const st = state.stories.find(s => s.id === btn.dataset.storyId);
+          if (!st) return;
+          st.seen = true;
+          saveState();
+          openModal(`قصة ${st.name}`, (body) => {
+            body.innerHTML = `
+              <div class="card">
+                <div class="row-title">${escapeHtml(st.name)}</div>
+                <div style="font-size:16px;font-weight:700;margin:12px 0;">${escapeHtml(st.text)}</div>
+                <button type="button" class="btn-primary" id="replyStoryBtn">إرسال رد سريع</button>
+              </div>
+            `;
+            body.querySelector("#replyStoryBtn").onclick = () => {
+              closeModal();
+              showToast(`تم إرسال رد إلى ${st.name}`);
+            };
+          });
+          renderCurrentScreen();
+        };
+      });
+    }
+
+    /* Post Card Renderer */
+    function renderPostCard(post) {
+      const isFollowed = state.profile.following > 0 && post.isFriendPost;
+      return `
+        <article class="post-card" data-post-id="${escapeHtml(post.id)}">
+          <div class="post-header">
+            <div class="post-author-wrap">
+              <div class="mini-avatar">${escapeHtml(post.avatar)}</div>
+              <div>
+                <div class="post-author-name">
+                  <span>${escapeHtml(post.author)}</span>
+                  ${post.isLive ? `<span class="live-badge">LIVE • 60/40</span>` : ""}
+                </div>
+                <div class="post-sub">${escapeHtml(post.handle)} • ${escapeHtml(post.views)} مشاهدة</div>
+              </div>
+            </div>
+            <button type="button" class="follow-btn ${isFollowed ? "following" : ""}" data-follow-post="${escapeHtml(post.id)}">
+              ${isFollowed ? "متابَع" : "متابعة"}
+            </button>
+          </div>
+          <div class="media-stage ${escapeHtml(post.theme || "")}">
+            <div class="stage-top-row">
+              <span class="pill-dark">${post.isLive ? "بث مباشر • أرباح المذيع 60% / المنصة 40%" : "مقطع قصير • DERT"}</span>
+              ${post.isPrivate ? `<span class="pill-dark">🔒 خاص</span>` : ""}
+            </div>
+            <div class="stage-caption">${escapeHtml(post.caption)}</div>
+          </div>
+          <div class="post-actions">
+            <div class="action-group">
+              <button type="button" class="act-btn ${post.liked ? "liked" : ""}" data-like-post="${escapeHtml(post.id)}">
+                <span>${post.liked ? "❤️" : "🤍"}</span>
+                <span>${post.likes}</span>
+              </button>
+              <button type="button" class="act-btn" data-comment-post="${escapeHtml(post.id)}">
+                <span>💬</span>
+                <span>${post.comments.length}</span>
+              </button>
+              <button type="button" class="act-btn" data-share-post="${escapeHtml(post.id)}">
+                <span>↗️</span>
+                <span>مشاركة</span>
+              </button>
+            </div>
+            <button type="button" class="act-btn" data-fav-post="${escapeHtml(post.id)}">
+              <span>${post.favorited ? "⭐" : "☆"}</span>
+              <span>مفضلة</span>
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function bindPostEvents(container) {
+      container.querySelectorAll("[data-follow-post]").forEach(btn => {
+        btn.onclick = () => {
+          const p = state.posts.find(x => x.id === btn.dataset.followPost);
+          if (!p) return;
+          p.isFriendPost = !p.isFriendPost;
+          state.profile.following += p.isFriendPost ? 1 : -1;
+          saveState();
+          renderCurrentScreen();
+          showToast(p.isFriendPost ? `تمت متابعة ${p.author}` : `تم إلغاء متابعة ${p.author}`);
+        };
+      });
+
+      container.querySelectorAll("[data-like-post]").forEach(btn => {
+        btn.onclick = () => {
+          const p = state.posts.find(x => x.id === btn.dataset.likePost);
+          if (!p) return;
+          p.liked = !p.liked;
+          p.likes += p.liked ? 1 : -1;
+          state.profile.likes += p.liked ? 1 : -1;
+          saveState();
+          renderCurrentScreen();
+        };
+      });
+
+      container.querySelectorAll("[data-fav-post]").forEach(btn => {
+        btn.onclick = () => {
+          const p = state.posts.find(x => x.id === btn.dataset.favPost);
+          if (!p) return;
+          p.favorited = !p.favorited;
+          saveState();
+          renderCurrentScreen();
+          showToast(p.favorited ? "أُضيف إلى المفضلة" : "أُزيل من المفضلة");
+        };
+      });
+
+      container.querySelectorAll("[data-share-post]").forEach(btn => {
+        btn.onclick = () => {
+          const p = state.posts.find(x => x.id === btn.dataset.sharePost);
+          if (!p) return;
+          const firstChat = state.chats[0];
+          if (firstChat) {
+            firstChat.messages.push({ from: "me", text: `مشاركة منشور ${p.author}: ${p.caption}` });
+            firstChat.lastTime = "الآن";
+          }
+          saveState();
+          showToast("تمت المشاركة إلى صندوق الوارد");
+        };
+      });
+
+      container.querySelectorAll("[data-comment-post]").forEach(btn => {
+        btn.onclick = () => {
+          const p = state.posts.find(x => x.id === btn.dataset.commentPost);
+          if (!p) return;
+          openModal(`تعليقات (${p.comments.length})`, (body) => {
+            body.innerHTML = `
+              <div class="card">
+                ${p.comments.map(c => `<div class="log-item"><span>${escapeHtml(c)}</span></div>`).join("") || `<div class="row-desc">لا توجد تعليقات بعد</div>`}
+                <input class="input-field" id="newCommentInput" placeholder="اكتب تعليقك..." />
+                <button type="button" class="btn-primary" id="addCommentBtn">إرسال التعليق</button>
+              </div>
+            `;
+            body.querySelector("#addCommentBtn").onclick = () => {
+              const val = body.querySelector("#newCommentInput").value.trim();
+              if (!val) return;
+              p.comments.push(val);
+              saveState();
+              closeModal();
+              renderCurrentScreen();
+              showToast("تم إضافة التعليق");
+            };
+          });
+        };
+      });
+    }
+
+    /* 1. Home Feed */
+    function renderHome(topbar, main) {
+      topbar.innerHTML = `
+        <div class="topbar-title"><span class="brand-dot"></span> ${escapeHtml(state.appName)}</div>
+        <div class="topbar-actions">
+          <button type="button" class="chip-btn" id="sqlBtn">SQL Schema</button>
+          <button type="button" class="chip-btn" id="quickSettingsBtn">الإعدادات</button>
+        </div>
+      `;
+      main.innerHTML = `
+        ${renderStoriesHtml()}
+        <div class="feed-list">
+          ${state.posts.map(renderPostCard).join("")}
+        </div>
+      `;
+      bindStoryClicks(main);
+      bindPostEvents(main);
+      document.getElementById("quickSettingsBtn").onclick = () => openSettingsDrawer();
+      document.getElementById("sqlBtn").onclick = () => openSqlModal();
+    }
+
+    /* 2. Friends Feed */
+    function renderFriends(topbar, main) {
+      const friendsPosts = state.posts.filter(p => p.isFriendPost || !p.isPrivate);
+      topbar.innerHTML = `
+        <div class="topbar-title">الأصدقاء</div>
+        <div class="topbar-actions">
+          <button type="button" class="chip-btn" id="addFriendDemoBtn">+ إضافة صديق</button>
+        </div>
+      `;
+      main.innerHTML = `
+        ${renderStoriesHtml()}
+        <div class="feed-list">
+          ${friendsPosts.map(renderPostCard).join("")}
+        </div>
+      `;
+      bindStoryClicks(main);
+      bindPostEvents(main);
+      document.getElementById("addFriendDemoBtn").onclick = () => {
+        state.profile.following += 1;
+        saveState();
+        renderCurrentScreen();
+        showToast("تمت إضافة صديق جديد");
+      };
+    }
+
+    /* 3. Inbox & Direct Messages */
+    function renderInbox(topbar, main) {
+      const filters = ["الرئيسي", "الطلبات", "غير مقروءة", "تم وضع نجمة"];
+      const filteredChats = state.chats.filter(c => {
+        if (state.inboxFilter === "الطلبات") return c.isRequest;
+        if (state.inboxFilter === "غير مقروءة") return c.unread;
+        if (state.inboxFilter === "تم وضع نجمة") return c.starred;
+        return !c.isRequest;
+      });
+
+      topbar.innerHTML = `
+        <div class="topbar-title">صندوق الوارد</div>
+        <div class="topbar-actions">
+          <button type="button" class="chip-btn" id="markAllReadBtn">قراءة الكل</button>
+        </div>
+      `;
+
+      main.innerHTML = `
+        ${renderStoriesHtml()}
+        <div class="filter-row">
+          ${filters.map(f => `
+            <button type="button" class="filter-pill ${state.inboxFilter === f ? "active" : ""}" data-f="${escapeHtml(f)}">${escapeHtml(f)}</button>
+          `).join("")}
+        </div>
+        <div>
+          ${filteredChats.map(ch => `
+            <button type="button" class="chat-row" data-chat-id="${escapeHtml(ch.id)}">
+              <div style="display:flex;align-items:center;gap:11px;min-width:0;flex:1;">
+                <div class="mini-avatar">${escapeHtml(ch.avatar)}</div>
+                <div style="min-width:0;flex:1;">
+                  <div class="row-title">${escapeHtml(ch.name)} ${ch.starred ? "⭐" : ""}</div>
+                  <div class="row-desc" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    ${escapeHtml(ch.messages[ch.messages.length - 1]?.text || "")}
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                <span class="row-desc">${escapeHtml(ch.lastTime)}</span>
+                ${ch.unread ? `<span class="unread-dot"></span>` : ""}
+              </div>
+            </button>
+          `).join("") || `<div style="padding:36px 16px;text-align:center;color:var(--muted);">لا توجد محادثات في هذا التبويب</div>`}
+        </div>
+      `;
+
+      bindStoryClicks(main);
+
+      main.querySelectorAll("[data-f]").forEach(btn => {
+        btn.onclick = () => {
+          state.inboxFilter = btn.dataset.f;
+          saveState();
+          renderCurrentScreen();
+        };
+      });
+
+      document.getElementById("markAllReadBtn").onclick = () => {
+        state.chats.forEach(c => { c.unread = false; });
+        saveState();
+        renderCurrentScreen();
+        showToast("تم تعليم الكل كمقروء");
+      };
+
+      main.querySelectorAll("[data-chat-id]").forEach(row => {
+        row.onclick = () => {
+          const ch = state.chats.find(c => c.id === row.dataset.chatId);
+          if (!ch) return;
+          ch.unread = false;
+          saveState();
+          updateBadges();
+
+          openModal(ch.name, (body) => {
+            const drawChat = () => {
+              body.innerHTML = `
+                <div class="card" style="margin-bottom:10px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span class="row-desc">${escapeHtml(ch.handle)}</span>
+                    <button type="button" class="chip-btn" id="toggleStarChat">${ch.starred ? "⭐ مميزة" : "☆ تمييز بنجمة"}</button>
+                  </div>
+                </div>
+                <div class="card" style="max-height:320px;overflow-y:auto;">
+                  ${ch.messages.map(m => `
+                    <div class="msg-bubble ${m.from === "me" ? "me" : "them"}">${escapeHtml(m.text)}</div>
+                  `).join("")}
+                </div>
+                <input class="input-field" id="chatMsgInput" placeholder="اكتب رسالة..." />
+                <button type="button" class="btn-primary" id="sendChatMsgBtn">إرسال</button>
+              `;
+              body.querySelector("#toggleStarChat").onclick = () => {
+                ch.starred = !ch.starred;
+                saveState();
+                drawChat();
+                renderCurrentScreen();
+              };
+              body.querySelector("#sendChatMsgBtn").onclick = () => {
+                const txt = body.querySelector("#chatMsgInput").value.trim();
+                if (!txt) return;
+                ch.messages.push({ from: "me", text: txt });
+                ch.lastTime = "الآن";
+                saveState();
+                drawChat();
+                renderCurrentScreen();
+              };
+            };
+            drawChat();
+          });
+          renderCurrentScreen();
+        };
+      });
+    }
+
+    /* 4. Profile Screen */
+    function renderProfile(topbar, main) {
+      const p = state.profile;
+      const tabPosts = state.posts.filter(post => {
+        if (state.profileTab === "favorites") return post.favorited;
+        if (state.profileTab === "reposts") return post.reposted;
+        if (state.profileTab === "private") return post.isPrivate;
+        return !post.isPrivate;
+      });
+
+      topbar.innerHTML = `
+        <div class="topbar-title">${escapeHtml(p.displayName)}</div>
+        <div class="topbar-actions">
+          <button type="button" class="chip-btn" id="openStudioTopBtn">Studio</button>
+          <button type="button" class="chip-btn" id="openDrawerMenuBtn">☰ الإعدادات</button>
+        </div>
+      `;
+
+      main.innerHTML = `
+        <div class="profile-banner"></div>
+        <div class="profile-head">
+          <div class="profile-avatar-row">
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar">${escapeHtml(p.displayName.trim()[0] || "W")}</div>
+              <span class="status-bubble">${escapeHtml(p.statusBubble)}</span>
+            </div>
+          </div>
+          <div class="profile-name">${escapeHtml(p.displayName)}</div>
+          <div class="profile-handle">${escapeHtml(p.handle)}</div>
+          <div class="profile-bio">${escapeHtml(p.bio)}</div>
+          <div class="stats-row">
+            <div class="stat-box"><span class="stat-num">${p.following}</span><span class="stat-lbl">أتابعهم</span></div>
+            <div class="stat-box"><span class="stat-num">${p.followers}</span><span class="stat-lbl">متابعون</span></div>
+            <div class="stat-box"><span class="stat-num">${p.likes}</span><span class="stat-lbl">تسجيلات الإعجاب</span></div>
+          </div>
+          <div class="profile-btns">
+            <button type="button" class="chip-btn" id="editProfileBtn">تعديل الملف الشخصي</button>
+            <button type="button" class="chip-btn" id="shareProfileBtn">مشاركة الحساب</button>
+          </div>
+        </div>
+
+        <div class="tabs-bar">
+          <button type="button" class="tab-btn ${state.profileTab === "posts" ? "active" : ""}" data-ptab="posts">المنشورات</button>
+          <button type="button" class="tab-btn ${state.profileTab === "favorites" ? "active" : ""}" data-ptab="favorites">المفضلة</button>
+          <button type="button" class="tab-btn ${state.profileTab === "reposts" ? "active" : ""}" data-ptab="reposts">إعادة نشر</button>
+          <button type="button" class="tab-btn ${state.profileTab === "private" ? "active" : ""}" data-ptab="private">خاص</button>
+        </div>
+
+        <div class="posts-grid">
+          ${tabPosts.map(item => `
+            <button type="button" class="grid-tile" data-grid-post="${escapeHtml(item.id)}">
+              ${item.pinned ? `<span class="pin-tag">مثبت</span>` : `<span></span>`}
+              <div style="font-size:11.5px;font-weight:700;line-height:1.35;">${escapeHtml(item.caption)}</div>
+              <span class="views-tag">▶ ${escapeHtml(item.views)}</span>
+            </button>
+          `).join("")}
+        </div>
+      `;
+
+      document.getElementById("openDrawerMenuBtn").onclick = () => openSettingsDrawer();
+      document.getElementById("openStudioTopBtn").onclick = () => openSettingsDrawer("studio");
+
+      document.getElementById("editProfileBtn").onclick = () => {
+        openModal("تعديل الملف الشخصي", (body) => {
+          body.innerHTML = `
+            <div class="card">
+              <label class="row-desc">الاسم الظاهر
+                <input class="input-field" id="edName" value="${escapeHtml(p.displayName)}" />
+              </label>
+              <label class="row-desc" style="display:block;margin-top:10px;">المعرف (@username)
+                <input class="input-field" id="edHandle" value="${escapeHtml(p.handle)}" />
+              </label>
+              <label class="row-desc" style="display:block;margin-top:10px;">فقاعة الحالة
+                <input class="input-field" id="edStatus" value="${escapeHtml(p.statusBubble)}" />
+              </label>
+              <label class="row-desc" style="display:block;margin-top:10px;">النبذة التعريفية
+                <textarea class="input-field" id="edBio" rows="3">${escapeHtml(p.bio)}</textarea>
+              </label>
+              <button type="button" class="btn-primary" id="saveProfileBtn">حفظ التعديلات</button>
+            </div>
+          `;
+          body.querySelector("#saveProfileBtn").onclick = () => {
+            const n = body.querySelector("#edName").value.trim();
+            const h = body.querySelector("#edHandle").value.trim();
+            if (n) p.displayName = n;
+            if (h) p.handle = h.startsWith("@") ? h : "@" + h;
+            p.statusBubble = body.querySelector("#edStatus").value.trim();
+            p.bio = body.querySelector("#edBio").value.trim();
+            saveState();
+            closeModal();
+            renderCurrentScreen();
+            showToast("تم حفظ الملف الشخصي");
+          };
+        });
+      };
+
+      document.getElementById("shareProfileBtn").onclick = () => {
+        showToast(`تم نسخ رابط الحساب ${p.handle}`);
+      };
+
+      main.querySelectorAll("[data-ptab]").forEach(t => {
+        t.onclick = () => {
+          state.profileTab = t.dataset.ptab;
+          saveState();
+          renderCurrentScreen();
+        };
+      });
+
+      main.querySelectorAll("[data-grid-post]").forEach(tile => {
+        tile.onclick = () => {
+          const post = state.posts.find(x => x.id === tile.dataset.gridPost);
+          if (!post) return;
+          openModal("تفاصيل المنشور", (body) => {
+            body.innerHTML = `
+              <div class="card">
+                <div class="row-title">${escapeHtml(post.author)}</div>
+                <div style="margin:10px 0;font-size:14px;line-height:1.5;">${escapeHtml(post.caption)}</div>
+                <div class="row-desc">المشاهدات: ${escapeHtml(post.views)} • الإعجابات: ${post.likes}</div>
+                <button type="button" class="btn-secondary" id="pinToggleBtn">${post.pinned ? "إلغاء التثبيت" : "تثبيت في الأعلى"}</button>
+              </div>
+            `;
+            body.querySelector("#pinToggleBtn").onclick = () => {
+              post.pinned = !post.pinned;
+              saveState();
+              closeModal();
+              renderCurrentScreen();
+              showToast(post.pinned ? "تم تثبيت المنشور" : "تم إلغاء التثبيت");
+            };
+          });
+        };
+      });
+    }
+
+    /* + Create Post / Live Modal */
+    document.getElementById("openCreateNavBtn").addEventListener("click", () => {
+      openModal("إنشاء منشور أو بث مباشر", (body) => {
+        body.innerHTML = `
+          <div class="card">
+            <label class="row-desc">نص المنشور أو عنوان البث
+              <textarea class="textarea-field" id="createCaptionInput" placeholder="اكتب شيئاً مميزاً..."></textarea>
+            </label>
+            <div class="card-row">
+              <div><div class="row-title">بث مباشر (LIVE)</div><div class="row-desc">تفعيل تقسيم الأرباح 60% للمذيع / 40% للمنصة</div></div>
+              <label class="switch"><input type="checkbox" id="createLiveChk" /><span class="slider"></span></label>
+            </div>
+            <div class="card-row">
+              <div><div class="row-title">منشور خاص</div><div class="row-desc">يظهر في تبويب خاص بالملف الشخصي</div></div>
+              <label class="switch"><input type="checkbox" id="createPrivateChk" /><span class="slider"></span></label>
+            </div>
+            <button type="button" class="btn-primary" id="publishPostBtn">نشر الآن</button>
+          </div>
+        `;
+        body.querySelector("#publishPostBtn").onclick = () => {
+          const cap = body.querySelector("#createCaptionInput").value.trim();
+          if (!cap) return;
+          const isLive = body.querySelector("#createLiveChk").checked;
+          const isPrivate = body.querySelector("#createPrivateChk").checked;
+          state.posts.unshift({
+            id: "p-" + Date.now(),
+            author: state.profile.displayName,
+            handle: state.profile.handle,
+            avatar: state.profile.displayName.trim()[0] || "W",
+            isLive,
+            views: "1",
+            likes: 0,
+            liked: false,
+            favorited: false,
+            reposted: false,
+            isPrivate,
+            pinned: false,
+            isFriendPost: true,
+            theme: isLive ? "" : "alt-1",
+            caption: cap,
+            comments: []
+          });
+          saveState();
+          closeModal();
+          state.currentTab = "home";
+          renderCurrentScreen();
+          showToast(isLive ? "بدأ البث المباشر" : "تم نشر المحتوى");
+        };
+      });
+    });
+
+    /* 5. Complete Settings & Shortcuts Drawer */
+    const settingsIcons = {
       wallet: `<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 10h18"/><circle cx="16.5" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg>`,
       clock: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5l3.2 1.8"/></svg>`,
       offline: `<svg viewBox="0 0 24 24"><path d="M17.5 18H7.5a4.5 4.5 0 0 1-.8-8.9A5.5 5.5 0 0 1 17.3 7.5 4 4 0 0 1 17.5 18z"/><path d="M12 11v5m0 0-2-2m2 2 2-2"/></svg>`,
@@ -740,96 +1878,6 @@
       chevron: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`
     };
 
-    function getSections() {
-      const broadcasterShare = Math.round(state.grossRevenueCoins * 0.6);
-      return [
-        {
-          title: "الأصول",
-          items: [
-            {
-              id: "balance",
-              label: "الرصيد",
-              icon: "wallet",
-              meta: `${state.balanceCoins} عملة • المذيع 60%: ${broadcasterShare}`
-            }
-          ]
-        },
-        {
-          title: "الأدوات الشخصية",
-          items: [
-            { id: "activity", label: "مركز الأنشطة", icon: "clock", meta: state.activityTime },
-            { id: "offline", label: "فيديوهات دون اتصال بالإنترنت", icon: "offline", meta: `${state.offlineVideos.length} محفوظة` },
-            { id: "qr", label: "رمز QR لديك", icon: "qr", meta: state.handle },
-            { id: "minis", label: `${state.appName} Minis`, icon: "minis", meta: `${state.minis.filter(m => m.enabled).length} مفعلة` }
-          ]
-        },
-        {
-          title: "أدوات الإبداع والأعمال",
-          items: [
-            { id: "shop", label: "المجموعة التجارية", icon: "shop", meta: `${state.shopItems.length} عنصر` },
-            { id: "studio", label: `${state.appName} Studio`, icon: "studio", meta: `${state.studioStats.views} مشاهدة` },
-            { id: "promote", label: "الترويج", icon: "promote", meta: `${state.promotedCount} نشط` }
-          ]
-        },
-        {
-          title: null,
-          items: [
-            { id: "settings", label: "الإعدادات والخصوصية", icon: "settings", meta: state.settings.language }
-          ]
-        }
-      ];
-    }
-
-    function renderMenu() {
-      const container = document.getElementById("menuContainer");
-      container.innerHTML = "";
-      const q = searchQuery.trim().toLowerCase();
-      let totalRendered = 0;
-
-      getSections().forEach((sec) => {
-        const filteredItems = q
-          ? sec.items.filter(it => it.label.toLowerCase().includes(q) || (it.meta || "").toLowerCase().includes(q))
-          : sec.items;
-
-        if (!filteredItems.length) return;
-        totalRendered += filteredItems.length;
-
-        const sectionEl = document.createElement("section");
-        sectionEl.className = "section";
-
-        if (sec.title) {
-          const h2 = document.createElement("h2");
-          h2.className = "section-title";
-          h2.textContent = sec.title;
-          sectionEl.appendChild(h2);
-        }
-
-        filteredItems.forEach((item) => {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "menu-item";
-          btn.innerHTML = `
-            <span class="menu-left">
-              <span class="menu-icon">${icons[item.icon] || ""}</span>
-              <span class="menu-label-wrap">
-                <span class="menu-label">${escapeHtml(item.label)}</span>
-                ${item.meta ? `<span class="menu-meta">${escapeHtml(item.meta)}</span>` : ""}
-              </span>
-            </span>
-            <span class="menu-chevron">${icons.chevron}</span>
-          `;
-          btn.addEventListener("click", () => openSubpage(item));
-          sectionEl.appendChild(btn);
-        });
-
-        container.appendChild(sectionEl);
-      });
-
-      if (!totalRendered) {
-        container.innerHTML = `<div class="empty-search">لا توجد نتائج مطابقة للبحث "${escapeHtml(searchQuery)}"</div>`;
-      }
-    }
-
     function renderQrCells(seedText) {
       let hash = 0;
       for (let i = 0; i < seedText.length; i++) {
@@ -841,360 +1889,346 @@
       }).join("");
     }
 
-    function openSubpage(item) {
-      currentOpenItem = item;
-      const backdrop = document.getElementById("subpageBackdrop");
-      const titleEl = document.getElementById("subpageTitle");
-      const bodyEl = document.getElementById("subpageBody");
-      titleEl.textContent = item.label;
-
-      if (item.id === "balance") {
-        const gateways = ["زين كاش", "سوبر كي", "زين العراق", "آسياسيل"];
+    function openSettingsDrawer(directSubId = null) {
+      openModal("الإعدادات والاختصارات", (body) => {
         const broadcasterShare = Math.round(state.grossRevenueCoins * 0.6);
-        const platformShare = Math.round(state.grossRevenueCoins * 0.4);
+        const sections = [
+          {
+            title: "الأصول",
+            items: [{ id: "balance", label: "الرصيد", icon: "wallet", meta: `${state.balanceCoins} عملة • المذيع 60%: ${broadcasterShare}` }]
+          },
+          {
+            title: "الأدوات الشخصية",
+            items: [
+              { id: "activity", label: "مركز الأنشطة", icon: "clock", meta: state.activityTime },
+              { id: "offline", label: "فيديوهات دون اتصال بالإنترنت", icon: "offline", meta: `${state.offlineVideos.length} محفوظة` },
+              { id: "qr", label: "رمز QR لديك", icon: "qr", meta: state.profile.handle },
+              { id: "minis", label: `${state.appName} Minis`, icon: "minis", meta: `${state.minis.filter(m => m.enabled).length} مفعلة` }
+            ]
+          },
+          {
+            title: "أدوات الإبداع والأعمال",
+            items: [
+              { id: "shop", label: "المجموعة التجارية", icon: "shop", meta: `${state.shopItems.length} عنصر` },
+              { id: "studio", label: `${state.appName} Studio`, icon: "studio", meta: `${state.studioStats.views} مشاهدة` },
+              { id: "promote", label: "الترويج", icon: "promote", meta: `${state.promotedCount} نشط` }
+            ]
+          },
+          {
+            title: null,
+            items: [{ id: "settings", label: "الإعدادات والخصوصية", icon: "settings", meta: state.settings.language }]
+          }
+        ];
 
-        bodyEl.innerHTML = `
-          <div class="card">
-            <div class="row-title">الرصيد والعملات</div>
-            <div style="font-size:26px;font-weight:800;margin:6px 0;">${state.balanceCoins} عملة</div>
-            <div class="row-desc">توزيع أرباح البث والمحتوى: 60% للمذيع / 40% للمنصة</div>
-            <div class="split-grid">
-              <div class="split-box">
-                <div class="row-desc">حصة المذيع (60%)</div>
-                <div class="split-val">${broadcasterShare} عملة</div>
-              </div>
-              <div class="split-box">
-                <div class="row-desc">حصة المنصة (40%)</div>
-                <div class="split-val">${platformShare} عملة</div>
-              </div>
-            </div>
-            <div class="pill-grid">
-              ${gateways.map(g => `<button type="button" class="gateway-btn ${state.selectedGateway === g ? "active" : ""}" data-gw="${escapeHtml(g)}">${escapeHtml(g)}</button>`).join("")}
-            </div>
-            <input class="input-field" id="refInput" value="${escapeHtml(state.phoneOrWalletRef)}" placeholder="رقم المحفظة أو الخط (اختياري)" />
-            <button class="btn-primary" id="topupBtn">+ شحن 200 عملة عبر ${escapeHtml(state.selectedGateway)}</button>
+        const q = settingsSearch.trim().toLowerCase();
+        body.innerHTML = `
+          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+            <button type="button" class="chip-btn" id="expJsonBtn">تصدير JSON</button>
+            <button type="button" class="chip-btn" id="impJsonBtn">استيراد JSON</button>
+            <button type="button" class="chip-btn" id="sqlSchemaBtn">SQL Schema</button>
+            <button type="button" class="chip-btn" id="rstAllBtn">إعادة ضبط</button>
           </div>
-          <div class="card">
-            <div class="row-title" style="margin-bottom:8px;">سجل العمليات</div>
-            ${state.transactions.map(t => `
-              <div class="log-item">
-                <div><strong>${escapeHtml(t.title)}</strong><div class="row-desc">${escapeHtml(t.id)}</div></div>
-                <div><div>${escapeHtml(t.amount)}</div><span class="badge-ok">${escapeHtml(t.status)}</span></div>
-              </div>
-            `).join("")}
-          </div>
+          <input class="input-field" id="setSearchInp" value="${escapeHtml(settingsSearch)}" placeholder="ابحث في الإعدادات والاختصارات..." style="margin-bottom:10px;" />
+          <div id="setSectionsList"></div>
         `;
 
-        bodyEl.querySelectorAll("[data-gw]").forEach(b => {
-          b.onclick = () => {
-            state.selectedGateway = b.dataset.gw;
-            saveState();
-            openSubpage(item);
-          };
-        });
-
-        bodyEl.querySelector("#topupBtn").onclick = () => {
-          const refVal = bodyEl.querySelector("#refInput").value.trim();
-          state.phoneOrWalletRef = refVal;
-          state.balanceCoins += 200;
-          state.grossRevenueCoins += 200;
-          state.transactions.unshift({
-            id: "TX-" + Math.floor(100 + Math.random() * 900),
-            title: `شحن رصيد (${state.selectedGateway})${refVal ? " • " + refVal : ""}`,
-            amount: "+200 عملة",
-            status: "مكتمل"
+        const listEl = body.querySelector("#setSectionsList");
+        sections.forEach(sec => {
+          const items = q ? sec.items.filter(it => it.label.toLowerCase().includes(q) || (it.meta || "").toLowerCase().includes(q)) : sec.items;
+          if (!items.length) return;
+          const wrap = document.createElement("div");
+          wrap.className = "section";
+          if (sec.title) {
+            const h = document.createElement("div");
+            h.className = "section-title";
+            h.textContent = sec.title;
+            wrap.appendChild(h);
+          }
+          items.forEach(it => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "menu-item";
+            b.innerHTML = `
+              <span class="menu-left">
+                <span class="menu-icon">${settingsIcons[it.icon] || ""}</span>
+                <span class="menu-label">${escapeHtml(it.label)}</span>
+                ${it.meta ? `<span class="menu-meta">${escapeHtml(it.meta)}</span>` : ""}
+              </span>
+              <span class="menu-chevron">${settingsIcons.chevron}</span>
+            `;
+            b.onclick = () => openSettingSubpage(it.id, it.label);
+            wrap.appendChild(b);
           });
-          saveState();
-          renderMenu();
-          openSubpage(item);
-          showToast("تم شحن 200 عملة");
-        };
-      } else if (item.id === "activity") {
-        bodyEl.innerHTML = `
-          <div class="card">
-            <div class="card-row">
-              <div><div class="row-title">وقت الاستخدام اليومي</div><div class="row-desc">متابعة النشاط داخل التطبيق</div></div>
-              <strong>${escapeHtml(state.activityTime)}</strong>
-            </div>
-            <div class="card-row">
-              <div><div class="row-title">سجل البحث (${state.searchHistory.length})</div><div class="row-desc">${state.searchHistory.map(escapeHtml).join(" • ") || "لا يوجد سجل"}</div></div>
-              <button class="topbar-btn" id="clearSearchHistBtn">مسح</button>
-            </div>
-          </div>
-        `;
-        bodyEl.querySelector("#clearSearchHistBtn").onclick = () => {
-          state.searchHistory = [];
-          saveState();
-          openSubpage(item);
-          showToast("تم مسح سجل البحث");
-        };
-      } else if (item.id === "offline") {
-        bodyEl.innerHTML = `
-          <div class="card">
-            <div class="row-title">الفيديوهات المحفوظة دون اتصال (${state.offlineVideos.length})</div>
-            ${state.offlineVideos.map(v => `
-              <div class="log-item">
-                <div><strong>${escapeHtml(v.title)}</strong><div class="row-desc">${escapeHtml(v.size)}</div></div>
-                <span class="badge-ok">جاهز</span>
-              </div>
-            `).join("") || `<div class="row-desc" style="margin:8px 0;">لا توجد فيديوهات محفوظة حالياً</div>`}
-            <button class="btn-primary" id="addOfflineBtn">+ حفظ فيديو جديد</button>
-            <button class="btn-danger-outline" id="clearOfflineBtn">حذف جميع الفيديوهات المحفوظة</button>
-          </div>
-        `;
-        bodyEl.querySelector("#addOfflineBtn").onclick = () => {
-          const idx = state.offlineVideos.length + 1;
-          state.offlineVideos.push({ id: "VID-" + Date.now(), title: `مقطع محفوظ #${idx}`, size: "21.5 MB" });
-          saveState();
-          renderMenu();
-          openSubpage(item);
-          showToast("تم حفظ الفيديو");
-        };
-        bodyEl.querySelector("#clearOfflineBtn").onclick = () => {
-          state.offlineVideos = [];
-          saveState();
-          renderMenu();
-          openSubpage(item);
-          showToast("تم حذف المحفوظات");
-        };
-      } else if (item.id === "qr") {
-        bodyEl.innerHTML = `
-          <div class="qr-box">
-            <div class="row-title">${escapeHtml(state.displayName)} (${escapeHtml(state.handle)})</div>
-            <div class="qr-grid">${renderQrCells(state.handle)}</div>
-            <label style="width:100%;font-size:12px;color:var(--muted);">اسم العرض:
-              <input class="input-field" id="nameInput" value="${escapeHtml(state.displayName)}" />
-            </label>
-            <label style="width:100%;font-size:12px;color:var(--muted);">المعرف (@username):
-              <input class="input-field" id="handleInput" value="${escapeHtml(state.handle)}" />
-            </label>
-            <button class="btn-primary" id="saveQrBtn">حفظ بيانات الحساب ورمز QR</button>
-          </div>
-        `;
-        bodyEl.querySelector("#saveQrBtn").onclick = () => {
-          const h = bodyEl.querySelector("#handleInput").value.trim();
-          const n = bodyEl.querySelector("#nameInput").value.trim();
-          if (h) state.handle = h.startsWith("@") ? h : "@" + h;
-          if (n) state.displayName = n;
-          saveState();
-          renderMenu();
-          openSubpage(item);
-          showToast("تم التحديث");
-        };
-      } else if (item.id === "minis") {
-        bodyEl.innerHTML = `
-          <div class="card">
-            ${state.minis.map((m, i) => `
-              <div class="card-row">
-                <div><div class="row-title">${escapeHtml(m.name)}</div><div class="row-desc">${escapeHtml(m.desc)}</div></div>
-                <label class="switch">
-                  <input type="checkbox" data-m-idx="${i}" ${m.enabled ? "checked" : ""} />
-                  <span class="slider"></span>
-                </label>
-              </div>
-            `).join("")}
-          </div>
-        `;
-        bodyEl.querySelectorAll("[data-m-idx]").forEach(chk => {
-          chk.onchange = () => {
-            state.minis[Number(chk.dataset.mIdx)].enabled = chk.checked;
-            saveState();
-            renderMenu();
-            showToast("تم تحديث الأداة المصغرة");
-          };
-        });
-      } else if (item.id === "shop") {
-        bodyEl.innerHTML = `
-          <div class="card">
-            <div class="row-title" style="margin-bottom:8px;">عناصر المجموعة التجارية</div>
-            ${state.shopItems.map((s, idx) => `
-              <div class="log-item">
-                <div><strong>${escapeHtml(s.name)}</strong><div class="row-desc">${escapeHtml(s.id)}</div></div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <strong>${escapeHtml(s.price)}</strong>
-                  <button type="button" class="mini-del-btn" data-del-shop="${idx}">حذف</button>
-                </div>
-              </div>
-            `).join("") || `<div class="row-desc" style="margin:6px 0;">لا توجد عناصر حالياً</div>`}
-            <input class="input-field" id="newShopName" placeholder="اسم خدمة أو منتج جديد" />
-            <input class="input-field" id="newShopPrice" placeholder="السعر (مثال: 15,000 د.ع)" />
-            <button class="btn-primary" id="addShopBtn">+ إضافة للمجموعة التجارية</button>
-          </div>
-        `;
-        bodyEl.querySelectorAll("[data-del-shop]").forEach(btn => {
-          btn.onclick = () => {
-            state.shopItems.splice(Number(btn.dataset.delShop), 1);
-            saveState();
-            renderMenu();
-            openSubpage(item);
-            showToast("تم حذف العنصر");
-          };
-        });
-        bodyEl.querySelector("#addShopBtn").onclick = () => {
-          const name = bodyEl.querySelector("#newShopName").value.trim();
-          const price = bodyEl.querySelector("#newShopPrice").value.trim() || "10,000 د.ع";
-          if (!name) return;
-          state.shopItems.push({ id: "SH-" + Math.floor(100 + Math.random() * 900), name, price });
-          saveState();
-          renderMenu();
-          openSubpage(item);
-          showToast("تمت الإضافة");
-        };
-      } else if (item.id === "studio") {
-        bodyEl.innerHTML = `
-          <div class="card">
-            <div class="card-row"><div><div class="row-title">إجمالي المشاهدات</div><div class="row-desc">آخر 30 يوماً</div></div><strong>${escapeHtml(state.studioStats.views)}</strong></div>
-            <div class="card-row"><div><div class="row-title">نمو المتابعين</div><div class="row-desc">صافي الزيادة</div></div><strong>${escapeHtml(state.studioStats.followersGrowth)}</strong></div>
-            <div class="card-row">
-              <div><div class="row-title">تفعيل البث المباشر</div><div class="row-desc">السماح ببدء بث مباشر من الاستوديو</div></div>
-              <label class="switch">
-                <input type="checkbox" id="liveToggle" ${state.studioStats.liveEnabled ? "checked" : ""} />
-                <span class="slider"></span>
-              </label>
-            </div>
-          </div>
-        `;
-        bodyEl.querySelector("#liveToggle").onchange = (e) => {
-          state.studioStats.liveEnabled = e.target.checked;
-          saveState();
-          showToast("تم تحديث حالة البث المباشر");
-        };
-      } else if (item.id === "promote") {
-        bodyEl.innerHTML = `
-          <div class="card">
-            <div class="row-title">حملات الترويج النشطة: ${state.promotedCount}</div>
-            <div class="row-desc">زيادة وصول الفيديوهات والمحتوى</div>
-            <button class="btn-primary" id="addPromoBtn">+ إطلاق حملة ترويج جديدة</button>
-          </div>
-        `;
-        bodyEl.querySelector("#addPromoBtn").onclick = () => {
-          state.promotedCount += 1;
-          saveState();
-          renderMenu();
-          openSubpage(item);
-          showToast("تم إطلاق الحملة");
-        };
-      } else if (item.id === "settings") {
-        const s = state.settings;
-        const toggleRow = (key, title, desc) => `
-          <div class="card-row">
-            <div><div class="row-title">${title}</div><div class="row-desc">${desc}</div></div>
-            <label class="switch">
-              <input type="checkbox" data-skey="${key}" ${s[key] ? "checked" : ""} />
-              <span class="slider"></span>
-            </label>
-          </div>
-        `;
-        bodyEl.innerHTML = `
-          <div class="card">
-            ${toggleRow("privateAccount", "حساب خاص", "تقييد مشاهدة المحتوى على المتابعين المعتمدين")}
-            ${toggleRow("allowComments", "التعليقات", "السماح بالتعليق على المنشورات")}
-            ${toggleRow("allowDownloads", "التنزيلات", "السماح بتنزيل المقاطع")}
-            ${toggleRow("pushNotifications", "الإشعارات الفورية", "تنبيهات الرسائل والنشاط")}
-            ${toggleRow("dataSaver", "توفير البيانات", "تقليل استهلاك الإنترنت أثناء التصفح")}
-            ${toggleRow("twoFactorAuth", "المصادقة الثنائية", "حماية إضافية لتسجيل الدخول")}
-            <div class="card-row" style="flex-direction:column;align-items:stretch;">
-              <div class="row-title">اللغة والمنطقة</div>
-              <select class="select-field" id="langSelect">
-                <option value="العربية (العراق)" ${s.language === "العربية (العراق)" ? "selected" : ""}>العربية (العراق)</option>
-                <option value="العربية" ${s.language === "العربية" ? "selected" : ""}>العربية</option>
-                <option value="English" ${s.language === "English" ? "selected" : ""}>English</option>
-              </select>
-            </div>
-          </div>
-          <div class="card">
-            <div class="row-desc">معرف الحزمة: <strong>${escapeHtml(state.packageId)}</strong> • الإصدار: <strong>${escapeHtml(state.versionName)}</strong></div>
-          </div>
-        `;
-
-        bodyEl.querySelectorAll("[data-skey]").forEach(chk => {
-          chk.onchange = () => {
-            state.settings[chk.dataset.skey] = chk.checked;
-            saveState();
-            showToast("تم حفظ الإعداد");
-          };
+          listEl.appendChild(wrap);
         });
 
-        bodyEl.querySelector("#langSelect").onchange = (e) => {
-          state.settings.language = e.target.value;
-          saveState();
-          renderMenu();
-          showToast("تم تغيير اللغة");
+        body.querySelector("#setSearchInp").oninput = (e) => {
+          settingsSearch = e.target.value;
+          openSettingsDrawer();
         };
-      }
 
-      backdrop.classList.add("open");
-      backdrop.setAttribute("aria-hidden", "false");
-    }
+        body.querySelector("#expJsonBtn").onclick = () => {
+          const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "dert-app-backup.json";
+          a.click();
+          URL.revokeObjectURL(url);
+          showToast("تم تصدير JSON");
+        };
 
-    function openImportModal() {
-      currentOpenItem = { id: "import_json", label: "استيراد نسخة JSON" };
-      const backdrop = document.getElementById("subpageBackdrop");
-      document.getElementById("subpageTitle").textContent = "استيراد نسخة JSON";
-      document.getElementById("subpageBody").innerHTML = `
-        <div class="card">
-          <div class="row-title">الصق بيانات JSON هنا</div>
-          <div class="row-desc">سيتم التحقق من الصيغة وحفظ الإعدادات تلقائياً</div>
-          <textarea class="textarea-field" id="jsonImportArea" placeholder='{"balanceCoins": 500}'></textarea>
-          <button class="btn-primary" id="applyJsonBtn">تطبيق واستيراد</button>
-        </div>
-      `;
-      document.getElementById("applyJsonBtn").onclick = () => {
-        try {
-          const parsed = JSON.parse(document.getElementById("jsonImportArea").value);
-          if (!parsed || typeof parsed !== "object") throw new Error("invalid");
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-          state = loadState();
-          renderMenu();
-          closeSubpage();
-          showToast("تم استيراد الإعدادات بنجاح");
-        } catch {
-          showToast("صيغة JSON غير صحيحة");
+        body.querySelector("#impJsonBtn").onclick = () => {
+          openModal("استيراد JSON", (sub) => {
+            sub.innerHTML = `
+              <div class="card">
+                <div class="row-title">الصق بيانات JSON</div>
+                <textarea class="textarea-field" id="impArea"></textarea>
+                <button type="button" class="btn-primary" id="doImpBtn">تطبيق الاستيراد</button>
+              </div>
+            `;
+            sub.querySelector("#doImpBtn").onclick = () => {
+              try {
+                const parsed = JSON.parse(sub.querySelector("#impArea").value);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+                state = loadState();
+                closeModal();
+                renderCurrentScreen();
+                showToast("تم الاستيراد بنجاح");
+              } catch {
+                showToast("صيغة JSON غير صالحة");
+              }
+            };
+          });
+        };
+
+        body.querySelector("#sqlSchemaBtn").onclick = () => openSqlModal();
+
+        body.querySelector("#rstAllBtn").onclick = () => {
+          state = cloneDefault();
+          saveState();
+          closeModal();
+          renderCurrentScreen();
+          showToast("تمت إعادة الضبط الكاملة");
+        };
+
+        if (directSubId) {
+          const found = sections.flatMap(s => s.items).find(i => i.id === directSubId);
+          if (found) openSettingSubpage(found.id, found.label);
         }
-      };
-      backdrop.classList.add("open");
-      backdrop.setAttribute("aria-hidden", "false");
+      });
     }
 
-    function closeSubpage() {
-      currentOpenItem = null;
-      const backdrop = document.getElementById("subpageBackdrop");
-      backdrop.classList.remove("open");
-      backdrop.setAttribute("aria-hidden", "true");
+    function openSettingSubpage(id, label) {
+      openModal(label, (body) => {
+        if (id === "balance") {
+          const gateways = ["زين كاش", "سوبر كي", "زين العراق", "آسياسيل"];
+          const broadcasterShare = Math.round(state.grossRevenueCoins * 0.6);
+          const platformShare = Math.round(state.grossRevenueCoins * 0.4);
+          body.innerHTML = `
+            <div class="card">
+              <div class="row-title">الرصيد والعملات</div>
+              <div style="font-size:26px;font-weight:800;margin:6px 0;">${state.balanceCoins} عملة</div>
+              <div class="row-desc">تقسيم الأرباح: 60% للمذيع / 40% للمنصة</div>
+              <div class="split-grid">
+                <div class="split-box"><div class="row-desc">المذيع (60%)</div><div class="split-val">${broadcasterShare}</div></div>
+                <div class="split-box"><div class="row-desc">المنصة (40%)</div><div class="split-val">${platformShare}</div></div>
+              </div>
+              <div class="pill-grid">
+                ${gateways.map(g => `<button type="button" class="gateway-btn ${state.selectedGateway === g ? "active" : ""}" data-gw="${escapeHtml(g)}">${escapeHtml(g)}</button>`).join("")}
+              </div>
+              <input class="input-field" id="gwRefInp" value="${escapeHtml(state.phoneOrWalletRef)}" placeholder="رقم المحفظة أو الخط" />
+              <button type="button" class="btn-primary" id="topup200Btn">+ شحن 200 عملة عبر ${escapeHtml(state.selectedGateway)}</button>
+            </div>
+            <div class="card">
+              <div class="row-title" style="margin-bottom:8px;">سجل العمليات</div>
+              ${state.transactions.map(t => `
+                <div class="log-item">
+                  <div><strong>${escapeHtml(t.title)}</strong><div class="row-desc">${escapeHtml(t.id)}</div></div>
+                  <div><div>${escapeHtml(t.amount)}</div><span class="badge-ok">${escapeHtml(t.status)}</span></div>
+                </div>
+              `).join("")}
+            </div>
+          `;
+          body.querySelectorAll("[data-gw]").forEach(b => {
+            b.onclick = () => { state.selectedGateway = b.dataset.gw; saveState(); openSettingSubpage(id, label); };
+          });
+          body.querySelector("#topup200Btn").onclick = () => {
+            const ref = body.querySelector("#gwRefInp").value.trim();
+            state.phoneOrWalletRef = ref;
+            state.balanceCoins += 200;
+            state.grossRevenueCoins += 200;
+            state.transactions.unshift({
+              id: "TX-" + Math.floor(100 + Math.random() * 900),
+              title: `شحن رصيد (${state.selectedGateway})${ref ? " • " + ref : ""}`,
+              amount: "+200 عملة",
+              status: "مكتمل"
+            });
+            saveState();
+            openSettingSubpage(id, label);
+            showToast("تم شحن 200 عملة");
+          };
+        } else if (id === "activity") {
+          body.innerHTML = `
+            <div class="card">
+              <div class="card-row"><div><div class="row-title">وقت الاستخدام اليومي</div><div class="row-desc">سجل النشاط</div></div><strong>${escapeHtml(state.activityTime)}</strong></div>
+              <div class="card-row"><div><div class="row-title">سجل البحث</div><div class="row-desc">${state.searchHistory.map(escapeHtml).join(" • ") || "فارغ"}</div></div><button type="button" class="chip-btn" id="clrHistBtn">مسح</button></div>
+            </div>
+          `;
+          body.querySelector("#clrHistBtn").onclick = () => { state.searchHistory = []; saveState(); openSettingSubpage(id, label); showToast("تم المسح"); };
+        } else if (id === "offline") {
+          body.innerHTML = `
+            <div class="card">
+              <div class="row-title">المحفوظات (${state.offlineVideos.length})</div>
+              ${state.offlineVideos.map(v => `<div class="log-item"><div><strong>${escapeHtml(v.title)}</strong><div class="row-desc">${escapeHtml(v.size)}</div></div><span class="badge-ok">جاهز</span></div>`).join("")}
+              <button type="button" class="btn-primary" id="addOffBtn">+ حفظ فيديو جديد</button>
+              <button type="button" class="btn-danger-outline" id="clrOffBtn">حذف الكل</button>
+            </div>
+          `;
+          body.querySelector("#addOffBtn").onclick = () => {
+            state.offlineVideos.push({ id: "VID-" + Date.now(), title: `مقطع محفوظ #${state.offlineVideos.length + 1}`, size: "22.0 MB" });
+            saveState(); openSettingSubpage(id, label); showToast("تم الحفظ");
+          };
+          body.querySelector("#clrOffBtn").onclick = () => {
+            state.offlineVideos = []; saveState(); openSettingSubpage(id, label); showToast("تم الحذف");
+          };
+        } else if (id === "qr") {
+          body.innerHTML = `
+            <div class="qr-box">
+              <div class="row-title">${escapeHtml(state.profile.displayName)} (${escapeHtml(state.profile.handle)})</div>
+              <div class="qr-grid">${renderQrCells(state.profile.handle)}</div>
+              <input class="input-field" id="qrHandleInp" value="${escapeHtml(state.profile.handle)}" />
+              <button type="button" class="btn-primary" id="saveQrBtn">حفظ رمز QR</button>
+            </div>
+          `;
+          body.querySelector("#saveQrBtn").onclick = () => {
+            const v = body.querySelector("#qrHandleInp").value.trim();
+            if (v) state.profile.handle = v.startsWith("@") ? v : "@" + v;
+            saveState(); openSettingSubpage(id, label); renderCurrentScreen(); showToast("تم التحديث");
+          };
+        } else if (id === "minis") {
+          body.innerHTML = `<div class="card">${state.minis.map((m, i) => `
+            <div class="card-row">
+              <div><div class="row-title">${escapeHtml(m.name)}</div><div class="row-desc">${escapeHtml(m.desc)}</div></div>
+              <label class="switch"><input type="checkbox" data-mi="${i}" ${m.enabled ? "checked" : ""} /><span class="slider"></span></label>
+            </div>
+          `).join("")}</div>`;
+          body.querySelectorAll("[data-mi]").forEach(c => {
+            c.onchange = () => { state.minis[Number(c.dataset.mi)].enabled = c.checked; saveState(); showToast("تم التحديث"); };
+          });
+        } else if (id === "shop") {
+          body.innerHTML = `
+            <div class="card">
+              ${state.shopItems.map((s, idx) => `
+                <div class="log-item">
+                  <div><strong>${escapeHtml(s.name)}</strong><div class="row-desc">${escapeHtml(s.id)}</div></div>
+                  <div style="display:flex;align-items:center;gap:8px;"><strong>${escapeHtml(s.price)}</strong><button type="button" class="btn-danger-outline" style="width:auto;margin:0;padding:4px 8px;" data-delsh="${idx}">حذف</button></div>
+                </div>
+              `).join("")}
+              <input class="input-field" id="shNameInp" placeholder="اسم منتج أو خدمة" />
+              <input class="input-field" id="shPriceInp" placeholder="السعر" />
+              <button type="button" class="btn-primary" id="addShBtn">+ إضافة</button>
+            </div>
+          `;
+          body.querySelectorAll("[data-delsh]").forEach(b => {
+            b.onclick = () => { state.shopItems.splice(Number(b.dataset.delsh), 1); saveState(); openSettingSubpage(id, label); };
+          });
+          body.querySelector("#addShBtn").onclick = () => {
+            const n = body.querySelector("#shNameInp").value.trim();
+            const p = body.querySelector("#shPriceInp").value.trim() || "15,000 د.ع";
+            if (!n) return;
+            state.shopItems.push({ id: "SH-" + Math.floor(100 + Math.random() * 900), name: n, price: p });
+            saveState(); openSettingSubpage(id, label); showToast("تمت الإضافة");
+          };
+        } else if (id === "studio") {
+          body.innerHTML = `
+            <div class="card">
+              <div class="card-row"><div><div class="row-title">المشاهدات</div><div class="row-desc">آخر 30 يوماً</div></div><strong>${escapeHtml(state.studioStats.views)}</strong></div>
+              <div class="card-row"><div><div class="row-title">نمو المتابعين</div><div class="row-desc">صافي الزيادة</div></div><strong>${escapeHtml(state.studioStats.followersGrowth)}</strong></div>
+              <div class="card-row"><div><div class="row-title">البث المباشر</div><div class="row-desc">تفعيل البث من الاستوديو</div></div><label class="switch"><input type="checkbox" id="stLiveChk" ${state.studioStats.liveEnabled ? "checked" : ""} /><span class="slider"></span></label></div>
+            </div>
+          `;
+          body.querySelector("#stLiveChk").onchange = (e) => { state.studioStats.liveEnabled = e.target.checked; saveState(); showToast("تم الحفظ"); };
+        } else if (id === "promote") {
+          body.innerHTML = `
+            <div class="card">
+              <div class="row-title">حملات الترويج النشطة: ${state.promotedCount}</div>
+              <button type="button" class="btn-primary" id="addPrBtn">+ إطلاق حملة ترويج</button>
+            </div>
+          `;
+          body.querySelector("#addPrBtn").onclick = () => { state.promotedCount += 1; saveState(); openSettingSubpage(id, label); showToast("تم إطلاق الحملة"); };
+        } else if (id === "settings") {
+          const s = state.settings;
+          const row = (k, t, d) => `
+            <div class="card-row">
+              <div><div class="row-title">${t}</div><div class="row-desc">${d}</div></div>
+              <label class="switch"><input type="checkbox" data-sk="${k}" ${s[k] ? "checked" : ""} /><span class="slider"></span></label>
+            </div>
+          `;
+          body.innerHTML = `
+            <div class="card">
+              ${row("privateAccount", "حساب خاص", "تقييد مشاهدة المحتوى")}
+              ${row("allowComments", "التعليقات", "السماح بالتعليق على المنشورات")}
+              ${row("allowDownloads", "التنزيلات", "السماح بتنزيل المقاطع")}
+              ${row("pushNotifications", "الإشعارات الفورية", "تنبيهات النشاط والرسائل")}
+              ${row("dataSaver", "توفير البيانات", "تقليل استهلاك الإنترنت")}
+              ${row("twoFactorAuth", "المصادقة الثنائية", "حماية إضافية للحساب")}
+              <div class="card-row" style="flex-direction:column;align-items:stretch;">
+                <div class="row-title">اللغة والمنطقة</div>
+                <select class="select-field" id="langSel">
+                  <option value="العربية (العراق)" ${s.language === "العربية (العراق)" ? "selected" : ""}>العربية (العراق)</option>
+                  <option value="العربية" ${s.language === "العربية" ? "selected" : ""}>العربية</option>
+                  <option value="English" ${s.language === "English" ? "selected" : ""}>English</option>
+                </select>
+              </div>
+            </div>
+            <div class="card"><div class="row-desc">الحزمة: <strong>${escapeHtml(state.packageId)}</strong> • الإصدار: <strong>${escapeHtml(state.versionName)}</strong></div></div>
+          `;
+          body.querySelectorAll("[data-sk]").forEach(c => {
+            c.onchange = () => { state.settings[c.dataset.sk] = c.checked; saveState(); showToast("تم الحفظ"); };
+          });
+          body.querySelector("#langSel").onchange = (e) => { state.settings.language = e.target.value; saveState(); showToast("تم تغيير اللغة"); };
+        }
+      });
     }
 
-    document.getElementById("closeSubpageBtn").addEventListener("click", closeSubpage);
-    document.getElementById("subpageBackdrop").addEventListener("click", (e) => {
-      if (e.target.id === "subpageBackdrop") closeSubpage();
+    function openSqlModal() {
+      openModal("مخطط قاعدة البيانات (SQL / Supabase)", (body) => {
+        body.innerHTML = `
+          <div class="card">
+            <div class="row-title">جداول DERT الجاهزة</div>
+            <textarea class="textarea-field" readonly>${escapeHtml(getSqlSchema())}</textarea>
+            <button type="button" class="btn-primary" id="copySqlBtn">نسخ SQL</button>
+          </div>
+        `;
+        body.querySelector("#copySqlBtn").onclick = () => {
+          const ta = body.querySelector("textarea");
+          ta.select();
+          document.execCommand("copy");
+          showToast("تم نسخ مخطط SQL");
+        };
+      });
+    }
+
+    function renderCurrentScreen() {
+      const topbar = document.getElementById("appTopbar");
+      const main = document.getElementById("mainView");
+      updateBadges();
+      if (state.currentTab === "friends") return renderFriends(topbar, main);
+      if (state.currentTab === "inbox") return renderInbox(topbar, main);
+      if (state.currentTab === "profile") return renderProfile(topbar, main);
+      return renderHome(topbar, main);
+    }
+
+    document.querySelectorAll(".nav-btn[data-tab]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.currentTab = btn.dataset.tab;
+        saveState();
+        renderCurrentScreen();
+      });
     });
 
-    document.getElementById("searchInput").addEventListener("input", (e) => {
-      searchQuery = e.target.value;
-      renderMenu();
-    });
-
-    document.getElementById("importStateBtn").addEventListener("click", openImportModal);
-
-    document.getElementById("exportStateBtn").addEventListener("click", () => {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "dert-settings-backup.json";
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast("تم تصدير البيانات JSON");
-    });
-
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      state = cloneDefault();
-      saveState();
-      renderMenu();
-      if (currentOpenItem && currentOpenItem.id !== "import_json") openSubpage(currentOpenItem);
-      showToast("تمت إعادة الضبط بالكامل");
-    });
-
-    renderMenu();
+    renderCurrentScreen();
   </script>
 </body>
 </html>

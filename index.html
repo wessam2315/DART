@@ -41,10 +41,10 @@ textarea{min-height:66px;resize:vertical}
 .tt-top-right{display:flex;align-items:center;gap:8px}
 .tt-back-mini{width:30px;height:30px;padding:0;border-radius:50%;background:#ffffff1f;backdrop-filter:blur(8px);color:#fff;font-size:16px;display:inline-flex;align-items:center;justify-content:center}
 .tt-live-pill{padding:4px 8px;border-radius:6px;background:#fe2c55;color:#fff;font-size:11px;font-weight:800;letter-spacing:.5px;cursor:pointer}
-.tt-tabs-scroll{display:flex;align-items:center;gap:14px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.tt-tabs-scroll{display:flex;align-items:center;gap:12px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
 .tt-tabs-scroll::-webkit-scrollbar{display:none}
-.tt-top-tab{background:transparent;padding:4px 2px;border-radius:0;color:#ffffffb8;font-size:15px;font-weight:700;white-space:nowrap;position:relative}
-.tt-top-tab.active{color:#ffffff;font-size:16px}
+.tt-top-tab{background:transparent;padding:4px 2px;border-radius:0;color:#ffffffb8;font-size:14px;font-weight:700;white-space:nowrap;position:relative}
+.tt-top-tab.active{color:#ffffff;font-size:15px}
 .tt-top-tab.active::after{content:"";position:absolute;bottom:-4px;left:15%;right:15%;height:3px;border-radius:3px;background:#ffffff}
 .tt-search-btn{width:36px;height:36px;padding:0;border-radius:10px;background:transparent;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
 
@@ -70,6 +70,37 @@ textarea{min-height:66px;resize:vertical}
 .story-ring .avatar{width:100%;height:100%;border:2px solid #121216;font-size:18px}
 .story-plus{position:absolute;bottom:-2px;left:-2px;width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center}
 .story-label{font-size:11px;color:#d6d9e2;max-width:66px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+
+/* الدردشات المستقلة */
+.chat-entry{display:flex;align-items:center;gap:11px;padding:12px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:12px;transition:background .15s}
+.chat-entry:active{background:#191b24}
+.chat-entry.pinned{background:#161722;border-inline-start:3px solid #25f4ee;padding-inline-start:8px}
+.chat-entry-info{flex:1;min-width:0}
+.chat-title-row{display:flex;align-items:center;gap:6px}
+.chat-last{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.chat-meta-col{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.chat-time{font-size:11px;color:var(--muted)}
+.unread-badge{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#fe2c55;color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.chat-entry-actions{display:flex;gap:4px;margin-top:6px}
+.chat-mini-act{background:#1e202b;border:1px solid #2d3040;color:#cfd3df;padding:4px 8px;font-size:11px;border-radius:8px}
+.chat-mini-act.danger{color:#ff6b84;border-color:#fe2c5544}
+
+/* قسم الاتصالات المستقل */
+.calls-filter-row{display:flex;gap:6px;margin:10px 0;overflow-x:auto;scrollbar-width:none}
+.calls-filter-row::-webkit-scrollbar{display:none}
+.call-filter-btn{flex:1;background:#1a1b24;color:#a8abb3;border:1px solid #2b2d3c;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap}
+.call-filter-btn.active{background:#fe2c55;color:#fff;border-color:#fe2c55}
+.call-log-row{display:flex;align-items:center;gap:11px;padding:12px 6px;border-bottom:1px solid var(--line)}
+.call-log-row.missed{background:#fe2c550f;border-radius:12px;padding-inline:8px}
+.call-log-info{flex:1;min-width:0}
+.call-status-line{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px;color:var(--muted)}
+.call-status-line.missed{color:#ff5c77;font-weight:700}
+.call-status-line.incoming{color:#29d389}
+.call-status-line.outgoing{color:#25f4ee}
+.call-quick-btns{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.call-icon-btn{width:38px;height:38px;padding:0;border-radius:50%;background:#1e202c;border:1px solid #2f3244;color:#fff;font-size:16px;display:inline-flex;align-items:center;justify-content:center}
+.call-icon-btn.voice:active,.call-icon-btn.voice:hover{background:#18a968;border-color:#18a968}
+.call-icon-btn.video:active,.call-icon-btn.video:hover{background:#fe2c55;border-color:#fe2c55}
 
 .sound-line{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 10px;border-radius:16px;background:#ffffff1a;color:#fff;font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 .music-picker-btn{width:100%;margin-top:12px;padding:13px 14px;border-radius:14px;background:#1a1b24;border:1px solid #2d2f3e;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:14px}
@@ -145,10 +176,6 @@ textarea{min-height:66px;resize:vertical}
 .chat-attach-row button{padding:7px 10px;font-size:12px}
 .file-chip{display:inline-flex;align-items:center;gap:6px;background:#1a1c26;border:1px solid #2e3244;padding:8px 11px;border-radius:10px;margin-top:8px;font-size:12px;color:#25f4ee}
 .message-meta{font-size:11px;color:#d0d3dc;margin-top:6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.chat-entry{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer}
-.chat-entry-info{flex:1;min-width:0}
-.chat-last{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
-.chat-time{font-size:11px;color:var(--muted)}
 #avatarFile{display:none}
 
 .violet-icon{width:28px;height:28px;border-radius:9px;background:radial-gradient(circle at 50% 88%,#6d28d988,#161522 72%);border:1px solid #4c2d8280;box-shadow:0 3px 10px #5b21b655,inset 0 -3px 6px #7c3aed66;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,box-shadow .15s}
@@ -159,11 +186,12 @@ nav button.active .violet-icon{box-shadow:0 4px 14px #8b5cf6aa,inset 0 -3px 7px 
 .violet-icon-lg{width:40px;height:40px;border-radius:12px}
 .violet-icon-lg svg{width:27px;height:27px}
 
-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;padding:6px 4px calc(8px + env(safe-area-inset-bottom));background:#000000;border-top:1px solid #1c1d24;max-width:720px;margin:auto}
-nav.has-admin{grid-template-columns:repeat(6,minmax(0,1fr))}
-nav button{margin:0;padding:4px 2px;background:transparent;color:#9da0ad;border-radius:8px;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:center;padding:6px 2px calc(8px + env(safe-area-inset-bottom));background:#000000;border-top:1px solid #1c1d24;max-width:720px;margin:auto}
+nav.has-admin{grid-template-columns:repeat(7,minmax(0,1fr))}
+nav button{margin:0;padding:4px 1px;background:transparent;color:#9da0ad;border-radius:8px;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;position:relative}
 nav button.active{color:#ffffff;background:transparent}
-.tt-plus-btn{width:44px;height:28px;border-radius:8px;padding:0;background:#ffffff;color:#000000;display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;line-height:1;box-shadow:-3px 0 0 #25f4ee,3px 0 0 #fe2c55;margin:2px auto}
+.nav-badge{position:absolute;top:1px;left:18%;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#fe2c55;color:#fff;font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.tt-plus-btn{width:40px;height:26px;border-radius:8px;padding:0;background:#ffffff;color:#000000;display:inline-flex;align-items:center;justify-content:center;font-size:19px;font-weight:900;line-height:1;box-shadow:-3px 0 0 #25f4ee,3px 0 0 #fe2c55;margin:2px auto}
 
 #videos{margin:-58px -12px -96px}
 .videos-feed{height:100vh;height:100dvh;width:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;scrollbar-width:none;background:#000}
@@ -353,6 +381,7 @@ nav button.active{color:#ffffff;background:transparent}
   <g id="ico-user"><circle cx="12" cy="6.5" r="3.4" fill="url(#vGrad)"/><path d="M5 19.5c0-3.5 3.1-6 7-6s7 2.5 7 6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" fill="url(#vGrad)"/><polygon points="12,14.2 10.4,17 12,20.2 13.6,17" fill="url(#vAccent)"/></g>
   <g id="ico-search"><circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="url(#vGrad)" stroke-width="2.6"/><line x1="15.2" y1="15.2" x2="20" y2="20" stroke="url(#vAccent)" stroke-width="3.2" stroke-linecap="round"/></g>
   <g id="ico-chat"><path d="M4.5 5.5h15A2.5 2.5 0 0 1 22 8v7.5a2.5 2.5 0 0 1-2.5 2.5H9.5L5 21.5v-3.5A2.5 2.5 0 0 1 2.5 15.5V8A2.5 2.5 0 0 1 4.5 5.5z" fill="url(#vGrad)"/><circle cx="8.5" cy="11.8" r="1.4" fill="#3b1d7a"/><circle cx="12.2" cy="11.8" r="1.4" fill="#3b1d7a"/><circle cx="15.9" cy="11.8" r="1.4" fill="#3b1d7a"/></g>
+  <g id="ico-call"><path d="M6.6 10.8a15.2 15.2 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.12.37 2.33.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.27.2 2.48.57 3.6a1 1 0 0 1-.25 1l-2.22 2.2z" fill="url(#vGrad)"/></g>
   <g id="ico-admin"><path d="M12 3.5l1.4 2.1 2.5-.5.5 2.5 2.1 1.4-1.2 2.2 1.2 2.2-2.1 1.4-.5 2.5-2.5-.5L12 20.5l-1.4-2.1-2.5.5-.5-2.5-2.1-1.4 1.2-2.2-1.2-2.2 2.1-1.4.5-2.5 2.5.5L12 3.5z" fill="url(#vGrad)"/><circle cx="12" cy="12" r="3.4" fill="url(#vAccent)"/></g>
   <g id="ico-share"><line x1="8.2" y1="10.8" x2="15.8" y2="6.8" stroke="url(#vGrad)" stroke-width="2.2"/><line x1="8.2" y1="13.2" x2="15.8" y2="17.2" stroke="url(#vGrad)" stroke-width="2.2"/><circle cx="6.5" cy="12" r="2.8" fill="url(#vGrad)"/><circle cx="17.5" cy="5.8" r="2.8" fill="url(#vAccent)"/><circle cx="17.5" cy="18.2" r="2.8" fill="url(#vAccent)"/></g>
  </defs>
@@ -408,8 +437,9 @@ nav button.active{color:#ffffff;background:transparent}
  <div class="tt-tabs-scroll">
   <button type="button" class="tt-top-tab" id="topTabFollowing" onclick="switchVideoFeedMode('following')">أتابع</button>
   <button type="button" class="tt-top-tab active" id="topTabVideos" onclick="switchVideoFeedMode('foryou')">لك</button>
-  <button type="button" class="tt-top-tab" onclick="openTab('feed',null)">المنشورات</button>
-  <button type="button" class="tt-top-tab" onclick="openTab('chats',null)">المحادثات</button>
+  <button type="button" class="tt-top-tab" id="topTabFeed" onclick="openTab('feed',null)">المنشورات</button>
+  <button type="button" class="tt-top-tab" id="topTabChats" onclick="openTab('chats',null)">الدردشات</button>
+  <button type="button" class="tt-top-tab" id="topTabCalls" onclick="openTab('calls',null)">الاتصالات</button>
  </div>
  <button type="button" class="tt-search-btn" title="بحث" onclick="openTab('people',null)">
   <span class="violet-icon violet-icon-sm"><svg viewBox="0 0 24 24"><use href="#ico-search"></use></svg></span>
@@ -424,51 +454,77 @@ nav button.active{color:#ffffff;background:transparent}
 </div>
 </section>
 
+<!-- ==================== القسم الأول: صفحة الدردشات المستقلة ==================== -->
 <section id="chats" class="section">
-<div class="card">
-<h2>المحادثات والقصص</h2>
-<div id="storiesStrip" class="stories-strip"></div>
-<div class="search-box">
- <span class="search-icon">🔍</span>
- <input id="chatSearch" placeholder="ابحث في المحادثات والمجموعات...">
-</div>
-<div id="chatList">جارٍ تحميل المحادثات...</div>
-<div class="user-row-actions">
- <button class="full" id="newChatBtn" style="flex:1">＋ محادثة خاصة</button>
- <button class="full gray" id="newGroupBtn" style="flex:1">👥 مجموعة دردشة</button>
-</div>
+<div class="card" id="chatsDirectoryCard">
+ <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+  <h2 style="margin:0">💬 الدردشات</h2>
+  <span class="small" id="chatsTotalBadge">0 محادثة</span>
+ </div>
+ <div id="storiesStrip" class="stories-strip" style="margin-top:8px"></div>
+ <div class="search-box">
+  <span class="search-icon">🔍</span>
+  <input id="chatSearch" placeholder="ابحث عن محادثة بالاسم أو اسم المستخدم...">
+ </div>
+ <div id="chatList">جارٍ تحميل الدردشات...</div>
+ <div class="user-row-actions">
+  <button class="full" id="newChatBtn" style="flex:1">＋ دردشة جديدة</button>
+  <button class="full gray" id="newGroupBtn" style="flex:1">👥 مجموعة دردشة</button>
+ </div>
 </div>
 
 <div class="card hidden" id="chatPanel">
-<div class="chat-row">
-<button type="button" class="tt-back-mini" title="رجوع" onclick="el('closeChatBtn').click()">‹</button>
-<div id="chatAvatar" class="avatar">D</div>
-<div style="flex:1"><strong id="chatTitle">المحادثة</strong><div class="small" id="chatUsername"></div></div>
-<button type="button" class="gray" style="padding:7px 10px;font-size:12px" id="voiceCallBtn" title="مكالمة صوتية">📞</button>
-<button type="button" class="gray" style="padding:7px 10px;font-size:12px" id="videoCallBtn" title="مكالمة فيديو">📹</button>
-<button type="button" class="gray" style="padding:7px 10px;font-size:11px" id="chatBlockUserBtn">🚫</button>
+ <div class="chat-row">
+  <button type="button" class="tt-back-mini" title="رجوع للدردشات" onclick="el('closeChatBtn').click()">‹</button>
+  <div id="chatAvatar" class="avatar">D</div>
+  <div style="flex:1;min-width:0">
+   <strong id="chatTitle">المحادثة</strong>
+   <div class="small" id="chatUsername"></div>
+  </div>
+  <button type="button" class="gray" style="padding:7px 10px;font-size:11px" id="chatBlockUserBtn" title="حظر">🚫</button>
+ </div>
+
+ <div id="chatReplyBanner" class="reply-banner hidden" style="margin:8px 0 0">
+  <span id="chatReplyBannerText">جارٍ الرد على...</span>
+  <button type="button" class="gray" onclick="clearChatReply()">إلغاء</button>
+ </div>
+
+ <div class="chatbox protected-media" id="chatMessages"></div>
+
+ <div class="chat-attach-row">
+  <button type="button" class="gray" id="pickChatMediaBtn">🖼️ صورة / فيديو</button>
+  <button type="button" class="gray" id="pickChatDocBtn">📎 ملف / مستند</button>
+  <button type="button" class="gray" id="voiceRecordBtn">🎤 رسالة صوتية</button>
+ </div>
+ <input id="chatFile" type="file" accept="image/*,video/*" class="hidden">
+ <input id="chatDocFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.csv" class="hidden">
+ <div id="chatAttachPreview" class="small" style="color:#25f4ee"></div>
+
+ <textarea id="chatText" placeholder="اكتب رسالتك المشفرة..."></textarea>
+ <button id="sendMessageBtn" class="full">إرسال الرسالة</button>
+ <button id="closeChatBtn" class="full gray">رجوع إلى قائمة الدردشات</button>
+ <p id="chatStatus" class="small"></p>
 </div>
+</section>
 
-<div id="chatReplyBanner" class="reply-banner hidden" style="margin:8px 0 0">
- <span id="chatReplyBannerText">جارٍ الرد على...</span>
- <button type="button" class="gray" onclick="clearChatReply()">إلغاء</button>
-</div>
-
-<div class="chatbox protected-media" id="chatMessages"></div>
-
-<div class="chat-attach-row">
- <button type="button" class="gray" id="pickChatMediaBtn">🖼️ صورة / فيديو</button>
- <button type="button" class="gray" id="pickChatDocBtn">📎 ملف / مستند</button>
- <button type="button" class="gray" id="voiceRecordBtn">🎤 رسالة صوتية</button>
-</div>
-<input id="chatFile" type="file" accept="image/*,video/*" class="hidden">
-<input id="chatDocFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.csv" class="hidden">
-<div id="chatAttachPreview" class="small" style="color:#25f4ee"></div>
-
-<textarea id="chatText" placeholder="اكتب رسالتك المشفرة..."></textarea>
-<button id="sendMessageBtn" class="full">إرسال الرسالة</button>
-<button id="closeChatBtn" class="full gray">إغلاق المحادثة</button>
-<p id="chatStatus" class="small"></p>
+<!-- ==================== القسم الثاني: صفحة الاتصالات المستقلة ==================== -->
+<section id="calls" class="section">
+<div class="card">
+ <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+  <h2 style="margin:0">📞 الاتصالات</h2>
+  <button type="button" class="green" style="padding:7px 12px;font-size:12px" id="newCallContactBtn">＋ اتصال جديد</button>
+ </div>
+ <div class="search-box">
+  <span class="search-icon">🔍</span>
+  <input id="callSearchInput" placeholder="ابحث في سجل المكالمات بالاسم أو المعرّف...">
+ </div>
+ <div class="calls-filter-row">
+  <button type="button" class="call-filter-btn active" data-call-filter="all">الكل</button>
+  <button type="button" class="call-filter-btn" data-call-filter="missed">الفائتة</button>
+  <button type="button" class="call-filter-btn" data-call-filter="incoming">الواردة</button>
+  <button type="button" class="call-filter-btn" data-call-filter="outgoing">الصادرة</button>
+ </div>
+ <div id="callsLogList">جارٍ تحميل سجل المكالمات...</div>
 </div>
 </section>
 
@@ -710,10 +766,11 @@ nav button.active{color:#ffffff;background:transparent}
  <div id="toolScreenBody"></div>
 </div>
 
+<!-- شريط التنقل السفلي بتبويبين منفصلين للدردشات والاتصالات -->
 <nav id="mainNav">
 <button class="active" onclick="openTab('videos',this)">
  <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-home"></use></svg></span>
- <span>الصفحة الرئيسية</span>
+ <span>الرئيسية</span>
 </button>
 <button onclick="openTab('people',this)">
  <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-user"></use></svg></span>
@@ -722,13 +779,19 @@ nav button.active{color:#ffffff;background:transparent}
 <button type="button" onclick="openCreateModal()" title="إنشاء">
  <span class="tt-plus-btn">+</span>
 </button>
-<button onclick="openTab('chats',this)">
+<button id="navChatsBtn" onclick="openTab('chats',this)">
  <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-chat"></use></svg></span>
- <span>صندوق الوارد</span>
+ <span>الدردشات</span>
+ <span id="navChatsUnread" class="nav-badge hidden">0</span>
+</button>
+<button id="navCallsBtn" onclick="openTab('calls',this)">
+ <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-call"></use></svg></span>
+ <span>الاتصالات</span>
+ <span id="navCallsMissed" class="nav-badge hidden">0</span>
 </button>
 <button onclick="openTab('profile',this)">
  <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-user"></use></svg></span>
- <span>الملف الشخصي</span>
+ <span>حسابي</span>
 </button>
 <button id="adminNav" class="hidden" onclick="openTab('admin',this)">
  <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-admin"></use></svg></span>
@@ -768,13 +831,15 @@ nav button.active{color:#ffffff;background:transparent}
  </div>
 </div>
 
+<!-- نافذة المكالمة المستقلة (مرتبطة بجدول calls فقط) -->
 <div id="callModal" class="overlay-modal hidden">
  <div class="modal-card" style="text-align:center">
   <div class="modal-top">
    <strong id="callModalTitle">مكالمة</strong>
    <button type="button" id="endCallBtn" class="red">إنهاء</button>
   </div>
-  <div id="callStageBox" style="min-height:190px;background:#09090d;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;position:relative;overflow:hidden">
+  <div id="callStageBox" style="min-height:210px;background:#09090d;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;position:relative;overflow:hidden">
+   <div id="callPeerAvatar" class="avatar" style="width:68px;height:68px;font-size:26px;margin-bottom:10px;z-index:2">D</div>
    <div id="callStatusText" style="font-size:15px;font-weight:700;z-index:2">جارٍ الاتصال...</div>
    <div id="callTimerText" class="small" style="z-index:2;margin-top:6px">00:00</div>
   </div>
@@ -910,7 +975,7 @@ const DERT_SONGS=[
 ];
 
 let currentUser=null,currentProfile=null,activeConversation=null,activeReceiver=null;
-let activeChannel=null,alertsChannel=null,pendingPhone=null,chatCache=[];
+let activeChannel=null,alertsChannel=null,callsChannel=null,pendingPhone=null,chatCache=[];
 let activeCommentPost=null,replyTarget=null,videoObserver=null,videoPostsCache=[],videoFeedMode="foryou";
 let followedIdsSet=new Set(),selectedImages=[],selectedVideo=null,selectedSong=null;
 let tabHistory=["videos"],previewAudio=new Audio(),playingSongId=null;
@@ -921,13 +986,35 @@ let selectedPackage={amount:5000,coins:100};
 let intentPollTimer=null;
 
 let chatReplyTarget=null,selectedDocFile=null,recordedVoiceFile=null;
-let mediaRecorderRef=null,voiceChunksRef=[],callStream=null,callInterval=null,callSeconds=0,callMuted=false,callCamOff=false;
+let mediaRecorderRef=null,voiceChunksRef=[];
+
+// حالة المكالمات المستقلة تماماً عن المحادثات
+let callStream=null,callInterval=null,callSeconds=0,callMuted=false,callCamOff=false;
+let activeCallRecordId=null,activeCallPeerId=null,activeCallType="voice";
+let callsCache=[],callsFilterMode="all";
 
 const el=id=>document.getElementById(id);
 function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
 function getDirectRoomId(u1,u2){return "dm_"+[String(u1),String(u2)].sort().join("_")}
 function stopIntentPolling(){if(intentPollTimer){clearInterval(intentPollTimer);intentPollTimer=null}}
+
+function formatDuration(sec){
+ const s=Math.max(0,Number(sec)||0);
+ const m=String(Math.floor(s/60)).padStart(2,"0");
+ const r=String(s%60).padStart(2,"0");
+ return `${m}:${r}`;
+}
+
+function formatSmartDate(iso){
+ if(!iso)return "";
+ const d=new Date(iso);
+ const now=new Date();
+ const sameDay=d.toDateString()===now.toDateString();
+ return sameDay
+  ? d.toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"})
+  : d.toLocaleDateString("ar-IQ",{month:"short",day:"numeric"})+" "+d.toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"});
+}
 
 function getLocalProfileCache(uid=currentUser?.id){
  if(!uid)return null;
@@ -1236,40 +1323,84 @@ function viewStory(st){
 }
 function closeStoryModal(){el("storyModal").classList.add("hidden")}
 
-/* ==================== مكالمات صوتية وفيديو ==================== */
-function startCall(withVideo=false){
- if(!activeReceiver){alert("افتح محادثة أولاً لبدء مكالمة.");return}
+/* ==================== نظام الاتصالات المستقل (مرتبط بجدول calls فقط) ==================== */
+async function initiateCall(peerId,peerName="مستخدم",peerAvatar=null,withVideo=false){
+ if(!currentUser || !peerId){alert("حدد المستخدم أولاً لبدء الاتصال.");return}
+ if(peerId===currentUser.id){alert("لا يمكنك الاتصال بنفسك.");return}
+ if(isUserBlocked(peerId)){alert("هذا المستخدم محظور.");return}
+
  callMuted=false;callCamOff=false;callSeconds=0;
- el("callModalTitle").textContent=withVideo?`📹 مكالمة فيديو مع ${el("chatTitle").textContent}`:`📞 مكالمة صوتية مع ${el("chatTitle").textContent}`;
+ activeCallPeerId=peerId;
+ activeCallType=withVideo?"video":"voice";
+ activeCallRecordId=null;
+
+ el("callModalTitle").textContent=withVideo?`📹 مكالمة فيديو • ${peerName}`:`📞 مكالمة صوتية • ${peerName}`;
  el("toggleCamCallBtn").classList.toggle("hidden",!withVideo);
- el("callStatusText").textContent=withVideo?"مكالمة فيديو نشطة...":"مكالمة صوتية نشطة...";
+ el("callStatusText").textContent=withVideo?"جارٍ الاتصال بالفيديو...":"جارٍ الاتصال الصوتي...";
  el("callTimerText").textContent="00:00";
+
+ const avWrap=el("callPeerAvatar");
+ const newAv=makeAvatar(peerAvatar,peerName);
+ newAv.id="callPeerAvatar";
+ newAv.style.cssText="width:68px;height:68px;font-size:26px;margin-bottom:10px;z-index:2";
+ avWrap.replaceWith(newAv);
+
  const stage=el("callStageBox");
  stage.querySelectorAll("video").forEach(v=>v.remove());
  el("callModal").classList.remove("hidden");
 
+ // تسجيل المكالمة فعلياً في جدول calls المستقل في قاعدة البيانات
+ try{
+  const {data:inserted,error}=await client.from("calls").insert({
+   caller_id:currentUser.id,
+   receiver_id:peerId,
+   call_type:activeCallType,
+   status:"ringing",
+   duration_seconds:0
+  }).select("id").single();
+  if(!error && inserted?.id)activeCallRecordId=inserted.id;
+ }catch(e){}
+
  navigator.mediaDevices?.getUserMedia({audio:true,video:withVideo}).then(stream=>{
   callStream=stream;
+  el("callStatusText").textContent=withVideo?"مكالمة فيديو نشطة":"مكالمة صوتية نشطة";
   if(withVideo){
    const v=document.createElement("video");v.srcObject=stream;v.autoplay=true;v.playsInline=true;v.muted=true;
-   v.style.cssText="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.75";
+   v.style.cssText="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.78";
    stage.prepend(v);
   }
- }).catch(()=>{});
+ }).catch(()=>{
+  el("callStatusText").textContent=withVideo?"مكالمة فيديو (وضع محاكاة)":"مكالمة صوتية (وضع محاكاة)";
+ });
 
+ if(callInterval)clearInterval(callInterval);
  callInterval=setInterval(()=>{
   callSeconds++;
-  const m=String(Math.floor(callSeconds/60)).padStart(2,"0");
-  const s=String(callSeconds%60).padStart(2,"0");
-  el("callTimerText").textContent=`${m}:${s}`;
+  el("callTimerText").textContent=formatDuration(callSeconds);
  },1000);
 }
-function endCall(){
+
+async function endCall(){
+ const finalDuration=callSeconds;
+ const recordId=activeCallRecordId;
  if(callInterval){clearInterval(callInterval);callInterval=null}
  if(callStream){callStream.getTracks().forEach(t=>t.stop());callStream=null}
  el("callStageBox").querySelectorAll("video").forEach(v=>v.remove());
  el("callModal").classList.add("hidden");
+ activeCallRecordId=null;activeCallPeerId=null;callSeconds=0;
+
+ if(recordId){
+  try{
+   await client.from("calls").update({
+    status:finalDuration>=2?"ended":"missed",
+    duration_seconds:finalDuration,
+    ended_at:new Date().toISOString()
+   }).eq("id",recordId);
+  }catch(e){}
+ }
+ if(el("calls").classList.contains("active"))await loadCallsLog();
 }
+
 el("endCallBtn").onclick=endCall;
 el("toggleMuteCallBtn").onclick=()=>{
  callMuted=!callMuted;
@@ -1281,6 +1412,139 @@ el("toggleCamCallBtn").onclick=()=>{
  callStream?.getVideoTracks().forEach(t=>t.enabled=!callCamOff);
  el("toggleCamCallBtn").textContent=callCamOff?"📷 تشغيل الكاميرا":"📷 إيقاف الكاميرا";
 };
+
+async function loadCallsLog(){
+ if(!currentUser)return;
+ const list=el("callsLogList");
+ list.textContent="جارٍ تحميل سجل المكالمات...";
+ try{
+  const {data,error}=await client
+   .from("calls")
+   .select("*")
+   .or(`caller_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+   .order("started_at",{ascending:false})
+   .limit(100);
+  if(error)throw error;
+
+  const rows=(data||[]).filter(c=>{
+   const peerId=c.caller_id===currentUser.id?c.receiver_id:c.caller_id;
+   return peerId && !isUserBlocked(peerId);
+  });
+
+  const peerIds=[...new Set(rows.map(c=>c.caller_id===currentUser.id?c.receiver_id:c.caller_id))];
+  let profMap={};
+  if(peerIds.length){
+   const {data:profiles}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified").in("id",peerIds);
+   (profiles||[]).forEach(p=>profMap[p.id]=p);
+  }
+
+  callsCache=rows.map(c=>{
+   const isOutgoing=c.caller_id===currentUser.id;
+   const peerId=isOutgoing?c.receiver_id:c.caller_id;
+   const isMissed=!isOutgoing && (c.status==="missed" || c.status==="declined" || (c.status==="ringing" && Number(c.duration_seconds||0)===0));
+   const direction=isMissed?"missed":(isOutgoing?"outgoing":"incoming");
+   return {...c,peerId,isOutgoing,isMissed,direction,profile:profMap[peerId]||{}};
+  });
+
+  const missedCount=callsCache.filter(x=>x.isMissed).length;
+  const badge=el("navCallsMissed");
+  if(badge){
+   badge.textContent=missedCount>99?"99+":String(missedCount);
+   badge.classList.toggle("hidden",missedCount===0);
+  }
+
+  renderCallsLog();
+ }catch(e){
+  list.textContent="تعذر تحميل سجل المكالمات: "+(e.message||"تأكد من إنشاء جدول calls في قاعدة البيانات.");
+ }
+}
+
+function renderCallsLog(){
+ const list=el("callsLogList");
+ if(!list)return;
+ const q=(el("callSearchInput")?.value||"").trim().toLowerCase();
+ const filtered=callsCache.filter(item=>{
+  if(callsFilterMode!=="all" && item.direction!==callsFilterMode)return false;
+  if(!q)return true;
+  const fname=(item.profile?.full_name||"").toLowerCase();
+  const uname=(item.profile?.username||"").toLowerCase();
+  return fname.includes(q) || uname.includes(q);
+ });
+
+ list.replaceChildren();
+ if(!filtered.length){
+  list.innerHTML=`<div class="small" style="text-align:center;padding:24px">لا توجد مكالمات في هذا القسم</div>`;
+  return;
+ }
+
+ filtered.forEach(item=>{
+  const row=document.createElement("div");
+  row.className="call-log-row"+(item.isMissed?" missed":"");
+
+  const av=makeAvatar(item.profile?.avatar_url,item.profile?.full_name||item.profile?.username);
+  av.classList.add("clickable-user");
+  av.onclick=()=>openUserProfile(item.peerId);
+
+  const info=document.createElement("div");
+  info.className="call-log-info";
+
+  const title=document.createElement("strong");
+  title.className="clickable-user";
+  const peerLabel=item.profile?.full_name||item.profile?.username||"مستخدم DERT";
+  addVerifiedName(title,peerLabel,item.profile?.is_verified===true);
+  title.onclick=()=>openUserProfile(item.peerId);
+
+  const statusLine=document.createElement("div");
+  statusLine.className="call-status-line "+item.direction;
+  const dirText=item.isMissed?"↙ مكالمة فائتة":(item.isOutgoing?"↗ مكالمة صادرة":"↘ مكالمة واردة");
+  const typeText=item.call_type==="video"?"فيديو":"صوتية";
+  const durText=Number(item.duration_seconds||0)>0?` • ${formatDuration(item.duration_seconds)}`:"";
+  statusLine.textContent=`${dirText} (${typeText})${durText} • ${formatSmartDate(item.started_at)}`;
+
+  info.append(title,statusLine);
+
+  const actions=document.createElement("div");
+  actions.className="call-quick-btns";
+
+  const voiceBtn=document.createElement("button");
+  voiceBtn.type="button";
+  voiceBtn.className="call-icon-btn voice";
+  voiceBtn.title="اتصال صوتي";
+  voiceBtn.textContent="📞";
+  voiceBtn.onclick=()=>initiateCall(item.peerId,peerLabel,item.profile?.avatar_url||null,false);
+
+  const videoBtn=document.createElement("button");
+  videoBtn.type="button";
+  videoBtn.className="call-icon-btn video";
+  videoBtn.title="اتصال فيديو";
+  videoBtn.textContent="📹";
+  videoBtn.onclick=()=>initiateCall(item.peerId,peerLabel,item.profile?.avatar_url||null,true);
+
+  actions.append(voiceBtn,videoBtn);
+  row.append(av,info,actions);
+  list.appendChild(row);
+ });
+}
+
+document.querySelectorAll("[data-call-filter]").forEach(btn=>{
+ btn.onclick=()=>{
+  callsFilterMode=btn.dataset.callFilter||"all";
+  document.querySelectorAll("[data-call-filter]").forEach(b=>b.classList.toggle("active",b===btn));
+  renderCallsLog();
+ };
+});
+el("callSearchInput").oninput=renderCallsLog;
+el("newCallContactBtn").onclick=()=>{openTab("people");el("searchUser").focus()};
+
+function startCallsRealtime(){
+ stopCallsRealtime();
+ if(!currentUser)return;
+ callsChannel=client.channel("dert-calls-"+currentUser.id)
+  .on("postgres_changes",{event:"*",schema:"public",table:"calls"},()=>{
+   loadCallsLog();
+  }).subscribe();
+}
+function stopCallsRealtime(){if(callsChannel){client.removeChannel(callsChannel);callsChannel=null}}
 
 /* ==================== التعليقات والردود والمنشورات ==================== */
 function updateDescCounter(){
@@ -1646,8 +1910,13 @@ function openTab(name,button,fromBack=false){
  else{const b=[...document.querySelectorAll("nav button")].find(x=>x.getAttribute("onclick")?.includes("'"+name+"'"));if(b)b.classList.add("active")}
  document.querySelectorAll(".tt-top-tab").forEach(t=>t.classList.remove("active"));
  if(name==="videos"){if(videoFeedMode==="following")el("topTabFollowing")?.classList.add("active");else el("topTabVideos")?.classList.add("active")}
+ if(name==="feed")el("topTabFeed")?.classList.add("active");
+ if(name==="chats")el("topTabChats")?.classList.add("active");
+ if(name==="calls")el("topTabCalls")?.classList.add("active");
+
  if(name==="videos")loadVideos();
  if(name==="chats"){renderStoriesStrip();loadChats()}
+ if(name==="calls"){loadCallsLog()}
  if(name==="alerts")loadAlerts();
  if(name==="profile"){loadStats();loadProfileMediaGrid();loadProfile().catch(e=>msg("profileMessage",e.message))}
  if(name==="feed")loadPosts();
@@ -1661,7 +1930,7 @@ function showLogin(){
  el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
  currentUser=null;currentProfile=null;activeConversation=null;activeReceiver=null;
  el("adminNav").classList.add("hidden");el("mainNav").classList.remove("has-admin");
- stopRealtime();stopAlertsRealtime();
+ stopRealtime();stopAlertsRealtime();stopCallsRealtime();
 }
 
 async function uploadFile(file,folder){
@@ -1851,8 +2120,9 @@ async function openFollowList(mode){
    const bio=document.createElement("div");bio.className="small";bio.textContent=p.bio||"";info.append(title,bio);line.appendChild(info);row.appendChild(line);
    const actions=document.createElement("div");actions.className="user-row-actions";
    const viewBtn=document.createElement("button");viewBtn.className="gray";viewBtn.textContent="الملف";viewBtn.onclick=()=>{closeFollowModal();openUserProfile(p.id)};
-   const dmBtn=document.createElement("button");dmBtn.textContent="مراسلة";dmBtn.onclick=()=>{closeFollowModal();startChat(p.id,p.username)};
-   actions.append(viewBtn,dmBtn);row.appendChild(actions);box.appendChild(row);
+   const dmBtn=document.createElement("button");dmBtn.textContent="دردشة";dmBtn.onclick=()=>{closeFollowModal();startChat(p.id,p.username)};
+   const callBtn=document.createElement("button");callBtn.className="green";callBtn.textContent="📞 اتصال";callBtn.onclick=()=>{closeFollowModal();initiateCall(p.id,p.full_name||p.username,p.avatar_url,false)};
+   actions.append(viewBtn,dmBtn,callBtn);row.appendChild(actions);box.appendChild(row);
   });
  }catch(e){box.textContent="تعذر تحميل القائمة: "+e.message}
 }
@@ -1895,16 +2165,18 @@ async function openUserProfile(targetUserId){
     fNum.textContent=followers;await loadStats();
    }catch(err){alert(err.message)}finally{followBtn.disabled=false}
   };
-  const supBtn=document.createElement("button");supBtn.type="button";supBtn.className="green";supBtn.textContent="🎁 دعم (60%/40%)";
-  supBtn.onclick=async(e)=>{e.stopPropagation();const sp=await processSupportSplit(20,"🎁 دعم حساب",p.id);if(sp)alert(`تم إرسال الدعم (20): حصة ${p.username||'المستخدم'} = ${sp.streamerCut} (60%) • أرباحك = ${sp.ownerCut} (40%)`)};
-  const dmBtn=document.createElement("button");dmBtn.type="button";dmBtn.className="gray";dmBtn.textContent="مراسلة";
+  const dmBtn=document.createElement("button");dmBtn.type="button";dmBtn.className="gray";dmBtn.textContent="💬 دردشة";
   dmBtn.onclick=(e)=>{e.stopPropagation();closeUserProfileModal();startChat(p.id,p.username)};
+  const callVBtn=document.createElement("button");callVBtn.type="button";callVBtn.className="green";callVBtn.textContent="📞 صوتي";
+  callVBtn.onclick=(e)=>{e.stopPropagation();closeUserProfileModal();initiateCall(p.id,p.full_name||p.username,p.avatar_url,false)};
+  const callVidBtn=document.createElement("button");callVidBtn.type="button";callVidBtn.className="gray";callVidBtn.textContent="📹 فيديو";
+  callVidBtn.onclick=(e)=>{e.stopPropagation();closeUserProfileModal();initiateCall(p.id,p.full_name||p.username,p.avatar_url,true)};
   const blkBtn=document.createElement("button");blkBtn.type="button";blkBtn.className="gray";
   let blocked=isUserBlocked(p.id);blkBtn.textContent=blocked?"إلغاء الحظر":"🚫 حظر";
   blkBtn.onclick=(e)=>{e.stopPropagation();blocked=toggleBlockUser(p.id,p.full_name||p.username);blkBtn.textContent=blocked?"إلغاء الحظر":"🚫 حظر";alert(blocked?"تم حظر المستخدم":"تم إلغاء الحظر")};
   const repBtn=document.createElement("button");repBtn.type="button";repBtn.className="red";repBtn.textContent="إبلاغ";
   repBtn.onclick=(e)=>{e.stopPropagation();reportContent("account",p.id)};
-  btns.append(followBtn,supBtn,dmBtn,blkBtn,repBtn);body.append(header,stats,btns);
+  btns.append(followBtn,dmBtn,callVBtn,callVidBtn,blkBtn,repBtn);body.append(header,stats,btns);
 
   (userPosts||[]).forEach(post=>{
    const card=document.createElement("div");card.className="post";const parsed=parseSongFromPost(post);
@@ -2191,10 +2463,12 @@ el("searchBtn").onclick=async()=>{
   const actions=document.createElement("div");actions.className="user-row-actions";
   const viewBtn=document.createElement("button");viewBtn.className="gray";viewBtn.textContent="الملف";viewBtn.onclick=()=>openUserProfile(p.id);
   const follow=document.createElement("button");
-  const isF=fSet.has(p.id);follow.textContent=isF?"يتابع ✓":"إضافة / متابعة";if(isF)follow.dataset.following="yes";
+  const isF=fSet.has(p.id);follow.textContent=isF?"يتابع ✓":"متابعة";if(isF)follow.dataset.following="yes";
   follow.onclick=()=>followUser(p.id,follow);
-  const dm=document.createElement("button");dm.className="gray";dm.textContent="مراسلة";dm.onclick=()=>startChat(p.id,p.username);
-  actions.append(viewBtn,follow,dm);row.appendChild(actions);list.appendChild(row);
+  const dm=document.createElement("button");dm.className="gray";dm.textContent="💬 دردشة";dm.onclick=()=>startChat(p.id,p.username);
+  const callVoice=document.createElement("button");callVoice.className="green";callVoice.textContent="📞";callVoice.title="اتصال صوتي";callVoice.onclick=()=>initiateCall(p.id,p.full_name||p.username,p.avatar_url,false);
+  const callVideo=document.createElement("button");callVideo.className="gray";callVideo.textContent="📹";callVideo.title="اتصال فيديو";callVideo.onclick=()=>initiateCall(p.id,p.full_name||p.username,p.avatar_url,true);
+  actions.append(viewBtn,follow,dm,callVoice,callVideo);row.appendChild(actions);list.appendChild(row);
  }
 };
 el("searchUser").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();el("searchBtn").click()}});
@@ -2202,13 +2476,21 @@ el("searchUser").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDef
 async function followUser(id,button){
  if(!currentUser||id===currentUser.id)return;button.disabled=true;
  try{
-  if(button.dataset.following==="yes"){await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",id);button.textContent=button.classList.contains("tt-plus-badge")?"+":"إضافة / متابعة";button.dataset.following="";followedIdsSet.delete(id)}
+  if(button.dataset.following==="yes"){await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",id);button.textContent=button.classList.contains("tt-plus-badge")?"+":"متابعة";button.dataset.following="";followedIdsSet.delete(id)}
   else{await client.from("follows").insert({follower_id:currentUser.id,following_id:id});button.textContent=button.classList.contains("tt-plus-badge")?"✓":"يتابع ✓";button.dataset.following="yes";followedIdsSet.add(id)}
   await loadStats();
  }catch(e){alert("تعذرت العملية: "+e.message)}finally{button.disabled=false}
 }
 
-/* ==================== المحادثات الخاصة والمجموعات والوسائط والرد والتفاعل ==================== */
+/* ==================== الدردشات المستقلة (تثبيت، كتم، حذف، عدد غير مقروء) ==================== */
+function getChatPrefsMap(){
+ try{return JSON.parse(localStorage.getItem("dert_chat_prefs_"+(currentUser?.id||"guest"))||"{}")}catch(e){return {}}
+}
+function saveChatPref(key,patch){
+ const all=getChatPrefsMap();
+ all[key]={...(all[key]||{}),...patch};
+ localStorage.setItem("dert_chat_prefs_"+(currentUser?.id||"guest"),JSON.stringify(all));
+}
 function getCustomGroups(){try{return JSON.parse(localStorage.getItem("dert_chat_groups_"+(currentUser?.id||"guest"))||"[]")}catch(e){return []}}
 function saveCustomGroups(groups){localStorage.setItem("dert_chat_groups_"+(currentUser?.id||"guest"),JSON.stringify(groups))}
 
@@ -2235,6 +2517,8 @@ el("newGroupBtn").onclick=async()=>{
 async function startChat(otherId,username){
  if(!currentUser||!otherId)return;if(otherId===currentUser.id){alert("لا يمكنك مراسلة نفسك");return}
  if(isUserBlocked(otherId)){alert("هذا المستخدم محظور في قائمة الحظر الخاصة بك.");return}
+ const prefs=getChatPrefsMap();
+ if(prefs[otherId]?.deleted)saveChatPref(otherId,{deleted:false});
  let convId=null;
  try{
   const {data:mine}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);const ids=(mine||[]).map(x=>x.conversation_id);
@@ -2249,11 +2533,27 @@ async function startChat(otherId,username){
  openTab("chats");await openChat(convId,otherId,username,false,"");
 }
 
+async function deleteChatThread(chatEntry){
+ if(!confirm("حذف هذه المحادثة من القائمة؟"))return;
+ const prefKey=chatEntry.isGroup?chatEntry.id:chatEntry.other;
+ if(chatEntry.isGroup){
+  saveCustomGroups(getCustomGroups().filter(g=>g.id!==chatEntry.id));
+ }else{
+  saveChatPref(prefKey,{deleted:true});
+  try{
+   await client.from("messages").delete().eq("sender_id",currentUser.id).eq("receiver_id",chatEntry.other);
+  }catch(e){}
+ }
+ await loadChats();
+}
+
 async function loadChats(){
- const list=el("chatList");list.textContent="جارٍ تحميل المحادثات...";const map=new Map();
+ const list=el("chatList");list.textContent="جارٍ تحميل الدردشات...";
+ const map=new Map();
+ const prefs=getChatPrefsMap();
 
  getCustomGroups().forEach(g=>{
-  map.set(g.id,{id:g.id,other:g.members.find(id=>id!==currentUser.id)||null,isGroup:true,groupName:g.name,latest:null,profile:{full_name:"👥 "+g.name,username:"مجموعة ("+g.members.length+" أعضاء)"}});
+  map.set(g.id,{id:g.id,other:g.members.find(id=>id!==currentUser.id)||null,isGroup:true,groupName:g.name,latest:null,unreadCount:0,createdAt:g.createdAt,profile:{full_name:"👥 "+g.name,username:"مجموعة ("+g.members.length+" أعضاء)"}});
  });
 
  try{
@@ -2262,40 +2562,105 @@ async function loadChats(){
    const {data:others}=await client.from("conversation_members").select("user_id").eq("conversation_id",m.conversation_id).neq("user_id",currentUser.id);
    const other=others?.[0]?.user_id;if(!other || isUserBlocked(other))continue;
    const {data:latest}=await client.from("messages").select("content,media_type,created_at").eq("conversation_id",m.conversation_id).order("created_at",{ascending:false}).limit(1);
-   map.set(other,{id:m.conversation_id,other,isGroup:false,latest:latest?.[0]||null});
-  }
- }catch(e){}
- try{
-  const {data:directMsgs}=await client.from("messages").select("conversation_id,sender_id,receiver_id,content,media_type,created_at").or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order("created_at",{ascending:false}).limit(100);
-  for(const m of (directMsgs||[])){
-   const other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;if(!other || other===currentUser.id || isUserBlocked(other))continue;
-   if(!map.has(other))map.set(other,{id:m.conversation_id||getDirectRoomId(currentUser.id,other),other,isGroup:false,latest:m});
+   const {count:unread}=await client.from("messages").select("id",{count:"exact",head:true}).eq("conversation_id",m.conversation_id).eq("receiver_id",currentUser.id).eq("is_read",false);
+   map.set(other,{id:m.conversation_id,other,isGroup:false,latest:latest?.[0]||null,unreadCount:unread||0});
   }
  }catch(e){}
 
- list.replaceChildren();const entries=[...map.values()];if(!entries.length){list.textContent="لا توجد محادثات بعد";return}
+ try{
+  const {data:directMsgs}=await client.from("messages").select("conversation_id,sender_id,receiver_id,content,media_type,is_read,created_at").or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`).order("created_at",{ascending:false}).limit(150);
+  const unreadBySender={};
+  for(const m of (directMsgs||[])){
+   if(m.receiver_id===currentUser.id && m.is_read===false && m.sender_id){
+    unreadBySender[m.sender_id]=(unreadBySender[m.sender_id]||0)+1;
+   }
+  }
+  for(const m of (directMsgs||[])){
+   const other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;if(!other || other===currentUser.id || isUserBlocked(other))continue;
+   if(!map.has(other))map.set(other,{id:m.conversation_id||getDirectRoomId(currentUser.id,other),other,isGroup:false,latest:m,unreadCount:unreadBySender[other]||0});
+   else{
+    const ex=map.get(other);
+    if(!ex.unreadCount && unreadBySender[other])ex.unreadCount=unreadBySender[other];
+   }
+  }
+ }catch(e){}
+
+ list.replaceChildren();
+ const entries=[...map.values()].filter(e=>{
+  const k=e.isGroup?e.id:e.other;
+  return !prefs[k]?.deleted;
+ });
+
+ const totalUnread=entries.reduce((sum,item)=>sum+(Number(item.unreadCount)||0),0);
+ const navBadge=el("navChatsUnread");
+ if(navBadge){
+  navBadge.textContent=totalUnread>99?"99+":String(totalUnread);
+  navBadge.classList.toggle("hidden",totalUnread===0);
+ }
+ if(el("chatsTotalBadge"))el("chatsTotalBadge").textContent=`${entries.length} محادثة`;
+
+ if(!entries.length){list.textContent="لا توجد دردشات بعد";return}
  const otherIds=[...new Set(entries.filter(x=>!x.isGroup && x.other).map(x=>x.other))];
  let profMap={};
  if(otherIds.length){const {data:profiles}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified").in("id",otherIds);(profiles||[]).forEach(p=>profMap[p.id]=p)}
- const chats=entries.map(e=>({...e,profile:e.isGroup?e.profile:(profMap[e.other]||{})}));
- chats.sort((a,b)=>new Date(b.latest?.created_at||b.createdAt||0)-new Date(a.latest?.created_at||a.createdAt||0));
+ const chats=entries.map(e=>{
+  const k=e.isGroup?e.id:e.other;
+  const p=prefs[k]||{};
+  return {...e,prefKey:k,pinned:!!p.pinned,muted:!!p.muted,profile:e.isGroup?e.profile:(profMap[e.other]||{})};
+ });
+ chats.sort((a,b)=>{
+  if(a.pinned!==b.pinned)return a.pinned?-1:1;
+  return new Date(b.latest?.created_at||b.createdAt||0)-new Date(a.latest?.created_at||a.createdAt||0);
+ });
  chatCache=chats;renderChatList(chats);
 }
 
 function renderChatList(chats){
  const list=el("chatList");list.replaceChildren();if(!chats.length){list.textContent="لا توجد محادثات مطابقة";return}
  chats.forEach(c=>{
-  const row=document.createElement("div");row.className="chat-entry";
+  const row=document.createElement("div");row.className="chat-entry"+(c.pinned?" pinned":"");
   row.appendChild(makeAvatar(c.profile?.avatar_url,c.profile?.full_name||c.profile?.username));
-  const info=document.createElement("div");info.className="chat-entry-info";const name=document.createElement("strong");
+  const info=document.createElement("div");info.className="chat-entry-info";
+
+  const titleRow=document.createElement("div");titleRow.className="chat-title-row";
+  const name=document.createElement("strong");
   addVerifiedName(name,c.profile?.full_name||c.profile?.username||"مستخدم",c.profile?.is_verified===true);
+  titleRow.appendChild(name);
+  if(c.pinned){const pinTag=document.createElement("span");pinTag.className="small";pinTag.textContent="📌";titleRow.appendChild(pinTag)}
+  if(c.muted){const muteTag=document.createElement("span");muteTag.className="small";muteTag.textContent="🔕";titleRow.appendChild(muteTag)}
+
   const preview=document.createElement("div");preview.className="chat-last";
-  const dec=c.latest?.content?parseChatMessagePayload(decryptText(c.latest.content)).text||"مرفق":"ابدأ المحادثة";
+  const dec=c.latest?.content?parseChatMessagePayload(decryptText(c.latest.content)).text||(c.latest.media_type==="audio"?"🎤 رسالة صوتية":c.latest.media_type==="file"?"📎 ملف":"🖼️ وسائط"):"ابدأ المحادثة";
   preview.textContent=c.latest?dec:(c.isGroup?"مجموعة دردشة جاهزة":"ابدأ المحادثة");
-  info.append(name,preview);
-  const side=document.createElement("div");side.className="chat-time";
-  side.textContent=c.latest?.created_at?new Date(c.latest.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"}):"";
-  row.append(info,side);
+
+  const actionsBar=document.createElement("div");actionsBar.className="chat-entry-actions";
+  const pinBtn=document.createElement("button");pinBtn.type="button";pinBtn.className="chat-mini-act";
+  pinBtn.textContent=c.pinned?"إلغاء التثبيت":"📌 تثبيت";
+  pinBtn.onclick=(e)=>{e.stopPropagation();saveChatPref(c.prefKey,{pinned:!c.pinned});loadChats()};
+
+  const muteBtn=document.createElement("button");muteBtn.type="button";muteBtn.className="chat-mini-act";
+  muteBtn.textContent=c.muted?"🔔 إلغاء الكتم":"🔕 كتم";
+  muteBtn.onclick=(e)=>{e.stopPropagation();saveChatPref(c.prefKey,{muted:!c.muted});loadChats()};
+
+  const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="chat-mini-act danger";
+  delBtn.textContent="🗑 حذف";
+  delBtn.onclick=(e)=>{e.stopPropagation();deleteChatThread(c)};
+
+  actionsBar.append(pinBtn,muteBtn,delBtn);
+  info.append(titleRow,preview,actionsBar);
+
+  const metaCol=document.createElement("div");metaCol.className="chat-meta-col";
+  const timeEl=document.createElement("div");timeEl.className="chat-time";
+  timeEl.textContent=c.latest?.created_at?formatSmartDate(c.latest.created_at):"";
+  metaCol.appendChild(timeEl);
+
+  if(Number(c.unreadCount)>0){
+   const uBadge=document.createElement("span");uBadge.className="unread-badge";
+   uBadge.textContent=c.unreadCount>99?"99+":String(c.unreadCount);
+   metaCol.appendChild(uBadge);
+  }
+
+  row.append(info,metaCol);
   row.onclick=()=>openChat(c.id,c.other,c.profile?.username||"مستخدم",!!c.isGroup,c.groupName||"");
   list.appendChild(row);
  });
@@ -2378,26 +2743,31 @@ el("voiceRecordBtn").onclick=async()=>{
 async function openChat(conversationId,receiverId,username,isGroup=false,groupTitle=""){
  stopRealtime();activeConversation=conversationId;activeReceiver=receiverId;
  clearChatReply();clearChatAttachment();
+ el("chatsDirectoryCard").classList.add("hidden");
  el("chatPanel").classList.remove("hidden");msg("chatStatus","");
  if(isGroup){
   addVerifiedName(el("chatTitle"),"👥 "+(groupTitle||username||"مجموعة"),false);
   el("chatUsername").textContent="مجموعة دردشة";
   const old=el("chatAvatar"),newA=makeAvatar(null,"👥");newA.id="chatAvatar";old.replaceWith(newA);
-  el("voiceCallBtn").classList.add("hidden");el("videoCallBtn").classList.add("hidden");el("chatBlockUserBtn").classList.add("hidden");
+  el("chatBlockUserBtn").classList.add("hidden");
  }else{
-  el("voiceCallBtn").classList.remove("hidden");el("videoCallBtn").classList.remove("hidden");el("chatBlockUserBtn").classList.remove("hidden");
+  el("chatBlockUserBtn").classList.remove("hidden");
   const {data:profile}=await client.from("profiles").select("username,full_name,avatar_url,is_verified").eq("id",receiverId).maybeSingle();
   addVerifiedName(el("chatTitle"),profile?.full_name||profile?.username||username,profile?.is_verified===true);
   el("chatUsername").textContent="@"+(profile?.username||username||"");
   const old=el("chatAvatar"),newA=makeAvatar(profile?.avatar_url,profile?.full_name||profile?.username);newA.id="chatAvatar";old.replaceWith(newA);
   el("chatBlockUserBtn").onclick=()=>{const blk=toggleBlockUser(receiverId,profile?.full_name||username);alert(blk?"تم حظر المستخدم":"تم إلغاء الحظر");if(blk)el("closeChatBtn").click()};
  }
- await loadMessages();await markMessagesRead();startRealtime();
+ await loadMessages();await markMessagesRead();await loadChats();startRealtime();
 }
 
-el("voiceCallBtn").onclick=()=>startCall(false);
-el("videoCallBtn").onclick=()=>startCall(true);
-el("closeChatBtn").onclick=()=>{endCall();stopRealtime();activeConversation=null;activeReceiver=null;clearChatReply();clearChatAttachment();el("chatPanel").classList.add("hidden");loadChats()};
+el("closeChatBtn").onclick=()=>{
+ stopRealtime();activeConversation=null;activeReceiver=null;
+ clearChatReply();clearChatAttachment();
+ el("chatPanel").classList.add("hidden");
+ el("chatsDirectoryCard").classList.remove("hidden");
+ loadChats();
+};
 
 async function deleteMessagePermanent(msgId){
  if(!confirm("حذف الرسالة نهائياً؟"))return;
@@ -2506,113 +2876,156 @@ el("sendMessageBtn").onclick=async()=>{
   const baseRow={sender_id:currentUser.id,receiver_id:activeReceiver || currentUser.id,content:cipherContent,media_url,media_type,is_read:false};
   if(!isDirect && activeConversation)baseRow.conversation_id=activeConversation;
   let {error}=await client.from("messages").insert(baseRow);
-  if(error && error.message.includes("is_read")){delete baseRow.is_read;const r1=await client.from("messages").insert(baseRow);error=r1.error}
-  if(error && error.message.includes("conversation_id")){delete baseRow.conversation_id;const r2=await client.from("messages").insert(baseRow);error=r2.error}
+  if(error && baseRow.conversation_id){const fb={...baseRow};delete fb.conversation_id;const retry=await client.from("messages").insert(fb);error=retry.error}
   if(error)throw error;
-  if(!isDirect && activeConversation)await client.from("conversations").update({last_message:cipherContent||"وسائط",updated_at:new Date().toISOString()}).eq("id",activeConversation);
-  el("chatText").value="";clearChatAttachment();clearChatReply();msg("chatStatus","تم الإرسال");
-  await loadMessages();await loadChats();
+  if(!isDirect && activeConversation)try{await client.from("conversations").update({last_message:cipherContent,updated_at:new Date().toISOString()}).eq("id",activeConversation)}catch(e){}
+  el("chatText").value="";clearChatAttachment();clearChatReply();msg("chatStatus","");await loadMessages();await loadChats();
  }catch(e){msg("chatStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
 };
 
-function startRealtime(){if(!activeConversation && !activeReceiver)return;const rid=activeReceiver||activeConversation;activeChannel=client.channel("dert-chat-"+rid).on("postgres_changes",{event:"*",schema:"public",table:"messages"},async()=>{if((activeReceiver||activeConversation)!==rid)return;await loadMessages();await markMessagesRead();loadChats()}).subscribe()}
+function startRealtime(){
+ stopRealtime();if(!activeConversation && !activeReceiver)return;
+ activeChannel=client.channel("chat-"+(activeConversation||activeReceiver)).on("postgres_changes",{event:"*",schema:"public",table:"messages"},async payload=>{
+  const row=payload.new||payload.old;
+  const matchConv=!String(activeConversation).startsWith("dm_") && row?.conversation_id===activeConversation;
+  const matchPeer=(row?.sender_id===activeReceiver && row?.receiver_id===currentUser.id)||(row?.sender_id===currentUser.id && row?.receiver_id===activeReceiver);
+  if(matchConv || matchPeer){await loadMessages();await markMessagesRead();await loadChats()}
+ }).subscribe();
+}
 function stopRealtime(){if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}}
 
+/* ==================== التنبيهات والإدارة والدعم ==================== */
 async function loadAlerts(){
- const list=el("alertsList");list.textContent="جارٍ التحميل...";
- try{const {data,error}=await client.from("notifications").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);if(error)throw error;list.replaceChildren();if(!data?.length){list.textContent="لا توجد تنبيهات";return}data.forEach(n=>{const row=document.createElement("div");row.className="item";row.textContent=n.content||"تنبيه جديد";list.appendChild(row)})}
- catch(e){list.textContent="خطأ: "+e.message}
+ const list=el("alertsList");list.textContent="جارٍ تحميل التنبيهات...";
+ const {data,error}=await client.from("notifications").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(30);
+ list.replaceChildren();if(error){list.textContent="تعذر تحميل التنبيهات: "+error.message;return}if(!data?.length){list.textContent="لا توجد تنبيهات";return}
+ data.forEach(n=>{const d=document.createElement("div");d.className="item";const t=document.createElement("strong");t.textContent=n.type||"تنبيه";const b=document.createElement("div");b.textContent=n.content||"";const date=document.createElement("div");date.className="small";date.textContent=new Date(n.created_at).toLocaleString("ar-IQ");d.append(t,b,date);list.appendChild(d)});
 }
 el("refreshAlerts").onclick=loadAlerts;
-function startAlertsRealtime(){stopAlertsRealtime();if(!currentUser)return;alertsChannel=client.channel("dert-alerts-"+currentUser.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:"user_id=eq."+currentUser.id},()=>{if(el("alerts").classList.contains("active"))loadAlerts()}).subscribe()}
+
+function startAlertsRealtime(){
+ stopAlertsRealtime();
+ alertsChannel=client.channel("alerts-"+currentUser.id)
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:"user_id=eq."+currentUser.id},loadAlerts)
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"receiver_id=eq."+currentUser.id},()=>{loadChats()})
+  .subscribe();
+}
 function stopAlertsRealtime(){if(alertsChannel){client.removeChannel(alertsChannel);alertsChannel=null}}
 
+el("sendSupportBtn").onclick=async()=>{
+ const t=el("supportText").value.trim();if(!t){msg("supportStatus","اكتب رسالتك");return}const b=el("sendSupportBtn");b.disabled=true;msg("supportStatus","جارٍ الإرسال...");
+ try{const {error}=await client.from("support_messages").insert({user_id:currentUser.id,sender_id:currentUser.id,message:t});if(error)throw error;el("supportText").value="";msg("supportStatus","تم الإرسال");await loadMySupport()}
+ catch(e){msg("supportStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
+};
+async function loadMySupport(){
+ const list=el("mySupportMessages");list.textContent="جارٍ التحميل...";
+ const {data,error}=await client.from("support_messages").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:true});
+ list.replaceChildren();if(error){list.textContent=error.message;return}if(!data?.length){list.textContent="لا توجد رسائل";return}
+ data.forEach(m=>{const d=document.createElement("div");d.className="support-message"+(m.sender_id===currentUser.id?" mine":"");d.textContent=m.message;list.appendChild(d)});
+}
+el("loadMySupport").onclick=loadMySupport;
+
 async function loadAdminTopups(){
- if(!isAdmin())return;const box=el("adminTopups");box.textContent="جارٍ التحميل...";
- try{
-  const {data,error}=await client.from("payment_intents").select("*").order("created_at",{ascending:false}).limit(50);
-  if(error)throw error;box.replaceChildren();if(!data?.length){box.textContent="لا توجد عمليات دفع";return}
-  data.forEach(t=>{const card=document.createElement("div");card.className="request-card";card.innerHTML=`<strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع)<div class="small">المرجع: ${t.provider_ref||"—"} • المستخدم: ${t.user_id}</div><p class="status-${t.status}">الحالة: ${t.status}</p>`;box.appendChild(card)});
- }catch(e){box.textContent="خطأ: "+e.message}
+ if(!isAdmin())return;const box=el("adminTopups");box.textContent="جارٍ تحميل سجل الشحن...";
+ const {data,error}=await client.from("payment_intents").select("*").order("created_at",{ascending:false}).limit(30);
+ box.replaceChildren();if(error){box.textContent=error.message;return}if(!data?.length){box.textContent="لا توجد عمليات شحن";return}
+ data.forEach(t=>{const c=document.createElement("div");c.className="request-card";c.innerHTML=`<strong>${getMethodArabicName(t.payment_method)} — ${t.coins_amount} عملة</strong><div class="small">المبلغ: ${t.package_amount} د.ع • الحالة: <span class="status-${t.status}">${t.status}</span></div><div class="small">المستخدم: ${t.user_id}</div>`;box.appendChild(c)});
 }
 el("refreshTopups").onclick=loadAdminTopups;
 
 async function loadAdminWithdrawals(){
- if(!isAdmin())return;const box=el("adminWithdrawals");box.textContent="جارٍ التحميل...";
- try{
-  const {data,error}=await client.from("withdrawal_requests").select("*").order("created_at",{ascending:false}).limit(50);
-  if(error)throw error;box.replaceChildren();if(!data?.length){box.textContent="لا توجد طلبات سحب";return}
-  data.forEach(w=>{
-   const card=document.createElement("div");card.className="request-card";card.innerHTML=`<strong>سحب: ${w.amount}</strong><div class="small">الطريقة: ${w.method_details} • المستخدم: ${w.user_id}</div><p class="status-${w.status}">الحالة: ${w.status}</p>`;
-   if(w.status==="pending"){
-    const actions=document.createElement("div");actions.className="admin-actions";
-    const ok=document.createElement("button");ok.className="green";ok.textContent="موافقة وخصم";ok.onclick=async()=>{ok.disabled=true;const {error:rpcErr}=await client.rpc("admin_review_withdrawal",{p_request_id:w.id,p_approve:true,p_note:"تم الصرف"});if(rpcErr)alert(rpcErr.message);await loadAdminWithdrawals()};
-    const no=document.createElement("button");no.className="red";no.textContent="رفض";no.onclick=async()=>{no.disabled=true;const {error:rpcErr}=await client.rpc("admin_review_withdrawal",{p_request_id:w.id,p_approve:false,p_note:"مرفوض"});if(rpcErr)alert(rpcErr.message);await loadAdminWithdrawals()};
-    actions.append(ok,no);card.appendChild(actions);
-   }
-   box.appendChild(card);
-  });
- }catch(e){box.textContent="خطأ: "+e.message}
+ if(!isAdmin())return;const box=el("adminWithdrawals");box.textContent="جارٍ تحميل طلبات السحب...";
+ const {data,error}=await client.from("withdrawal_requests").select("*").order("created_at",{ascending:false});
+ box.replaceChildren();if(error){box.textContent=error.message;return}if(!data?.length){box.textContent="لا توجد طلبات سحب";return}
+ data.forEach(w=>{
+  const c=document.createElement("div");c.className="request-card";c.innerHTML=`<strong>سحب ${w.amount} — ${w.method_details||""}</strong><div class="small">الحالة: <span class="status-${w.status}">${w.status}</span></div>`;
+  if(w.status==="pending"){
+   const act=document.createElement("div");act.className="admin-actions";
+   const ok=document.createElement("button");ok.className="green";ok.textContent="تم التحويل ✓";ok.onclick=async()=>{await client.from("withdrawal_requests").update({status:"approved"}).eq("id",w.id);loadAdminWithdrawals()};
+   const no=document.createElement("button");no.className="red";no.textContent="رفض ✕";no.onclick=async()=>{await client.from("withdrawal_requests").update({status:"rejected"}).eq("id",w.id);loadAdminWithdrawals()};
+   act.append(ok,no);c.appendChild(act);
+  }
+  box.appendChild(c);
+ });
 }
 el("refreshWithdrawals").onclick=loadAdminWithdrawals;
 
 async function loadAdminRequests(){
- if(!isAdmin())return;const box=el("adminRequests");box.textContent="جارٍ التحميل...";
- try{
-  const {data,error}=await client.rpc("admin_verification_requests");if(error)throw error;box.replaceChildren();
-  const requests=Array.isArray(data)?data:[];if(!requests.length){box.textContent="لا توجد طلبات";return}
-  requests.forEach(r=>{
-   const card=document.createElement("div");card.className="request-card";const p=r.profile||{};
-   card.innerHTML=`<h3>${p.full_name||p.username||"مستخدم"}</h3><p class="small">${r.user_id}</p><p class="${r.status==="approved"?"status-approved":r.status==="rejected"?"status-rejected":"status-pending"}">${r.status}</p>`;
-   if(r.status==="pending"){const actions=document.createElement("div");actions.className="admin-actions";const yes=document.createElement("button");yes.textContent="موافقة";yes.onclick=()=>reviewVerification(r.request_id,"approve");const no=document.createElement("button");no.className="red";no.textContent="رفض";no.onclick=()=>reviewVerification(r.request_id,"reject");actions.append(yes,no);card.appendChild(actions)}
-   box.appendChild(card);
-  });
- }catch(e){box.textContent="خطأ: "+e.message}
+ if(!isAdmin())return;const box=el("adminRequests");msg("adminMessage","جارٍ التحميل...");
+ const {data,error}=await client.from("verification_requests").select("id,user_id,status,created_at").order("created_at",{ascending:false});
+ box.replaceChildren();if(error){msg("adminMessage",error.message);return}msg("adminMessage","");if(!data?.length){box.textContent="لا توجد طلبات";return}
+ const ids=[...new Set(data.map(r=>r.user_id))];const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ data.forEach(req=>{
+  const c=document.createElement("div");c.className="request-card";const p=map[req.user_id],t=document.createElement("strong");
+  addVerifiedName(t,p?(p.full_name||"مستخدم")+" @"+(p.username||"user"):req.user_id,p?.is_verified===true);
+  const s=document.createElement("div");s.className="small status-"+req.status;s.textContent="الحالة: "+req.status;c.append(t,s);
+  if(req.status==="pending"){
+   const actions=document.createElement("div");actions.className="admin-actions";
+   const ok=document.createElement("button");ok.className="green";ok.textContent="موافقة";ok.onclick=async()=>{ok.disabled=true;await client.from("profiles").update({is_verified:true}).eq("id",req.user_id);await client.from("verification_requests").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",req.id);await loadAdminRequests()};
+   const no=document.createElement("button");no.className="red";no.textContent="رفض";no.onclick=async()=>{no.disabled=true;await client.from("verification_requests").update({status:"rejected",reviewed_at:new Date().toISOString()}).eq("id",req.id);await loadAdminRequests()};
+   actions.append(ok,no);c.appendChild(actions);
+  }
+  box.appendChild(c);
+ });
 }
-async function reviewVerification(id,action){if(!isAdmin())return;let reason=null;if(action==="reject"){reason=prompt("سبب الرفض:");if(reason===null)return}const result=action==="approve"?await client.rpc("admin_approve_verification",{p_request_id:id}):await client.rpc("admin_reject_verification",{p_request_id:id,p_reason:reason});if(result.error)alert(result.error.message);else{msg("adminMessage","تم التنفيذ");await loadAdminRequests()}}
 el("refreshAdmin").onclick=loadAdminRequests;
 
 async function loadReports(){
  if(!isAdmin())return;const box=el("adminReports");box.textContent="جارٍ التحميل...";
- const {data,error}=await client.from("content_reports").select("*").order("created_at",{ascending:false}).limit(100);
- if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد بلاغات";return}
- data.forEach(r=>{const card=document.createElement("div");card.className="request-card";card.innerHTML=`<strong>بلاغ: ${r.target_type}</strong><p>السبب: ${r.reason}</p><p class="small">الحالة: ${r.status}</p>`;if(r.status==="pending"){const btn=document.createElement("button");btn.className="gray";btn.textContent="تمت المراجعة";btn.onclick=async()=>{btn.disabled=true;await client.from("content_reports").update({status:"reviewed"}).eq("id",r.id);await loadReports()};card.appendChild(btn)}box.appendChild(card)});
+ const {data,error}=await client.from("content_reports").select("*").order("created_at",{ascending:false});
+ box.replaceChildren();if(error){box.textContent=error.message;return}if(!data?.length){box.textContent="لا توجد بلاغات";return}
+ data.forEach(r=>{
+  const c=document.createElement("div");c.className="request-card";
+  const t=document.createElement("strong");t.textContent="بلاغ: "+r.target_type;
+  const reason=document.createElement("div");reason.textContent=r.reason;
+  const del=document.createElement("button");del.className="red";del.textContent="حذف المحتوى";
+  del.onclick=async()=>{del.disabled=true;const table=r.target_type==="post"?"posts":r.target_type==="comment"?"post_comments":null;if(table)await client.from(table).delete().eq("id",r.target_id);await client.from("content_reports").update({status:"resolved"}).eq("id",r.id);await loadReports()};
+  c.append(t,reason,del);box.appendChild(c);
+ });
 }
 el("refreshReports").onclick=loadReports;
 
-el("sendSupportBtn").onclick=async()=>{const message=el("supportText").value.trim();if(!message){msg("supportStatus","اكتب رسالتك أولاً");return}const b=el("sendSupportBtn");b.disabled=true;const {error}=await client.from("support_messages").insert({user_id:currentUser.id,sender_id:currentUser.id,message,is_admin_reply:false});b.disabled=false;if(error)msg("supportStatus",error.message);else{el("supportText").value="";msg("supportStatus","تم الإرسال");await loadMySupport()}};
-async function loadMySupport(){const box=el("mySupportMessages");box.textContent="جارٍ التحميل...";const {data,error}=await client.from("support_messages").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:true});if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد رسائل";return}data.forEach(m=>{const d=document.createElement("div");d.className="support-message"+(m.sender_id===currentUser.id?" mine":"");d.textContent=(m.is_admin_reply?"الدعم:\n":"أنت:\n")+m.message;box.appendChild(d)})}
-el("loadMySupport").onclick=loadMySupport;
-
 async function loadAdminSupport(){
  if(!isAdmin())return;const box=el("adminSupport");box.textContent="جارٍ التحميل...";
- const {data,error}=await client.from("support_messages").select("*").order("created_at",{ascending:true}).limit(200);
- if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد رسائل";return}
- data.forEach(m=>{const card=document.createElement("div");card.className="request-card";card.innerHTML=`<strong>${m.user_id}</strong><p>${m.message}</p>`;if(!m.is_admin_reply){const reply=document.createElement("textarea");reply.placeholder="اكتب الرد...";const btn=document.createElement("button");btn.className="full";btn.textContent="إرسال الرد";btn.onclick=async()=>{const text=reply.value.trim();if(!text)return;btn.disabled=true;await client.from("support_messages").insert({user_id:m.user_id,sender_id:currentUser.id,message:text,is_admin_reply:true});await loadAdminSupport()};card.append(reply,btn)}box.appendChild(card)});
+ const {data,error}=await client.from("support_messages").select("*").order("created_at",{ascending:false}).limit(40);
+ box.replaceChildren();if(error){box.textContent=error.message;return}if(!data?.length){box.textContent="لا توجد رسائل";return}
+ data.forEach(m=>{
+  const c=document.createElement("div");c.className="request-card";const t=document.createElement("strong");t.textContent="مستخدم: "+m.user_id;
+  const msgEl=document.createElement("div");msgEl.textContent=m.message;const input=document.createElement("input");input.placeholder="رد الإدارة";
+  const send=document.createElement("button");send.textContent="إرسال الرد";
+  send.onclick=async()=>{if(!input.value.trim())return;send.disabled=true;await client.from("support_messages").insert({user_id:m.user_id,sender_id:currentUser.id,message:input.value.trim()});await loadAdminSupport()};
+  c.append(t,msgEl,input,send);box.appendChild(c);
+ });
 }
 el("refreshSupportAdmin").onclick=loadAdminSupport;
 
 async function showHome(user){
- currentUser=user;el("auth").classList.add("hidden");el("home").classList.remove("hidden");
- registerCurrentDevice();renderStoriesStrip();
- await enforceMandatoryFollow();openTab("videos");startAlertsRealtime();
- try{await loadProfile();await loadStats();await loadChats()}catch(e){msg("profileMessage",e.message)}
+ currentUser=user;
+ el("auth").classList.add("hidden");el("home").classList.remove("hidden");
+ registerCurrentDevice();
  const cfg=getSecurityConfig();
- if(cfg.appLockEnabled && cfg.pinCode)lockAppNow();
+ if(cfg.appLockEnabled && cfg.pinCode){el("appLockModal").classList.remove("hidden")}
+ await loadProfile();
+ await enforceMandatoryFollow();
+ openTab("videos",document.querySelector("nav button"));
+ await loadStats();
+ await loadChats();
+ await loadCallsLog();
+ startAlertsRealtime();
+ startCallsRealtime();
 }
 
-async function checkSession(){
- try{
-  const params=new URLSearchParams(window.location.search);const hash=new URLSearchParams(window.location.hash.replace(/^#/,""));
-  const authError=params.get("error_description")||params.get("error")||hash.get("error_description")||hash.get("error");
-  if(authError){showAuthForm("login");msg("message","تعذر تأكيد البريد: "+authError.replace(/\+/g," "));return}
-  const code=params.get("code");
-  if(code){const {data:sessionData,error:exchangeError}=await client.auth.exchangeCodeForSession(code);if(exchangeError)throw exchangeError;if(sessionData?.user){window.history.replaceState({},document.title,window.location.pathname);await showHome(sessionData.user);return}}
-  const {data:{session},error}=await client.auth.getSession();if(error)throw error;if(session?.user){await showHome(session.user);return}showLogin();
- }catch(e){showAuthForm("login");msg("message","تعذر فحص الجلسة: "+e.message)}
-}
-
-checkSession();
+client.auth.onAuthStateChange((event,session)=>{if(session?.user&&!currentUser)showHome(session.user);if(event==="SIGNED_OUT")showLogin()});
+(async()=>{
+ const url=new URL(location.href);
+ if(url.searchParams.get("code")){
+  await client.auth.exchangeCodeForSession(url.searchParams.get("code"));
+  history.replaceState({},document.title,location.pathname);
+ }
+ const {data}=await client.auth.getSession();
+ if(data.session?.user)await showHome(data.session.user);
+ else showLogin();
+})();
 </script>
 </body>
 </html>

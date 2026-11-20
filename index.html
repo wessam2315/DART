@@ -1042,4 +1042,2291 @@ nav button.active{color:var(--text);background:transparent}
    <button type="button" class="gray" onclick="clearReplyTarget()">إلغاء</button>
   </div>
   <div class="comment-sheet-form">
-   <input id="commentInput" plac
+   <input id="commentInput" placeholder="اكتب تعليقاً أو رداً..." maxlength="1000">
+   <button id="sendCommentBtn">إرسال</button>
+  </div>
+ </div>
+</div>
+
+<script>
+const SUPABASE_URL="https://forwefmjghgcybiccdxz.supabase.co";
+const SUPABASE_KEY="sb_publishable_xsXMr3yr2yJXOgRn9ZjMtQ_sfoS0OIR";
+const DERT_SITE_URL="https://wessam2315.github.io/DART/";
+
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+ auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:"pkce"}
+});
+
+const ADMIN_ID="221ecf80-7f89-4172-b61a-304369cbe870";
+const MANDATORY_FOLLOW_USER_ID="221ecf80-7f89-4172-b61a-304369cbe870";
+
+const STREAMER_SHARE_RATE=0.60;
+const OWNER_SHARE_RATE=0.40;
+
+const DERT_SONGS=[
+ {id:"s1",title:"أيامي بيك - Elissa",artist:"Music Mix",duration:"0:28",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"},
+ {id:"s2",title:"نبض الليل - Night Pulse",artist:"DERT Sound",duration:"0:32",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"},
+ {id:"s3",title:"أجواء المدينة - City Vibes",artist:"Remix Studio",duration:"0:25",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"},
+ {id:"s4",title:"هدوء الشفق - Sunset Calm",artist:"Ambient Lab",duration:"0:30",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"}
+];
+
+const I18N={
+ ar:{
+  dir:"rtl",signup:"إنشاء حساب",login:"تسجيل الدخول",
+  tab_following:"أتابع",tab_foryou:"لك",tab_posts:"المنشورات",tab_chats:"الدردشات",tab_calls:"الاتصالات",
+  chats_title:"💬 الدردشات",calls_title:"📞 الاتصالات",posts_heading:"المنشورات",
+  friends_heading:"الأصدقاء والمتابعة",alerts_heading:"🔔 الإشعارات",
+  nav_home:"الرئيسية",nav_friends:"الأصدقاء",nav_chats:"الدردشات",nav_calls:"الاتصالات",nav_alerts:"الإشعارات",nav_profile:"حسابي"
+ },
+ en:{
+  dir:"ltr",signup:"Sign Up",login:"Log In",
+  tab_following:"Following",tab_foryou:"For You",tab_posts:"Posts",tab_chats:"Chats",tab_calls:"Calls",
+  chats_title:"💬 Chats",calls_title:"📞 Calls",posts_heading:"Posts",
+  friends_heading:"Friends & Follow",alerts_heading:"🔔 Notifications",
+  nav_home:"Home",nav_friends:"Friends",nav_chats:"Chats",nav_calls:"Calls",nav_alerts:"Alerts",nav_profile:"Profile"
+ }
+};
+
+let currentUser=null,currentProfile=null,activeConversation=null,activeReceiver=null;
+let activeChannel=null,alertsChannel=null,callsChannel=null,presenceTimer=null;
+let pendingPhone=null,chatCache=[];
+let activeCommentPost=null,replyTarget=null,videoObserver=null,videoPostsCache=[],videoFeedMode="foryou";
+let followedIdsSet=new Set(),selectedImages=[],selectedVideo=null,selectedSong=null;
+let tabHistory=["videos"],previewAudio=new Audio(),playingSongId=null;
+let activeProfileMediaTab="posts",liveStream=null;
+let liveChatMessages=["أهلاً بالجميع في بث DERT المباشر! 🎉 (توزيع الدعم: 60% لصاحب البث • 40% أرباحك)"];
+let selectedPayMethod="zaincash",selectedPackage={amount:5000,coins:100},intentPollTimer=null;
+
+let chatReplyTarget=null,selectedDocFile=null,recordedVoiceFile=null;
+let mediaRecorderRef=null,voiceChunksRef=[];
+
+// حالة المكالمات المستقلة
+let callStream=null,callInterval=null,callSeconds=0,callMuted=false,callCamOff=false;
+let activeCallRecordId=null,activeCallPeerId=null,activeCallType="voice",isIncomingRinging=false;
+let callsCache=[],callsFilterMode="all";
+
+const el=id=>document.getElementById(id);
+function msg(id,text){if(el(id))el(id).textContent=text}
+function isAdmin(){return currentUser?.id===ADMIN_ID}
+function getDirectRoomId(u1,u2){return "dm_"+[String(u1),String(u2)].sort().join("_")}
+function stopIntentPolling(){if(intentPollTimer){clearInterval(intentPollTimer);intentPollTimer=null}}
+
+function formatDuration(sec){
+ const s=Math.max(0,Number(sec)||0);
+ const m=String(Math.floor(s/60)).padStart(2,"0");
+ const r=String(s%60).padStart(2,"0");
+ return `${m}:${r}`;
+}
+
+function formatSmartDate(iso){
+ if(!iso)return "";
+ const d=new Date(iso);
+ const now=new Date();
+ const sameDay=d.toDateString()===now.toDateString();
+ return sameDay
+  ? d.toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"})
+  : d.toLocaleDateString("ar-IQ",{month:"short",day:"numeric"})+" "+d.toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"});
+}
+
+function formatPresenceLabel(profile){
+ const cfg=getSecurityConfig();
+ if(cfg.hideOnlineStatus || cfg.hideLastSeen)return "الظهور مخفي";
+ if(profile?.is_online)return `<span class="online-dot"></span>متصل الآن`;
+ const last=profile?.last_seen?`آخر ظهور: ${formatSmartDate(profile.last_seen)}`:"غير متصل";
+ return `<span class="offline-dot"></span>${last}`;
+}
+
+/* ==================== الإعدادات العامة: الوضع الليلي/النهاري، اللغة، الإشعارات ==================== */
+function getAppPrefs(){
+ const def={theme:"dark",lang:"ar",notifMsg:true,notifCall:true,notifFriend:true};
+ try{return {...def,...JSON.parse(localStorage.getItem("dert_app_prefs_v1")||"{}")}}catch(e){return def}
+}
+function saveAppPrefs(patch){
+ const next={...getAppPrefs(),...patch};
+ localStorage.setItem("dert_app_prefs_v1",JSON.stringify(next));
+ applyAppPrefs(next);
+ return next;
+}
+function applyAppPrefs(prefs=getAppPrefs()){
+ document.documentElement.setAttribute("data-theme",prefs.theme==="light"?"light":"dark");
+ const lang=prefs.lang==="en"?"en":"ar";
+ const dict=I18N[lang]||I18N.ar;
+ document.documentElement.lang=lang;
+ document.documentElement.dir=dict.dir;
+ document.querySelectorAll("[data-i18n]").forEach(node=>{
+  const k=node.getAttribute("data-i18n");
+  if(dict[k])node.textContent=dict[k];
+ });
+ if(el("themeSelect"))el("themeSelect").value=prefs.theme==="light"?"light":"dark";
+ if(el("langSelect"))el("langSelect").value=lang;
+ ["notifMsg","notifCall","notifFriend"].forEach(key=>{
+  const c1=el(key==="notifMsg"?"notifMsgToggle":key==="notifCall"?"notifCallToggle":"notifFriendToggle");
+  const c2=el(key==="notifMsg"?"setNotifMsg":key==="notifCall"?"setNotifCall":"setNotifFriend");
+  if(c1)c1.checked=prefs[key]!==false;
+  if(c2)c2.checked=prefs[key]!==false;
+ });
+}
+
+function initPrefsListeners(){
+ applyAppPrefs();
+ el("themeSelect")?.addEventListener("change",e=>saveAppPrefs({theme:e.target.value}));
+ el("langSelect")?.addEventListener("change",e=>saveAppPrefs({lang:e.target.value}));
+ const bindNotif=(id1,id2,key)=>{
+  const sync=val=>saveAppPrefs({[key]:val});
+  el(id1)?.addEventListener("change",e=>sync(e.target.checked));
+  el(id2)?.addEventListener("change",e=>sync(e.target.checked));
+ };
+ bindNotif("notifMsgToggle","setNotifMsg","notifMsg");
+ bindNotif("notifCallToggle","setNotifCall","notifCall");
+ bindNotif("notifFriendToggle","setNotifFriend","notifFriend");
+}
+
+/* ==================== حالة الاتصال وآخر ظهور ==================== */
+async function updatePresence(isOnline){
+ if(!currentUser)return;
+ const cfg=getSecurityConfig();
+ if(cfg.hideOnlineStatus && isOnline)return;
+ try{
+  await client.from("profiles").update({
+   is_online:!!isOnline,
+   last_seen:new Date().toISOString()
+  }).eq("id",currentUser.id);
+ }catch(e){}
+}
+function startPresenceLoop(){
+ stopPresenceLoop();
+ updatePresence(true);
+ presenceTimer=setInterval(()=>updatePresence(true),45000);
+ window.addEventListener("beforeunload",()=>{updatePresence(false)});
+}
+function stopPresenceLoop(){
+ if(presenceTimer){clearInterval(presenceTimer);presenceTimer=null}
+}
+
+function getLocalProfileCache(uid=currentUser?.id){
+ if(!uid)return null;
+ try{return JSON.parse(localStorage.getItem("dert_profile_cache_"+uid)||"null")}catch(e){return null}
+}
+function saveLocalProfileCache(profileObj,uid=currentUser?.id){
+ if(!uid || !profileObj)return;
+ try{localStorage.setItem("dert_profile_cache_"+uid,JSON.stringify(profileObj))}catch(e){}
+}
+function renderProfileUI(data){
+ if(!data)return;
+ const fallbackUser="user_"+String(currentUser?.id||"").replace(/-/g,"").slice(0,8);
+ const fallbackName=currentUser?.email?currentUser.email.split("@")[0]:"مستخدم DERT";
+ const cleanName=(data.full_name||data.username||fallbackName).trim();
+ const cleanHandle=(data.username||fallbackUser).trim();
+ const cleanBio=data.bio||"مرحباً بك في DERT";
+ if(el("fullName"))el("fullName").value=cleanName;
+ if(el("username"))el("username").value=cleanHandle;
+ if(el("bio"))el("bio").value=data.bio||"";
+ addVerifiedName(el("displayName"),cleanName,data.is_verified===true);
+ addVerifiedName(el("displayUsernameTop"),"@"+cleanHandle,data.is_verified===true);
+ if(el("displayUsername"))el("displayUsername").textContent="@"+cleanHandle;
+ if(el("displayBio"))el("displayBio").textContent=cleanBio;
+ if(el("displayPresenceLine"))el("displayPresenceLine").innerHTML=formatPresenceLabel(data);
+ showAvatar(data.avatar_url,cleanName);
+}
+
+function shuffleArray(arr){
+ const copy=[...arr];
+ for(let i=copy.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [copy[i],copy[j]]=[copy[j],copy[i]];
+ }
+ return copy;
+}
+
+/* ==================== الأمان والخصوصية ==================== */
+function getSecurityConfig(){
+ const def={
+  appLockEnabled:false,biometricEnabled:true,pinCode:"",twoFactorEnabled:false,
+  encryptChats:true,protectMedia:true,blockScreenshots:true,
+  profileVisibility:"public",messagePermission:"everyone",hideOnlineStatus:false,hideLastSeen:false,
+  blockedUsers:[],securityAlerts:[],connectedDevices:[]
+ };
+ try{
+  const raw=JSON.parse(localStorage.getItem("dert_security_v1_"+(currentUser?.id||"global"))||"{}");
+  return {...def,...raw};
+ }catch(e){return def}
+}
+function saveSecurityConfig(patch){
+ const next={...getSecurityConfig(),...patch};
+ localStorage.setItem("dert_security_v1_"+(currentUser?.id||"global"),JSON.stringify(next));
+ applyScreenShield();return next;
+}
+function addSecurityAlert(title){
+ const cfg=getSecurityConfig();
+ const list=Array.isArray(cfg.securityAlerts)?cfg.securityAlerts:[];
+ saveSecurityConfig({securityAlerts:[`${title} • ${new Date().toLocaleString("ar-IQ")}`,...list].slice(0,25)});
+}
+function registerCurrentDevice(){
+ const cfg=getSecurityConfig();
+ const devLabel=`${navigator.platform||"Web"} — ${(navigator.userAgent||"").slice(0,55)}`;
+ const existing=Array.isArray(cfg.connectedDevices)?cfg.connectedDevices:[];
+ if(!existing.some(d=>d.label===devLabel)){
+  saveSecurityConfig({connectedDevices:[{id:"dev_"+Date.now(),label:devLabel,lastActive:new Date().toLocaleString("ar-IQ"),current:true},...existing].slice(0,10)});
+  addSecurityAlert("تسجيل دخول من جهاز: "+(navigator.platform||"Web"));
+ }
+}
+function isUserBlocked(userId){
+ if(!userId)return false;
+ const cfg=getSecurityConfig();
+ return Array.isArray(cfg.blockedUsers) && cfg.blockedUsers.includes(String(userId));
+}
+function toggleBlockUser(userId,labelName="المستخدم"){
+ if(!userId || userId===currentUser?.id)return false;
+ const cfg=getSecurityConfig();
+ const set=new Set((cfg.blockedUsers||[]).map(String));
+ const key=String(userId);let blockedNow=false;
+ if(set.has(key)){set.delete(key);blockedNow=false;addSecurityAlert(`تم إلغاء حظر ${labelName}`)}
+ else{set.add(key);blockedNow=true;addSecurityAlert(`تم حظر ${labelName}`)}
+ saveSecurityConfig({blockedUsers:[...set]});return blockedNow;
+}
+function encryptText(plain){
+ const str=String(plain||"");if(!str)return "";
+ if(getSecurityConfig().encryptChats===false)return str;
+ try{
+  const bytes=new TextEncoder().encode(str);let bin="";
+  bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return "ENC1:"+btoa(bin);
+ }catch(e){return str}
+}
+function decryptText(cipher){
+ const str=String(cipher||"");if(!str.startsWith("ENC1:"))return str;
+ try{
+  const bin=atob(str.slice(5));const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+ }catch(e){return str}
+}
+function applyScreenShield(){
+ const cfg=getSecurityConfig();
+ document.querySelectorAll("img.media").forEach(img=>{
+  img.classList.toggle("protected-media",cfg.protectMedia!==false);
+  if(cfg.protectMedia!==false){img.setAttribute("draggable","false");img.oncontextmenu=e=>e.preventDefault()}
+  else{img.removeAttribute("draggable");img.oncontextmenu=null}
+ });
+}
+document.addEventListener("visibilitychange",()=>{
+ const cfg=getSecurityConfig();
+ if(cfg.blockScreenshots!==false){
+  if(document.hidden)document.body.classList.add("sensitive-blur");
+  else setTimeout(()=>document.body.classList.remove("sensitive-blur"),250);
+ }
+ if(document.hidden && cfg.appLockEnabled && currentUser)lockAppNow();
+ if(currentUser)updatePresence(!document.hidden);
+});
+window.addEventListener("blur",()=>{
+ const cfg=getSecurityConfig();
+ if(cfg.blockScreenshots!==false && (activeConversation || !el("commentModal")?.classList.contains("hidden")))document.body.classList.add("sensitive-blur");
+});
+window.addEventListener("focus",()=>{document.body.classList.remove("sensitive-blur");if(currentUser)updatePresence(true)});
+
+function lockAppNow(){
+ const cfg=getSecurityConfig();
+ if(!cfg.appLockEnabled && !cfg.pinCode){alert("فعّل قفل التطبيق أو عيّن رمز PIN أولاً من مركز الأمان والخصوصية.");openPrivacyCenter();return}
+ el("unlockPinInput").value="";msg("appLockStatus","");el("appLockModal").classList.remove("hidden");
+}
+async function unlockWithBiometrics(){
+ if(!window.PublicKeyCredential || !navigator.credentials){msg("appLockStatus","البصمة / Face ID غير مدعومة هنا، استخدم رمز PIN.");return}
+ try{
+  msg("appLockStatus","جارٍ التحقق بالبصمة / Face ID...");
+  const cred=await navigator.credentials.create({
+   publicKey:{
+    challenge:crypto.getRandomValues(new Uint8Array(16)),rp:{name:"DERT"},
+    user:{id:crypto.getRandomValues(new Uint8Array(16)),name:currentUser?.email||"dert_user",displayName:currentProfile?.full_name||"DERT User"},
+    pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
+    authenticatorSelection:{userVerification:"required"},timeout:20000
+   }
+  });
+  if(cred){el("appLockModal").classList.add("hidden");msg("appLockStatus","")}
+ }catch(e){msg("appLockStatus","تعذر التحقق الحيوي أو تم الإلغاء، جرّب رمز PIN.")}
+}
+el("unlockByPinBtn").onclick=()=>{
+ const cfg=getSecurityConfig();const entered=el("unlockPinInput").value.trim();
+ if(cfg.pinCode && entered===cfg.pinCode){el("appLockModal").classList.add("hidden");msg("appLockStatus","")}
+ else if(!cfg.pinCode && entered.length>=4){saveSecurityConfig({pinCode:entered,appLockEnabled:true});el("appLockModal").classList.add("hidden")}
+ else msg("appLockStatus","رمز القفل غير صحيح.");
+};
+el("unlockByBioBtn").onclick=unlockWithBiometrics;
+
+async function openPrivacyCenter(){
+ closeAllStandaloneScreens();
+ el("toolScreenTitle").textContent="🛡️ مركز الأمان والخصوصية";
+ const body=el("toolScreenBody");el("toolScreen").classList.remove("hidden");
+ const cfg=getSecurityConfig();
+ const blockedList=Array.isArray(cfg.blockedUsers)?cfg.blockedUsers:[];
+ let blockedProfiles=[];
+ if(blockedList.length){try{const {data}=await client.from("profiles").select("id,username,full_name").in("id",blockedList);blockedProfiles=data||[]}catch(e){}}
+ const devices=Array.isArray(cfg.connectedDevices)?cfg.connectedDevices:[];
+ const alerts=Array.isArray(cfg.securityAlerts)?cfg.securityAlerts:[];
+ body.innerHTML=`
+  <div class="tt-sub-box">
+   <strong>🔐 قفل التطبيق والتحقق بخطوتين (2FA)</strong>
+   <label class="tt-switch-label" style="margin-top:8px"><span>تفعيل قفل التطبيق (بصمة / Face ID / PIN)</span><input type="checkbox" id="secAppLockChk" ${cfg.appLockEnabled?"checked":""}></label>
+   <label class="tt-switch-label" style="margin-top:8px"><span>دعم المصادقة الحيوية (بصمة / Face ID)</span><input type="checkbox" id="secBioChk" ${cfg.biometricEnabled?"checked":""}></label>
+   <input id="secPinInput" type="password" inputmode="numeric" maxlength="8" placeholder="تعيين رمز القفل السريع (4-8 أرقام)" value="${cfg.pinCode||""}" dir="ltr">
+   <label class="tt-switch-label" style="margin-top:8px"><span>تفعيل التحقق بخطوتين (2FA)</span><input type="checkbox" id="sec2faChk" ${cfg.twoFactorEnabled?"checked":""}></label>
+   <button type="button" class="green full" id="saveLock2faBtn" style="margin-top:8px">حفظ إعدادات القفل و 2FA</button>
+   <button type="button" class="gray full" onclick="lockAppNow()" style="margin-top:6px">اختبار قفل التطبيق الآن</button>
+  </div>
+  <div class="tt-sub-box">
+   <strong>💬 تشفير المحادثات وحماية المحتوى الحساس</strong>
+   <label class="tt-switch-label" style="margin-top:8px"><span>تشفير المحادثات بين المستخدمين</span><input type="checkbox" id="secEncChk" ${cfg.encryptChats!==false?"checked":""}></label>
+   <label class="tt-switch-label" style="margin-top:8px"><span>حماية الصور والملفات الخاصة</span><input type="checkbox" id="secMediaChk" ${cfg.protectMedia!==false?"checked":""}></label>
+   <label class="tt-switch-label" style="margin-top:8px"><span>منع تصوير الشاشة / إخفاء الشاشة عند تبديل النوافذ</span><input type="checkbox" id="secShotChk" ${cfg.blockScreenshots!==false?"checked":""}></label>
+  </div>
+  <div class="tt-sub-box">
+   <strong>👁️ الخصوصية والظهور والمراسلات</strong>
+   <div class="tt-opt-row" style="margin-top:8px"><span>من يشاهد الملف الشخصي</span><select id="secProfileVisSel"><option value="public" ${cfg.profileVisibility==="public"?"selected":""}>الجميع</option><option value="followers" ${cfg.profileVisibility==="followers"?"selected":""}>المتابعون</option><option value="private" ${cfg.profileVisibility==="private"?"selected":""}>أنا فقط</option></select></div>
+   <div class="tt-opt-row" style="margin-top:8px"><span>من يستطيع مراسلتي</span><select id="secMsgPermSel"><option value="everyone" ${cfg.messagePermission==="everyone"?"selected":""}>الجميع</option><option value="followers" ${cfg.messagePermission==="followers"?"selected":""}>المتابعون فقط</option><option value="nobody" ${cfg.messagePermission==="nobody"?"selected":""}>لا أحد</option></select></div>
+   <label class="tt-switch-label" style="margin-top:8px"><span>إخفاء حالة الاتصال</span><input type="checkbox" id="secHideOnlineChk" ${cfg.hideOnlineStatus?"checked":""}></label>
+   <label class="tt-switch-label" style="margin-top:8px"><span>إخفاء آخر ظهور</span><input type="checkbox" id="secHideSeenChk" ${cfg.hideLastSeen?"checked":""}></label>
+   <button type="button" class="full" id="savePrivacyPrefsBtn" style="margin-top:8px">حفظ تفضيلات الخصوصية</button>
+  </div>
+  <div class="tt-sub-box">
+   <strong>🚫 المستخدمون المحظورون (${blockedList.length})</strong>
+   <div style="margin-top:6px">${blockedList.length?blockedList.map(uid=>{const p=blockedProfiles.find(x=>x.id===uid);const label=p?`${p.full_name||p.username} (@${p.username||uid.slice(0,6)})`:uid;return `<div class="item" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="small">${label}</span><button type="button" class="gray" style="padding:5px 10px;font-size:11px" data-unblock="${uid}">إلغاء الحظر</button></div>`}).join(""):`<div class="small">لا يوجد مستخدمون محظورون</div>`}</div>
+  </div>
+  <div class="tt-sub-box">
+   <strong>📱 الأجهزة المتصلة وتنبيهات الأمان</strong>
+   <div style="margin-top:6px">${devices.length?devices.map(d=>`<div class="item small"><strong>${d.label}</strong><div>آخر نشاط: ${d.lastActive}</div></div>`).join(""):`<div class="small">جهازك الحالي نشط</div>`}</div>
+   <button type="button" class="red full" id="signOutAllDevicesBtn" style="margin-top:8px">تسجيل الخروج من جميع الأجهزة</button>
+   <div style="margin-top:10px"><strong class="small">سجل التنبيهات الأمنية:</strong>${alerts.length?alerts.map(a=>`<div class="item small">${a}</div>`).join(""):`<div class="small">لا توجد تنبيهات أمنية بعد</div>`}</div>
+  </div>
+  <div class="tt-sub-box">
+   <strong>🔑 تغيير كلمة المرور واستعادة الحساب</strong>
+   <input id="secNewPassInput" type="password" placeholder="كلمة المرور الجديدة (6 أحرف فأكثر)">
+   <button type="button" class="green full" id="secUpdatePassBtn">تغيير كلمة المرور وتنبيهي</button>
+   <button type="button" class="gray full" id="secSendResetBtn" style="margin-top:6px">إرسال رابط استعادة الحساب إلى البريد</button>
+   <p id="secPassStatus" class="small" style="margin-top:6px"></p>
+  </div>
+  <div class="tt-sub-box">
+   <strong>🎛️ إدارة صلاحيات الكاميرا والمايك والموقع</strong>
+   <div class="user-row-actions">
+    <button type="button" class="gray" id="testCamPermBtn">📷 الكاميرا</button>
+    <button type="button" class="gray" id="testMicPermBtn">🎤 المايك</button>
+    <button type="button" class="gray" id="testLocPermBtn">📍 الموقع</button>
+   </div>
+   <p id="secPermStatus" class="small" style="margin-top:8px"></p>
+  </div>
+ `;
+ el("saveLock2faBtn").onclick=()=>{
+  const pin=el("secPinInput").value.trim();const appLock=el("secAppLockChk").checked;
+  if(appLock && pin.length<4){alert("أدخل رمز قفل (PIN) من 4 أرقام على الأقل.");return}
+  saveSecurityConfig({appLockEnabled:appLock,biometricEnabled:el("secBioChk").checked,pinCode:pin,twoFactorEnabled:el("sec2faChk").checked});
+  addSecurityAlert("تم تحديث إعدادات القفل والتحقق بخطوتين");alert("تم حفظ إعدادات القفل و 2FA ✓");
+ };
+ const syncShield=()=>saveSecurityConfig({encryptChats:el("secEncChk").checked,protectMedia:el("secMediaChk").checked,blockScreenshots:el("secShotChk").checked});
+ el("secEncChk").onchange=syncShield;el("secMediaChk").onchange=syncShield;el("secShotChk").onchange=syncShield;
+ el("savePrivacyPrefsBtn").onclick=()=>{
+  const hideOn=el("secHideOnlineChk").checked;
+  saveSecurityConfig({profileVisibility:el("secProfileVisSel").value,messagePermission:el("secMsgPermSel").value,hideOnlineStatus:hideOn,hideLastSeen:el("secHideSeenChk").checked});
+  if(!hideOn)updatePresence(true);
+  if(currentProfile)renderProfileUI(currentProfile);
+  addSecurityAlert("تم تحديث إعدادات الخصوصية وحالة الظهور");alert("تم حفظ إعدادات الخصوصية ✓");
+ };
+ body.querySelectorAll("[data-unblock]").forEach(btn=>{btn.onclick=()=>{toggleBlockUser(btn.dataset.unblock,"مستخدم");openPrivacyCenter()}});
+ el("signOutAllDevicesBtn").onclick=async()=>{
+  if(!confirm("تسجيل الخروج من جميع الأجهزة؟"))return;
+  await updatePresence(false);
+  addSecurityAlert("تم تسجيل الخروج من جميع الأجهزة");
+  try{await client.auth.signOut({scope:"global"})}catch(e){await client.auth.signOut()}
+  showLogin();
+ };
+ el("secUpdatePassBtn").onclick=async()=>{
+  const np=el("secNewPassInput").value;if(!np || np.length<6){msg("secPassStatus","أدخل كلمة مرور 6 أحرف على الأقل.");return}
+  const b=el("secUpdatePassBtn");b.disabled=true;msg("secPassStatus","جارٍ التحديث...");
+  try{const {error}=await client.auth.updateUser({password:np});if(error)throw error;el("secNewPassInput").value="";addSecurityAlert("تم تغيير كلمة المرور بنجاح");msg("secPassStatus","تم تغيير كلمة المرور وتسجيل تنبيه أمان ✓")}
+  catch(e){msg("secPassStatus","تعذر التغيير: "+e.message)}finally{b.disabled=false}
+ };
+ el("secSendResetBtn").onclick=async()=>{
+  const em=currentUser?.email;if(!em){msg("secPassStatus","لا يوجد بريد إلكتروني.");return}
+  const b=el("secSendResetBtn");b.disabled=true;msg("secPassStatus","جارٍ الإرسال...");
+  try{const {error}=await client.auth.resetPasswordForEmail(em,{redirectTo:DERT_SITE_URL});if(error)throw error;addSecurityAlert("تم إرسال رابط استعادة الحساب إلى "+em);msg("secPassStatus","تم إرسال رابط الاستعادة إلى بريدك ✓")}
+  catch(e){msg("secPassStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
+ };
+ el("testCamPermBtn").onclick=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({video:true});s.getTracks().forEach(t=>t.stop());msg("secPermStatus","الكاميرا متاحة ✓")}catch(e){msg("secPermStatus","الكاميرا: "+e.message)}};
+ el("testMicPermBtn").onclick=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true});s.getTracks().forEach(t=>t.stop());msg("secPermStatus","المايكروفون متاح ✓")}catch(e){msg("secPermStatus","المايكروفون: "+e.message)}};
+ el("testLocPermBtn").onclick=()=>{if(!navigator.geolocation){msg("secPermStatus","الموقع غير مدعوم.");return}navigator.geolocation.getCurrentPosition(p=>msg("secPermStatus",`الموقع متاح (دقة ~${Math.round(p.coords.accuracy)}م) ✓`),e=>msg("secPermStatus","الموقع: "+e.message))};
+}
+
+/* ==================== الحالات والقصص اليومية ==================== */
+function getStoriesList(){
+ try{return JSON.parse(localStorage.getItem("dert_stories_v1")||"[]")}catch(e){return []}
+}
+function saveStoriesList(list){
+ localStorage.setItem("dert_stories_v1",JSON.stringify((list||[]).slice(0,30)));
+}
+function renderStoriesStrip(){
+ const strip=el("storiesStrip");if(!strip)return;
+ strip.replaceChildren();
+ const addItem=document.createElement("div");addItem.className="story-item";
+ const addRing=document.createElement("div");addRing.className="story-ring add-ring";
+ addRing.innerHTML=`<div class="avatar">+</div><span class="story-plus">+</span>`;
+ const addLbl=document.createElement("div");addLbl.className="story-label";addLbl.textContent="قصتك";
+ addItem.append(addRing,addLbl);addItem.onclick=openAddStoryModal;strip.appendChild(addItem);
+
+ const stories=getStoriesList().filter(s=>!isUserBlocked(s.userId));
+ stories.forEach(st=>{
+  const item=document.createElement("div");item.className="story-item";
+  const ring=document.createElement("div");ring.className="story-ring";
+  ring.appendChild(makeAvatar(st.avatarUrl,st.authorName));
+  const lbl=document.createElement("div");lbl.className="story-label";lbl.textContent=st.authorName||"قصة";
+  item.append(ring,lbl);item.onclick=()=>viewStory(st);strip.appendChild(item);
+ });
+}
+function openAddStoryModal(){
+ if(!currentUser)return;
+ el("storyModalTitle").textContent="إضافة حالة أو قصة يومية";
+ el("storyModalBody").innerHTML=`
+  <textarea id="storyTextInput" placeholder="اكتب نص حالتك أو قصتك اليومية..."></textarea>
+  <input id="storyImageFile" type="file" accept="image/*,video/*">
+  <button type="button" class="green full" id="publishStoryBtn">نشر القصة</button>
+ `;
+ el("storyModal").classList.remove("hidden");
+ el("publishStoryBtn").onclick=async()=>{
+  const txt=el("storyTextInput").value.trim();const f=el("storyImageFile").files[0];
+  if(!txt && !f){alert("اكتب نصاً أو اختر صورة/فيديو للقصة");return}
+  const b=el("publishStoryBtn");b.disabled=true;
+  try{
+   let mediaUrl=null,mediaType=null;
+   if(f){mediaUrl=await uploadFile(f,"stories");mediaType=f.type.startsWith("video/")?"video":"image"}
+   const list=getStoriesList();
+   const name=currentProfile?.full_name||currentProfile?.username||"مستخدم DERT";
+   list.unshift({id:"st_"+Date.now(),userId:currentUser.id,authorName:name,avatarUrl:currentProfile?.avatar_url||null,text:txt,mediaUrl,mediaType,time:new Date().toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"})});
+   saveStoriesList(list);closeStoryModal();renderStoriesStrip();
+  }catch(e){alert("تعذر نشر القصة: "+e.message)}finally{b.disabled=false}
+ };
+}
+function viewStory(st){
+ el("storyModalTitle").textContent=`قصة ${st.authorName} • ${st.time||""}`;
+ const body=el("storyModalBody");body.replaceChildren();
+ if(st.mediaUrl){
+  if(st.mediaType==="video"){const v=document.createElement("video");v.src=st.mediaUrl;v.controls=true;v.autoplay=true;v.playsInline=true;v.style.cssText="width:100%;max-height:360px;border-radius:12px";body.appendChild(v)}
+  else{const img=document.createElement("img");img.src=st.mediaUrl;img.className="media protected-media";body.appendChild(img)}
+ }
+ if(st.text){const p=document.createElement("p");p.className="post-text";p.style.marginTop="12px";p.textContent=st.text;body.appendChild(p)}
+ const replyBtn=document.createElement("button");replyBtn.type="button";replyBtn.className="full";replyBtn.style.marginTop="12px";replyBtn.textContent="رد على القصة برسالة";
+ replyBtn.onclick=()=>{closeStoryModal();if(st.userId && st.userId!==currentUser.id)startChat(st.userId,st.authorName)};
+ body.appendChild(replyBtn);
+ el("storyModal").classList.remove("hidden");
+}
+function closeStoryModal(){el("storyModal").classList.add("hidden")}
+
+/* ==================== نظام الاتصالات المستقل (صوتي + فيديو + إشعارات مكالمات) ==================== */
+async function initiateCall(peerId,peerName="مستخدم",peerAvatar=null,withVideo=false){
+ if(!currentUser || !peerId){alert("حدد المستخدم أولاً لبدء الاتصال.");return}
+ if(peerId===currentUser.id){alert("لا يمكنك الاتصال بنفسك.");return}
+ if(isUserBlocked(peerId)){alert("هذا المستخدم محظور.");return}
+
+ isIncomingRinging=false;
+ callMuted=false;callCamOff=false;callSeconds=0;
+ activeCallPeerId=peerId;
+ activeCallType=withVideo?"video":"voice";
+ activeCallRecordId=null;
+
+ el("incomingCallControls").classList.add("hidden");
+ el("activeCallControls").classList.remove("hidden");
+ el("callModalTitle").textContent=withVideo?`📹 مكالمة فيديو • ${peerName}`:`📞 مكالمة صوتية • ${peerName}`;
+ el("toggleCamCallBtn").classList.toggle("hidden",!withVideo);
+ el("callStatusText").textContent=withVideo?"جارٍ الاتصال بالفيديو...":"جارٍ الاتصال الصوتي...";
+ el("callTimerText").textContent="00:00";
+
+ const avWrap=el("callPeerAvatar");
+ const newAv=makeAvatar(peerAvatar,peerName);
+ newAv.id="callPeerAvatar";
+ newAv.style.cssText="width:68px;height:68px;font-size:26px;margin-bottom:10px;z-index:2";
+ avWrap.replaceWith(newAv);
+
+ const stage=el("callStageBox");
+ stage.querySelectorAll("video").forEach(v=>v.remove());
+ el("callModal").classList.remove("hidden");
+
+ try{
+  const {data:inserted,error}=await client.from("calls").insert({
+   caller_id:currentUser.id,
+   receiver_id:peerId,
+   call_type:activeCallType,
+   status:"ringing",
+   duration_seconds:0
+  }).select("id").single();
+  if(!error && inserted?.id)activeCallRecordId=inserted.id;
+  await pushNotification(peerId,"call",`${currentProfile?.full_name||currentProfile?.username||"مستخدم"} يتصل بك (${withVideo?"فيديو":"صوتي"}) 📞`);
+ }catch(e){}
+
+ navigator.mediaDevices?.getUserMedia({audio:true,video:withVideo}).then(stream=>{
+  callStream=stream;
+  el("callStatusText").textContent=withVideo?"مكالمة فيديو نشطة":"مكالمة صوتية نشطة";
+  if(withVideo){
+   const v=document.createElement("video");v.srcObject=stream;v.autoplay=true;v.playsInline=true;v.muted=true;
+   v.style.cssText="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.78";
+   stage.prepend(v);
+  }
+ }).catch(()=>{
+  el("callStatusText").textContent=withVideo?"مكالمة فيديو نشطة":"مكالمة صوتية نشطة";
+ });
+
+ if(callInterval)clearInterval(callInterval);
+ callInterval=setInterval(()=>{
+  callSeconds++;
+  el("callTimerText").textContent=formatDuration(callSeconds);
+ },1000);
+}
+
+async function handleIncomingCallRecord(callRow){
+ if(!currentUser || !callRow || callRow.receiver_id!==currentUser.id || callRow.status!=="ringing")return;
+ if(isUserBlocked(callRow.caller_id))return;
+ if(!el("callModal").classList.contains("hidden"))return;
+
+ isIncomingRinging=true;
+ activeCallRecordId=callRow.id;
+ activeCallPeerId=callRow.caller_id;
+ activeCallType=callRow.call_type==="video"?"video":"voice";
+ callSeconds=0;
+
+ let callerName="مستخدم DERT",callerAvatar=null;
+ try{
+  const {data:p}=await client.from("profiles").select("username,full_name,avatar_url").eq("id",callRow.caller_id).maybeSingle();
+  callerName=p?.full_name||p?.username||callerName;
+  callerAvatar=p?.avatar_url||null;
+ }catch(e){}
+
+ el("callModalTitle").textContent=activeCallType==="video"?`📹 مكالمة فيديو واردة • ${callerName}`:`📞 مكالمة صوتية واردة • ${callerName}`;
+ el("callStatusText").textContent="مكالمة واردة الآن...";
+ el("callTimerText").textContent="00:00";
+ el("incomingCallControls").classList.remove("hidden");
+ el("activeCallControls").classList.add("hidden");
+ el("toggleCamCallBtn").classList.toggle("hidden",activeCallType!=="video");
+
+ const avWrap=el("callPeerAvatar");
+ const newAv=makeAvatar(callerAvatar,callerName);
+ newAv.id="callPeerAvatar";
+ newAv.style.cssText="width:68px;height:68px;font-size:26px;margin-bottom:10px;z-index:2";
+ avWrap.replaceWith(newAv);
+
+ el("callModal").classList.remove("hidden");
+}
+
+el("acceptIncomingCallBtn").onclick=async()=>{
+ isIncomingRinging=false;
+ el("incomingCallControls").classList.add("hidden");
+ el("activeCallControls").classList.remove("hidden");
+ el("callStatusText").textContent="جارٍ فتح المكالمة...";
+ if(activeCallRecordId){
+  try{await client.from("calls").update({status:"answered"}).eq("id",activeCallRecordId)}catch(e){}
+ }
+ navigator.mediaDevices?.getUserMedia({audio:true,video:activeCallType==="video"}).then(stream=>{
+  callStream=stream;
+  el("callStatusText").textContent=activeCallType==="video"?"مكالمة فيديو نشطة":"مكالمة صوتية نشطة";
+  if(activeCallType==="video"){
+   const stage=el("callStageBox");stage.querySelectorAll("video").forEach(v=>v.remove());
+   const v=document.createElement("video");v.srcObject=stream;v.autoplay=true;v.playsInline=true;v.muted=true;
+   v.style.cssText="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.78";
+   stage.prepend(v);
+  }
+ }).catch(()=>{el("callStatusText").textContent="المكالمة نشطة"});
+ if(callInterval)clearInterval(callInterval);
+ callInterval=setInterval(()=>{callSeconds++;el("callTimerText").textContent=formatDuration(callSeconds)},1000);
+};
+
+el("declineIncomingCallBtn").onclick=async()=>{
+ const recId=activeCallRecordId;
+ isIncomingRinging=false;
+ el("incomingCallControls").classList.add("hidden");
+ el("activeCallControls").classList.remove("hidden");
+ el("callModal").classList.add("hidden");
+ activeCallRecordId=null;activeCallPeerId=null;
+ if(recId){try{await client.from("calls").update({status:"declined",ended_at:new Date().toISOString()}).eq("id",recId)}catch(e){}}
+ await loadCallsLog();
+};
+
+async function endCall(){
+ const finalDuration=callSeconds;
+ const recordId=activeCallRecordId;
+ const wasRinging=isIncomingRinging;
+ isIncomingRinging=false;
+ el("incomingCallControls").classList.add("hidden");
+ el("activeCallControls").classList.remove("hidden");
+ if(callInterval){clearInterval(callInterval);callInterval=null}
+ if(callStream){callStream.getTracks().forEach(t=>t.stop());callStream=null}
+ el("callStageBox").querySelectorAll("video").forEach(v=>v.remove());
+ el("callModal").classList.add("hidden");
+ activeCallRecordId=null;activeCallPeerId=null;callSeconds=0;
+
+ if(recordId){
+  try{
+   await client.from("calls").update({
+    status:wasRinging?"missed":(finalDuration>=2?"ended":"missed"),
+    duration_seconds:finalDuration,
+    ended_at:new Date().toISOString()
+   }).eq("id",recordId);
+  }catch(e){}
+ }
+ if(el("calls").classList.contains("active"))await loadCallsLog();
+}
+
+el("endCallBtn").onclick=endCall;
+el("toggleMuteCallBtn").onclick=()=>{
+ callMuted=!callMuted;
+ callStream?.getAudioTracks().forEach(t=>t.enabled=!callMuted);
+ el("toggleMuteCallBtn").textContent=callMuted?"🔇 إلغاء الكتم":"🎤 كتم الصوت";
+};
+el("toggleCamCallBtn").onclick=()=>{
+ callCamOff=!callCamOff;
+ callStream?.getVideoTracks().forEach(t=>t.enabled=!callCamOff);
+ el("toggleCamCallBtn").textContent=callCamOff?"📷 تشغيل الكاميرا":"📷 إيقاف الكاميرا";
+};
+
+async function loadCallsLog(){
+ if(!currentUser)return;
+ const list=el("callsLogList");
+ list.textContent="جارٍ تحميل سجل المكالمات...";
+ try{
+  const {data,error}=await client
+   .from("calls")
+   .select("*")
+   .or(`caller_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
+   .order("started_at",{ascending:false})
+   .limit(100);
+  if(error)throw error;
+
+  const rows=(data||[]).filter(c=>{
+   const peerId=c.caller_id===currentUser.id?c.receiver_id:c.caller_id;
+   return peerId && !isUserBlocked(peerId);
+  });
+
+  const peerIds=[...new Set(rows.map(c=>c.caller_id===currentUser.id?c.receiver_id:c.caller_id))];
+  let profMap={};
+  if(peerIds.length){
+   const {data:profiles}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified,is_online,last_seen").in("id",peerIds);
+   (profiles||[]).forEach(p=>profMap[p.id]=p);
+  }
+
+  callsCache=rows.map(c=>{
+   const isOutgoing=c.caller_id===currentUser.id;
+   const peerId=isOutgoing?c.receiver_id:c.caller_id;
+   const isMissed=!isOutgoing && (c.status==="missed" || c.status==="declined" || (c.status==="ringing" && Number(c.duration_seconds||0)===0));
+   const direction=isMissed?"missed":(isOutgoing?"outgoing":"incoming");
+   return {...c,peerId,isOutgoing,isMissed,direction,profile:profMap[peerId]||{}};
+  });
+
+  const missedCount=callsCache.filter(x=>x.isMissed).length;
+  const badge=el("navCallsMissed");
+  if(badge){
+   badge.textContent=missedCount>99?"99+":String(missedCount);
+   badge.classList.toggle("hidden",missedCount===0);
+  }
+
+  renderCallsLog();
+ }catch(e){
+  list.textContent="تعذر تحميل سجل المكالمات: "+(e.message||"تأكد من إنشاء جدول calls في قاعدة البيانات.");
+ }
+}
+
+function renderCallsLog(){
+ const list=el("callsLogList");
+ if(!list)return;
+ const q=(el("callSearchInput")?.value||"").trim().toLowerCase();
+ const filtered=callsCache.filter(item=>{
+  if(callsFilterMode!=="all" && item.direction!==callsFilterMode)return false;
+  if(!q)return true;
+  const fname=(item.profile?.full_name||"").toLowerCase();
+  const uname=(item.profile?.username||"").toLowerCase();
+  return fname.includes(q) || uname.includes(q);
+ });
+
+ list.replaceChildren();
+ if(!filtered.length){
+  list.innerHTML=`<div class="small" style="text-align:center;padding:24px">لا توجد مكالمات في هذا القسم</div>`;
+  return;
+ }
+
+ filtered.forEach(item=>{
+  const row=document.createElement("div");
+  row.className="call-log-row"+(item.isMissed?" missed":"");
+
+  const av=makeAvatar(item.profile?.avatar_url,item.profile?.full_name||item.profile?.username);
+  av.classList.add("clickable-user");
+  av.onclick=()=>openUserProfile(item.peerId);
+
+  const info=document.createElement("div");
+  info.className="call-log-info";
+
+  const title=document.createElement("strong");
+  title.className="clickable-user";
+  const peerLabel=item.profile?.full_name||item.profile?.username||"مستخدم DERT";
+  addVerifiedName(title,peerLabel,item.profile?.is_verified===true);
+  title.onclick=()=>openUserProfile(item.peerId);
+
+  const statusLine=document.createElement("div");
+  statusLine.className="call-status-line "+item.direction;
+  const dirText=item.isMissed?"↙ مكالمة فائتة":(item.isOutgoing?"↗ مكالمة صادرة":"↘ مكالمة واردة");
+  const typeText=item.call_type==="video"?"فيديو":"صوتية";
+  const durText=Number(item.duration_seconds||0)>0?` • ${formatDuration(item.duration_seconds)}`:"";
+  statusLine.textContent=`${dirText} (${typeText})${durText} • ${formatSmartDate(item.started_at)}`;
+
+  info.append(title,statusLine);
+
+  const actions=document.createElement("div");
+  actions.className="call-quick-btns";
+
+  const voiceBtn=document.createElement("button");
+  voiceBtn.type="button";
+  voiceBtn.className="call-icon-btn voice";
+  voiceBtn.title="اتصال صوتي";
+  voiceBtn.textContent="📞";
+  voiceBtn.onclick=()=>initiateCall(item.peerId,peerLabel,item.profile?.avatar_url||null,false);
+
+  const videoBtn=document.createElement("button");
+  videoBtn.type="button";
+  videoBtn.className="call-icon-btn video";
+  videoBtn.title="اتصال فيديو";
+  videoBtn.textContent="📹";
+  videoBtn.onclick=()=>initiateCall(item.peerId,peerLabel,item.profile?.avatar_url||null,true);
+
+  actions.append(voiceBtn,videoBtn);
+  row.append(av,info,actions);
+  list.appendChild(row);
+ });
+}
+
+document.querySelectorAll("[data-call-filter]").forEach(btn=>{
+ btn.onclick=()=>{
+  callsFilterMode=btn.dataset.callFilter||"all";
+  document.querySelectorAll("[data-call-filter]").forEach(b=>b.classList.toggle("active",b===btn));
+  renderCallsLog();
+ };
+});
+el("callSearchInput").oninput=renderCallsLog;
+el("newCallContactBtn").onclick=()=>{openTab("people");el("searchUser").focus()};
+
+function startCallsRealtime(){
+ stopCallsRealtime();
+ if(!currentUser)return;
+ callsChannel=client.channel("dert-calls-"+currentUser.id)
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"calls",filter:"receiver_id=eq."+currentUser.id},async payload=>{
+   if(getAppPrefs().notifCall!==false){
+    await handleIncomingCallRecord(payload.new);
+   }
+   await loadCallsLog();
+  })
+  .on("postgres_changes",{event:"*",schema:"public",table:"calls"},()=>{
+   loadCallsLog();
+  }).subscribe();
+}
+function stopCallsRealtime(){if(callsChannel){client.removeChannel(callsChannel);callsChannel=null}}
+
+/* ==================== التعليقات والردود والمنشورات ==================== */
+function updateDescCounter(){
+ const ta=el("dertDescription");
+ if(ta && el("dertDescCounter"))el("dertDescCounter").textContent=`${ta.value.length} / 400`;
+}
+function appendHashtag(tag){
+ const ta=el("dertDescription");if(!ta)return;
+ const cur=ta.value.trim();if(cur.includes(tag))return;
+ ta.value=(cur?`${cur} ${tag}`:tag).slice(0,400);updateDescCounter();ta.focus();
+}
+function updateMediaPickLabels(){
+ if(el("imagesPickSub"))el("imagesPickSub").textContent=selectedImages.length?`تم اختيار ${selectedImages.length} صورة`:"صورة أو عدة صور";
+ if(el("videoPickSub"))el("videoPickSub").textContent=selectedVideo?(selectedVideo.name||"فيديو مختار"):"مقطع فيديو قصير";
+}
+
+function getDertState(){
+ try{return JSON.parse(localStorage.getItem("dert_user_state_"+(currentUser?.id||"guest"))||"{}")}catch(e){return {}}
+}
+function saveDertState(patch){
+ const next={...getDertState(),...patch};
+ localStorage.setItem("dert_user_state_"+(currentUser?.id||"guest"),JSON.stringify(next));
+ return next;
+}
+
+function isCommentLiked(commentId){const st=getDertState();return Array.isArray(st.likedComments) && st.likedComments.includes(String(commentId))}
+function toggleCommentLike(commentId,btn){
+ const st=getDertState();const set=new Set((st.likedComments||[]).map(String));const key=String(commentId);
+ let liked=false;if(set.has(key)){set.delete(key);liked=false}else{set.add(key);liked=true}
+ saveDertState({likedComments:[...set]});if(btn)btn.textContent=liked?"❤️ أعجبني":"🤍 إعجاب";
+}
+function setReplyTarget(commentId,authorName,snippet){
+ replyTarget={id:commentId,authorName:authorName||"مستخدم",snippet:(snippet||"").slice(0,45)};
+ el("replyTargetText").textContent=`الرد على @${replyTarget.authorName}: ${replyTarget.snippet}`;
+ el("replyTargetBanner").classList.remove("hidden");el("commentInput").focus();
+}
+function clearReplyTarget(){replyTarget=null;el("replyTargetBanner")?.classList.add("hidden");if(el("replyTargetText"))el("replyTargetText").textContent=""}
+function encodeCommentPayload(text,target){
+ if(!target)return text;
+ const safeName=String(target.authorName||"user").replace(/\]/g,"");
+ const safeSnippet=String(target.snippet||"").replace(/\]/g,"").replace(/\n/g," ");
+ return `[REPLY_TO:${safeName}|${safeSnippet}]\n${text}`;
+}
+function decodeCommentPayload(raw){
+ const str=String(raw||"");
+ const m=str.match(/^\[REPLY_TO:([^|\]]+)\|([^\]]*)\]\n?([\s\S]*)$/);
+ if(m)return{isReply:true,replyToName:m[1].trim(),replyToSnippet:m[2].trim(),body:m[3]};
+ return{isReply:false,replyToName:"",replyToSnippet:"",body:str};
+}
+
+async function fetchWalletBalance(userId=currentUser?.id){
+ if(!userId)return 0;
+ try{const {data,error}=await client.from("wallets").select("balance").eq("user_id",userId).maybeSingle();if(error)throw error;return Number(data?.balance||0)}catch(e){return Number(getDertState().streamerBalance||0)}
+}
+async function processSupportSplit(totalAmount,giftLabel="دعم",targetStreamerId=null){
+ const amt=Number(totalAmount);if(!Number.isFinite(amt) || amt<=0)return null;
+ const streamerCut=Number((amt*STREAMER_SHARE_RATE).toFixed(2));
+ const ownerCut=Number((amt*OWNER_SHARE_RATE).toFixed(2));
+ const recipientId=targetStreamerId || ADMIN_ID;let rpcDone=false;
+ try{const {error}=await client.rpc("send_support_split",{p_streamer_id:recipientId,p_amount:amt,p_gift_label:giftLabel});if(!error)rpcDone=true}catch(e){}
+ const st=getDertState();const history=Array.isArray(st.supportSplitLog)?st.supportSplitLog:[];
+ saveDertState({streamerBalance:Number((Number(st.streamerBalance||0)+streamerCut).toFixed(2)),ownerProfit:Number((Number(st.ownerProfit||0)+ownerCut).toFixed(2)),supportSplitLog:[{giftLabel,total:amt,streamerCut,ownerCut,synced:rpcDone,time:new Date().toLocaleTimeString("ar-IQ")},...history].slice(0,30)});
+ return {total:amt,streamerCut,ownerCut,synced:rpcDone};
+}
+
+function isPostLiked(postId){const st=getDertState();return Array.isArray(st.likedPosts) && st.likedPosts.includes(String(postId))}
+function isPostSaved(postId){const st=getDertState();return Array.isArray(st.savedPosts) && st.savedPosts.some(x=>String(x.id)===String(postId))}
+function toggleLikePost(postId,btn,lbl){
+ const st=getDertState();const liked=new Set((st.likedPosts||[]).map(String));const idStr=String(postId);
+ let nowLiked=false;if(liked.has(idStr)){liked.delete(idStr);nowLiked=false}else{liked.add(idStr);nowLiked=true}
+ saveDertState({likedPosts:[...liked]});if(btn)btn.classList.toggle("active",nowLiked);if(lbl)lbl.textContent=nowLiked?"أعجبني":"إعجاب";
+}
+function toggleSavePost(post,btn,lbl){
+ const st=getDertState();const saved=Array.isArray(st.savedPosts)?[...st.savedPosts]:[];const idStr=String(post.id);
+ const idx=saved.findIndex(x=>String(x.id)===idStr);let nowSaved=false;
+ if(idx>=0){saved.splice(idx,1);nowSaved=false}else{saved.unshift(post);nowSaved=true}
+ saveDertState({savedPosts:saved.slice(0,50)});if(btn)btn.classList.toggle("active",nowSaved);if(lbl)lbl.textContent=nowSaved?"محفوظ":"حفظ";
+}
+
+function stopLiveCamera(){if(liveStream){liveStream.getTracks().forEach(t=>t.stop());liveStream=null}}
+async function refreshLiveSplitCards(){
+ const dbBal=await fetchWalletBalance(currentUser?.id);const st=getDertState();
+ if(el("liveStreamerEarned"))el("liveStreamerEarned").textContent=dbBal || Number(st.streamerBalance||0);
+ if(el("liveOwnerEarned"))el("liveOwnerEarned").textContent=Number(st.ownerProfit||0);
+}
+async function openLiveRoom(){
+ closeAllStandaloneScreens();el("toolScreenTitle").textContent="غرفة البث المباشر LIVE";
+ const body=el("toolScreenBody");el("toolScreen").classList.remove("hidden");
+ const st=getDertState();const dbBal=await fetchWalletBalance(currentUser?.id);
+ body.innerHTML=`
+  <div class="tt-live-stage">
+   <div class="tt-live-screen" id="liveScreenBox"><span class="tt-live-badge-top">● LIVE مباشر</span><strong id="liveRoomHeading">بث DERT المباشر</strong><div class="small" style="margin-top:4px;color:#d6d9e2">60% صاحب البث • 40% أرباحك</div></div>
+   <div class="tt-split-summary">
+    <div class="tt-split-box"><strong id="liveStreamerEarned">${dbBal || Number(st.streamerBalance||0)}</strong><span>رصيدك / حصة البث (60%)</span></div>
+    <div class="tt-split-box"><strong id="liveOwnerEarned">${Number(st.ownerProfit||0)}</strong><span>أرباحك أنت (40%)</span></div>
+   </div>
+   <div class="user-row-actions" style="justify-content:center;margin-top:10px">
+    <button type="button" class="green" id="startCamLiveBtn">تشغيل الكاميرا</button>
+    <button type="button" class="gray" id="stopCamLiveBtn">إيقاف الكاميرا</button>
+    <button type="button" class="gray" onclick="openStandaloneTool('topup')">🪙 شراء عملات</button>
+   </div>
+   <div class="tt-live-gifts">
+    <button type="button" onclick="sendLiveGift('❤️ قلب',10)">❤️ قلب (10)</button>
+    <button type="button" onclick="sendLiveGift('🌹 وردة',25)">🌹 وردة (25)</button>
+    <button type="button" onclick="sendLiveGift('🔥 نار',50)">🔥 نار (50)</button>
+    <button type="button" onclick="sendLiveGift('💎 ماسة',100)">💎 ماسة (100)</button>
+   </div>
+   <div style="display:flex;gap:8px;margin-top:8px"><input id="customSupportAmount" type="number" min="1" placeholder="مبلغ دعم مخصص..." style="margin:0;flex:1"><button type="button" class="green" id="sendCustomSupportBtn">دعم بالمبلغ</button></div>
+   <div class="tt-live-chat" id="liveChatBox"></div>
+   <div style="display:flex;gap:8px;margin-top:8px"><input id="liveMsgInput" placeholder="اكتب تعليقاً في البث..." style="margin:0;flex:1"><button type="button" id="sendLiveMsgBtn">إرسال</button></div>
+  </div>`;
+ renderLiveChat();
+ el("startCamLiveBtn").onclick=async()=>{try{stopLiveCamera();liveStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});const box=el("liveScreenBox");const oldVid=box.querySelector("video");if(oldVid)oldVid.remove();const v=document.createElement("video");v.srcObject=liveStream;v.autoplay=true;v.playsInline=true;v.muted=true;box.prepend(v)}catch(e){alert("تعذر تشغيل الكاميرا: "+e.message)}};
+ el("stopCamLiveBtn").onclick=()=>{stopLiveCamera();const oldVid=el("liveScreenBox")?.querySelector("video");if(oldVid)oldVid.remove()};
+ el("sendCustomSupportBtn").onclick=async()=>{const val=Number(el("customSupportAmount").value);if(!Number.isFinite(val) || val<=0){alert("أدخل مبلغ دعم صحيح");return}await sendLiveGift("🎁 دعم مباشر",val);el("customSupportAmount").value=""};
+ el("sendLiveMsgBtn").onclick=()=>{const inp=el("liveMsgInput");const t=inp.value.trim();if(!t)return;liveChatMessages.push(`${currentProfile?.full_name||currentProfile?.username||"أنت"}: ${t}`);inp.value="";renderLiveChat()};
+}
+async function sendLiveGift(gift,amount=10){
+ const split=await processSupportSplit(amount,gift,currentUser?.id||ADMIN_ID);if(!split)return;
+ const sender=currentProfile?.full_name||currentProfile?.username||"أنت";
+ liveChatMessages.push(`🎁 دعم ${gift} (${split.total}) من ${sender} ⬅️ صاحب البث: ${split.streamerCut} (60%) | أرباحك: ${split.ownerCut} (40%)`);
+ await refreshLiveSplitCards();renderLiveChat();
+}
+function renderLiveChat(){const box=el("liveChatBox");if(!box)return;box.innerHTML=liveChatMessages.map(m=>`<div class="small" style="padding:4px 0;color:var(--text)">${m}</div>`).join("");box.scrollTop=box.scrollHeight}
+
+async function enforceMandatoryFollow(){
+ if(!currentUser || !MANDATORY_FOLLOW_USER_ID || currentUser.id===MANDATORY_FOLLOW_USER_ID){el("mandatoryFollowModal")?.classList.add("hidden");return true}
+ try{
+  const {data:existing,error:fErr}=await client.from("follows").select("follower_id").eq("follower_id",currentUser.id).eq("following_id",MANDATORY_FOLLOW_USER_ID).maybeSingle();
+  if(fErr)throw fErr;if(existing){el("mandatoryFollowModal")?.classList.add("hidden");return true}
+  const {data:targetProfile}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified").eq("id",MANDATORY_FOLLOW_USER_ID).maybeSingle();
+  const avContainer=el("mandatoryTargetAvatar");const newAv=makeAvatar(targetProfile?.avatar_url,targetProfile?.full_name||targetProfile?.username||"D");
+  newAv.id="mandatoryTargetAvatar";newAv.className="avatar";newAv.style.cssText="width:84px;height:84px;font-size:32px;margin:0 auto 12px;border:2px solid #fe2c55";
+  avContainer.replaceWith(newAv);
+  addVerifiedName(el("mandatoryTargetName"),targetProfile?.full_name||"مستخدم DERT",targetProfile?.is_verified===true);
+  el("mandatoryTargetUsername").textContent="@"+(targetProfile?.username||"user");
+  el("mandatoryTargetBio").textContent=targetProfile?.bio||"تابع هذا الحساب للمتابعة واستخدام المنصة.";
+  msg("mandatoryFollowStatus","");const btn=el("mandatoryFollowBtn");btn.disabled=false;btn.textContent="متابعة";
+  el("mandatoryFollowModal").classList.remove("hidden");
+  return await new Promise(resolve=>{
+   btn.onclick=async()=>{
+    btn.disabled=true;msg("mandatoryFollowStatus","جارٍ المتابعة...");
+    try{const {error:insErr}=await client.from("follows").insert({follower_id:currentUser.id,following_id:MANDATORY_FOLLOW_USER_ID,status:"accepted"});if(insErr && !String(insErr.message||"").toLowerCase().includes("duplicate"))throw insErr;el("mandatoryFollowModal").classList.add("hidden");await loadStats();resolve(true)}
+    catch(e){msg("mandatoryFollowStatus","تعذر المتابعة: "+e.message);btn.disabled=false}
+   };
+  });
+ }catch(e){el("mandatoryFollowModal")?.classList.add("hidden");return true}
+}
+
+function closeAllStandaloneScreens(){stopLiveCamera();stopIntentPolling();el("menuScreen")?.classList.add("hidden");el("settingsScreen")?.classList.add("hidden");el("toolScreen")?.classList.add("hidden")}
+function openMenuScreen(){closeAllStandaloneScreens();el("menuScreen").classList.remove("hidden")}
+function closeMenuScreen(){el("menuScreen").classList.add("hidden")}
+async function openSettingsScreen(){el("menuScreen").classList.add("hidden");el("settingsScreen").classList.remove("hidden");applyAppPrefs();await loadMyVerificationStatus()}
+function closeSettingsScreen(){el("settingsScreen").classList.add("hidden");el("menuScreen").classList.remove("hidden")}
+function closeToolScreen(){stopLiveCamera();stopIntentPolling();el("toolScreen").classList.add("hidden");el("menuScreen").classList.remove("hidden")}
+
+function getMethodArabicName(method){const map={zaincash:"زين كاش",superqi:"سوبر كي",zain_iq:"زين العراق",asiacell:"آسياسيل"};return map[method]||method}
+function watchPaymentIntent(intentId){
+ stopIntentPolling();let checks=0;
+ intentPollTimer=setInterval(async()=>{
+  checks++;if(checks>40){stopIntentPolling();return}
+  try{
+   const {data}=await client.from("payment_intents").select("status,coins_amount").eq("id",intentId).maybeSingle();
+   if(data?.status==="paid"){stopIntentPolling();msg("topupStatusMsg",`تم تأكيد الدفع وإضافة ${data.coins_amount} عملة إلى رصيدك تلقائياً ✓`);openStandaloneTool("topup")}
+   else if(data?.status==="failed" || data?.status==="expired"){stopIntentPolling();msg("topupStatusMsg","لم تكتمل عملية الدفع أو انتهت صلاحيتها.")}
+  }catch(e){}
+ },3000);
+}
+
+async function openStandaloneTool(tool){
+ const body=el("toolScreenBody");el("menuScreen").classList.add("hidden");el("settingsScreen").classList.add("hidden");el("toolScreen").classList.remove("hidden");
+ const st=getDertState();const uname=currentProfile?.username||"user";const fname=currentProfile?.full_name||"مستخدم DERT";
+
+ if(tool==="topup"){
+  el("toolScreenTitle").textContent="شراء العملات";const currentBal=await fetchWalletBalance(currentUser.id);
+  const pkgs=[{amount:5000,coins:100,label:"5,000 د.ع = 100 عملة"},{amount:10000,coins:220,label:"10,000 د.ع = 220 عملة"},{amount:25000,coins:600,label:"25,000 د.ع = 600 عملة"}];
+  let intents=[];try{const {data}=await client.from("payment_intents").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(10);intents=data||[]}catch(e){}
+  body.innerHTML=`
+   <div class="tt-split-summary" style="margin-bottom:10px"><div class="tt-split-box" style="grid-column:1/-1"><strong>${currentBal}</strong><span>رصيد العملات الحالي المؤكد في حسابك</span></div></div>
+   <div class="tt-sub-box">
+    <strong>اختر طريقة الدفع الآمنة</strong>
+    <div class="pay-methods-grid">
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='zaincash'?'active':''}" data-m="zaincash">زين كاش</button>
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='superqi'?'active':''}" data-m="superqi">سوبر كي</button>
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='zain_iq'?'active':''}" data-m="zain_iq">زين العراق</button>
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='asiacell'?'active':''}" data-m="asiacell">آسياسيل</button>
+    </div>
+    <strong>اختر الباقة</strong>
+    <div class="packages-grid">${pkgs.map((p,idx)=>`<button type="button" class="pkg-btn ${selectedPackage.coins===p.coins?'active':''}" data-idx="${idx}">${p.label}</button>`).join("")}</div>
+    <p class="small">يتم إنشاء عملية دفع رسمية وموثقة من الخادم؛ تُضاف العملات تلقائياً فور إتمام الدفع.</p>
+    <button type="button" class="green full" id="startSecureTopupBtn">متابعة إلى الدفع الآمن</button>
+    <p id="topupStatusMsg" class="small" style="margin-top:8px"></p>
+   </div>
+   <div class="tt-sub-box"><strong>سجل عمليات الدفع</strong><div>${intents.length?intents.map(t=>`<div class="item small"><strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع) — الحالة: <span class="status-${t.status}">${t.status}</span>${t.checkout_url && t.status==='pending'?` • <a href="${t.checkout_url}" target="_blank" style="color:#25f4ee">فتح رابط الدفع</a>`:""}</div>`).join(""):`<div class="small">لا توجد عمليات دفع بعد</div>`}</div></div>`;
+  body.querySelectorAll(".pay-method-btn").forEach(btn=>{btn.onclick=()=>{selectedPayMethod=btn.dataset.m;body.querySelectorAll(".pay-method-btn").forEach(b=>b.classList.toggle("active",b===btn))}});
+  body.querySelectorAll(".pkg-btn").forEach(btn=>{btn.onclick=()=>{const p=pkgs[Number(btn.dataset.idx)];if(!p)return;selectedPackage={amount:p.amount,coins:p.coins};body.querySelectorAll(".pkg-btn").forEach(b=>b.classList.toggle("active",b===btn))}});
+  el("startSecureTopupBtn").onclick=async()=>{
+   const b=el("startSecureTopupBtn");b.disabled=true;msg("topupStatusMsg","جارٍ إنشاء طلب الدفع الآمن...");
+   try{
+    const {data,error}=await client.functions.invoke("create-payment-intent",{body:{payment_method:selectedPayMethod,package_amount:selectedPackage.amount}});
+    if(error)throw error;if(!data?.ok || !data?.intent_id)throw new Error(data?.error || "تعذر إنشاء طلب الدفع");
+    if(data.checkout_url)window.open(data.checkout_url,"_blank","noopener,noreferrer");
+    msg("topupStatusMsg","تم فتح صفحة الدفع. ننتظر تأكيد الدفع تلقائياً...");watchPaymentIntent(data.intent_id);
+   }catch(e){msg("topupStatusMsg","تعذر بدء الدفع: "+(e.message||e));b.disabled=false}
+  };return;
+ }
+
+ if(tool==="balance"){
+  el("toolScreenTitle").textContent="الرصيد والأرباح (60% / 40%)";const dbBal=await fetchWalletBalance(currentUser.id);
+  const streamerBal=dbBal || Number(st.streamerBalance||0);const ownerProfit=Number(st.ownerProfit||0);const log=Array.isArray(st.supportSplitLog)?st.supportSplitLog:[];
+  body.innerHTML=`
+   <div class="tt-split-summary"><div class="tt-split-box"><strong>${streamerBal}</strong><span>رصيدك الحالي / حصة البث (60%)</span></div><div class="tt-split-box"><strong>${ownerProfit}</strong><span>أرباحك أنت (40%)</span></div></div>
+   <div class="user-row-actions" style="margin-top:10px"><button type="button" class="green" onclick="openStandaloneTool('topup')" style="flex:1">🪙 شراء عملات</button></div>
+   <div class="tt-sub-box" style="margin-top:10px"><strong>تسجيل عملية دعم جديدة</strong><input id="supportAmountInput" type="number" min="1" placeholder="اكتب قيمة الدعم مثل 100"><button type="button" class="green full" id="addSupportSplitBtn">توزيع الدعم (60% له / 40% لك)</button></div>
+   <div class="tt-sub-box" style="margin-top:10px"><strong>طلب سحب الأرباح</strong><input id="withdrawAmountInput" type="number" min="1" placeholder="مبلغ السحب المطلوب"><input id="withdrawMethodInput" placeholder="طريقة السحب (زين كاش / سوبر كي)"><button type="button" class="full" id="submitWithdrawBtn">إرسال طلب سحب</button><p id="withdrawStatusMsg" class="small" style="margin-top:6px"></p></div>
+   <div id="coinHistoryBox" style="margin-top:10px">${log.length?log.map(x=>`<div class="item small">${x.giftLabel} • إجمالي: ${x.total} | صاحب البث (60%): ${x.streamerCut} | أرباحك (40%): ${x.ownerCut} • ${x.time}</div>`).join(""):`<div class="small">لا توجد عمليات دعم مسجلة بعد</div>`}</div>`;
+  el("addSupportSplitBtn").onclick=async()=>{const amt=Number(el("supportAmountInput").value);if(!Number.isFinite(amt) || amt<=0){alert("أدخل مبلغاً صحيحاً");return}await processSupportSplit(amt,"🎁 دعم",currentUser.id);openStandaloneTool("balance")};
+  el("submitWithdrawBtn").onclick=async()=>{
+   const wAmt=Number(el("withdrawAmountInput").value);const wMethod=el("withdrawMethodInput").value.trim();
+   if(!Number.isFinite(wAmt) || wAmt<=0){msg("withdrawStatusMsg","أدخل مبلغ سحب صحيح");return}
+   if(!wMethod){msg("withdrawStatusMsg","اكتب طريقة السحب أو رقم المحفظة");return}
+   const b=el("submitWithdrawBtn");b.disabled=true;msg("withdrawStatusMsg","جارٍ إرسال طلب السحب...");
+   try{const {error}=await client.from("withdrawal_requests").insert({user_id:currentUser.id,amount:wAmt,method_details:wMethod,status:"pending"});if(error)throw error;msg("withdrawStatusMsg","تم إرسال طلب السحب بنجاح إلى الإدارة ✓");el("withdrawAmountInput").value="";el("withdrawMethodInput").value=""}
+   catch(e){msg("withdrawStatusMsg","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
+  };return;
+ }
+
+ if(tool==="activity"){
+  el("toolScreenTitle").textContent="مركز الأنشطة";body.textContent="جارٍ تحميل نشاطاتك...";
+  const [{count:pCnt},{count:cCnt}]=await Promise.all([client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),client.from("post_comments").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id)]);
+  body.innerHTML=`<div class="tt-stat-grid"><div class="tt-stat-tile"><strong>${pCnt||0}</strong><span>منشوراتك</span></div><div class="tt-stat-tile"><strong>${cCnt||0}</strong><span>تعليقاتك</span></div><div class="tt-stat-tile"><strong>${(st.likedPosts||[]).length}</strong><span>إعجاباتك</span></div><div class="tt-stat-tile"><strong>${(st.savedPosts||[]).length}</strong><span>محفوظاتك</span></div></div><button type="button" class="full gray" onclick="closeAllStandaloneScreens();openTab('feed')">الانتقال إلى منشوراتي</button>`;return;
+ }
+ if(tool==="offline"){
+  el("toolScreenTitle").textContent="فيديوهات دون اتصال بالإنترنت";const saved=Array.isArray(st.offlineVideos)?st.offlineVideos:[];
+  const {data:vids}=await client.from("posts").select("id,content,image_url,created_at").eq("media_type","video").limit(10);const list=vids||[];
+  body.innerHTML=`<p class="small">اختر فيديوهات لحفظها في قائمة الوصول السريع:</p><div id="offlineListBox"></div>`;const box=el("offlineListBox");
+  if(!list.length){box.innerHTML=`<div class="small">لا توجد فيديوهات متاحة حالياً</div>`;return}
+  list.forEach(v=>{
+   const isSaved=saved.some(item=>item.id===v.id);const row=document.createElement("div");row.className="item";
+   const title=document.createElement("strong");title.textContent=(v.content||"فيديو DERT").slice(0,45);
+   const btn=document.createElement("button");btn.type="button";btn.className=isSaved?"gray":"green";btn.style.marginTop="8px";btn.textContent=isSaved?"محفوظ ✓":"حفظ للقائمة السريعة";
+   btn.onclick=()=>{const current=getDertState().offlineVideos||[];const exists=current.some(item=>item.id===v.id);saveDertState({offlineVideos:exists?current.filter(item=>item.id!==v.id):[v,...current].slice(0,12)});openStandaloneTool("offline")};
+   row.append(title,document.createElement("br"),btn);box.appendChild(row);
+  });return;
+ }
+ if(tool==="qr"){
+  el("toolScreenTitle").textContent="رمز QR لديك";const shareUrl=`${DERT_SITE_URL}?user=${encodeURIComponent(uname)}`;
+  const qrImg=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`;
+  body.innerHTML=`<div class="tt-qr-box"><img src="${qrImg}" alt="QR Code" style="width:180px;height:180px;border-radius:10px"><div style="font-weight:800;margin-top:8px">${fname}</div><div style="font-size:13px;color:#444">@${uname}</div></div><button type="button" class="full" id="copyQrLinkBtn">نسخ رابط الحساب</button>`;
+  el("copyQrLinkBtn").onclick=async()=>{try{await navigator.clipboard.writeText(shareUrl)}catch(e){}alert("تم نسخ رابط الحساب: "+shareUrl)};return;
+ }
+ if(tool==="minis"){
+  el("toolScreenTitle").textContent="DERT Minis";
+  body.innerHTML=`<div class="tt-sub-box"><strong>⚡ مولّد هاشتاغات سريع</strong><input id="miniTopicInput" placeholder="اكتب موضوع الفيديو..."><button type="button" class="full" id="genTagsBtn">توليد هاشتاغات</button><div id="miniTagsOut" class="small" style="margin-top:8px"></div></div><div class="tt-sub-box"><strong>🎵 مستعرض الأغاني</strong><button type="button" class="full gray" onclick="closeAllStandaloneScreens();openMusicPicker()">فتح مكتبة الأغاني</button></div>`;
+  el("genTagsBtn").onclick=()=>{const t=(el("miniTopicInput").value||"DERT").trim().replace(/\s+/g,"_");el("miniTagsOut").textContent=`#${t} #DERT #ترند #محتوى_عربي #اكسبلور`};return;
+ }
+ if(tool==="shop"){
+  el("toolScreenTitle").textContent="المجموعة التجارية";const items=Array.isArray(st.shopItems)?st.shopItems:[{name:"باقة تصميم احترافية",price:"$15"},{name:"قالب واجهة مخصص",price:"$25"}];
+  body.innerHTML=`<div id="shopItemsList">${items.map(i=>`<div class="item"><strong>${i.name}</strong><div class="small">السعر: ${i.price}</div></div>`).join("")}</div><div class="tt-sub-box"><strong>إضافة عنصر جديد</strong><input id="shopItemName" placeholder="اسم المنتج أو الخدمة"><input id="shopItemPrice" placeholder="السعر مثال: $10"><button type="button" class="full green" id="addShopItemBtn">إضافة للمجموعة</button></div>`;
+  el("addShopItemBtn").onclick=()=>{const name=el("shopItemName").value.trim();const price=el("shopItemPrice").value.trim()||"مجاناً";if(!name)return;saveDertState({shopItems:[...items,{name,price}]});openStandaloneTool("shop")};return;
+ }
+ if(tool==="studio"){
+  el("toolScreenTitle").textContent="DERT Studio";
+  const [{count:postsC},{count:followersC}]=await Promise.all([client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id),client.from("follows").select("*",{count:"exact",head:true}).eq("following_id",currentUser.id)]);
+  body.innerHTML=`<div class="tt-stat-grid"><div class="tt-stat-tile"><strong>${postsC||0}</strong><span>إجمالي المنشورات</span></div><div class="tt-stat-tile"><strong>${followersC||0}</strong><span>المتابعون</span></div></div><button type="button" class="full" onclick="closeAllStandaloneScreens();openCreateModal()">+ نشر محتوى جديد الآن</button>`;return;
+ }
+ if(tool==="promote"){
+  el("toolScreenTitle").textContent="الترويج";const {data:myPosts}=await client.from("posts").select("id,content").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(10);
+  const opts=(myPosts||[]).map(p=>`<option value="${p.id}">${(p.content||"منشور بدون نص").slice(0,35)}</option>`).join("");
+  body.innerHTML=`<div class="tt-sub-box"><label class="small">اختر منشوراً للترويج</label><select id="promoPostSelect">${opts||`<option value="">لا توجد منشورات</option>`}</select><label class="small">مدة الترويج</label><select id="promoDaysSelect"><option value="1">يوم واحد</option><option value="3">3 أيام</option><option value="7">7 أيام</option></select><button type="button" class="full" id="startPromoBtn">تفعيل الترويج</button><div id="promoStatus" class="small" style="margin-top:8px"></div></div>`;
+  el("startPromoBtn").onclick=()=>{el("promoStatus").textContent=`تم جدولة الترويج لمدة ${el("promoDaysSelect").value} يوم بنجاح ✓`};
+ }
+}
+
+async function switchProfileMediaTab(mode){activeProfileMediaTab=mode;el("profTabPosts")?.classList.toggle("active",mode==="posts");el("profTabVideos")?.classList.toggle("active",mode==="videos");el("profTabSaved")?.classList.toggle("active",mode==="saved");await loadProfileMediaGrid()}
+async function loadProfileMediaGrid(){
+ const grid=el("profileMediaGrid");if(!grid || !currentUser)return;grid.replaceChildren();
+ const loading=document.createElement("div");loading.className="small";loading.style.cssText="grid-column:1/-1;text-align:center;padding:18px";loading.textContent="جارٍ التحميل...";grid.appendChild(loading);
+ try{
+  let rows=[];
+  if(activeProfileMediaTab==="saved")rows=Array.isArray(getDertState().savedPosts)?getDertState().savedPosts:[];
+  else{let q=client.from("posts").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(30);if(activeProfileMediaTab==="videos")q=q.eq("media_type","video");const {data,error}=await q;if(error)throw error;rows=data||[]}
+  grid.replaceChildren();
+  if(!rows.length){const empty=document.createElement("div");empty.className="small";empty.style.cssText="grid-column:1/-1;text-align:center;padding:24px";empty.textContent=activeProfileMediaTab==="saved"?"لا توجد محفوظات بعد":(activeProfileMediaTab==="videos"?"لا توجد فيديوهات بعد":"لا توجد منشورات بعد");grid.appendChild(empty);return}
+  rows.forEach(post=>{
+   const tile=document.createElement("div");tile.className="tt-ig-tile";const imgs=getPostImages(post);
+   if(imgs.length){const img=document.createElement("img");img.src=imgs[0];img.loading="lazy";tile.appendChild(img);if(imgs.length>1){const b=document.createElement("span");b.className="tt-ig-badge";b.textContent=imgs.length+" صور";tile.appendChild(b)}}
+   else if(post.media_type==="video" && post.image_url){const v=document.createElement("video");v.src=post.image_url;v.muted=true;v.playsInline=true;tile.appendChild(v);const b=document.createElement("span");b.className="tt-ig-badge";b.textContent="▶ فيديو";tile.appendChild(b)}
+   else{const parsed=parseSongFromPost(post);tile.textContent=(parsed.cleanContent||parsed.song?.title||"منشور").slice(0,48)}
+   tile.onclick=()=>openPostComments(post);grid.appendChild(tile);
+  });
+ }catch(e){grid.replaceChildren();const err=document.createElement("div");err.className="small";err.style.cssText="grid-column:1/-1;text-align:center;padding:16px";err.textContent="تعذر تحميل المحتوى";grid.appendChild(err)}
+}
+
+function parseSongFromPost(post){
+ const raw=post?.content||"";const match=raw.match(/\[🎵\s*([^\]]+)\]/);
+ if(match)return{song:{title:match[1].trim(),url:DERT_SONGS[0].url},cleanContent:raw.replace(/\n?\[🎵\s*[^\]]+\]/g,"").trim()};
+ return{song:null,cleanContent:raw};
+}
+function togglePreviewSong(song){
+ if(!song?.url)return;
+ if(playingSongId===song.id && !previewAudio.paused){previewAudio.pause();playingSongId=null;renderMusicList(el("musicSearchInput")?.value||"");return}
+ previewAudio.pause();previewAudio.src=song.url;previewAudio.currentTime=0;playingSongId=song.id;previewAudio.play().catch(()=>{});
+ previewAudio.onended=()=>{playingSongId=null;renderMusicList(el("musicSearchInput")?.value||"")};renderMusicList(el("musicSearchInput")?.value||"");
+}
+function renderMusicList(query=""){
+ const box=el("musicListBox");if(!box)return;const q=query.trim().toLowerCase();
+ const list=DERT_SONGS.filter(s=>!q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q));
+ box.replaceChildren();if(!list.length){box.textContent="لا توجد أغاني مطابقة";return}
+ list.forEach(song=>{
+  const row=document.createElement("div");row.className="music-row";const info=document.createElement("div");info.className="music-row-info";
+  const t=document.createElement("strong");t.textContent="♫ "+song.title;const sub=document.createElement("div");sub.className="small";sub.textContent=song.artist+" • "+song.duration;
+  info.append(t,sub);const actions=document.createElement("div");actions.className="music-row-actions";
+  const playBtn=document.createElement("button");playBtn.type="button";playBtn.className="gray";playBtn.textContent=(playingSongId===song.id && !previewAudio.paused)?"⏸":"▶";playBtn.onclick=()=>togglePreviewSong(song);
+  const pickBtn=document.createElement("button");pickBtn.type="button";pickBtn.className="green";pickBtn.textContent="اختيار";pickBtn.onclick=()=>selectSong(song);
+  actions.append(playBtn,pickBtn);row.append(info,actions);box.appendChild(row);
+ });
+}
+function openMusicPicker(){el("musicPickerModal").classList.remove("hidden");el("musicSearchInput").value="";renderMusicList("")}
+function closeMusicPicker(){previewAudio.pause();playingSongId=null;el("musicPickerModal").classList.add("hidden")}
+function selectSong(song){selectedSong=song;el("selectedMusicLabel").textContent="♫ "+song.title;el("selectedMusicBar").classList.remove("hidden");closeMusicPicker()}
+function clearSelectedMusic(){selectedSong=null;el("selectedMusicBar").classList.add("hidden")}
+el("openMusicPickerBtn").onclick=openMusicPicker;el("musicSearchInput").oninput=()=>renderMusicList(el("musicSearchInput").value);
+function openCreateModal(){if(!currentUser){alert("سجل الدخول أولاً");return}updateMediaPickLabels();updateDescCounter();el("dertCreateModal").style.display="flex"}
+
+function goBackSmart(){
+ if(!el("appLockModal").classList.contains("hidden"))return;
+ if(!el("callModal").classList.contains("hidden")){endCall();return}
+ if(!el("storyModal").classList.contains("hidden")){closeStoryModal();return}
+ if(!el("toolScreen").classList.contains("hidden")){closeToolScreen();return}
+ if(!el("settingsScreen").classList.contains("hidden")){closeSettingsScreen();return}
+ if(!el("menuScreen").classList.contains("hidden")){closeMenuScreen();return}
+ if(!el("commentModal").classList.contains("hidden")){closePostComments();return}
+ if(!el("userProfileModal").classList.contains("hidden")){closeUserProfileModal();return}
+ if(!el("followModal").classList.contains("hidden")){closeFollowModal();return}
+ if(!el("musicPickerModal").classList.contains("hidden")){closeMusicPicker();return}
+ if(el("dertCreateModal").style.display==="flex"){el("dertCreateModal").style.display="none";return}
+ if(activeConversation){el("closeChatBtn").click();return}
+ if(tabHistory.length>1){tabHistory.pop();openTab(tabHistory[tabHistory.length-1]||"videos",null,true)}else openTab("videos",null,true);
+}
+
+function addVerifiedName(element,name,verified){
+ element.replaceChildren();element.appendChild(document.createTextNode(name||"مستخدم DERT"));
+ if(verified===true){const b=document.createElement("span");b.className="verified-badge";b.textContent="✓";element.appendChild(b)}
+}
+function makeAvatar(url,name){
+ if(url){const i=document.createElement("img");i.className="avatar";i.src=url;i.alt="صورة الحساب";return i}
+ const d=document.createElement("div");d.className="avatar";d.textContent=(name||"D").charAt(0).toUpperCase();return d;
+}
+function showAvatar(url,name){el("avatarDisplay").replaceChildren(makeAvatar(url,name))}
+function stopVideoPlayback(){if(videoObserver){videoObserver.disconnect();videoObserver=null}document.querySelectorAll("#videosList video").forEach(v=>v.pause())}
+function switchVideoFeedMode(mode){videoFeedMode=mode;openTab("videos",null);el("topTabVideos")?.classList.toggle("active",mode==="foryou");el("topTabFollowing")?.classList.toggle("active",mode==="following");loadVideos()}
+
+function openTab(name,button,fromBack=false){
+ closeAllStandaloneScreens();
+ if(name==="admin"&&!isAdmin()){alert("غير مصرح لك");return}
+ if(name!=="videos")stopVideoPlayback();
+ document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+ el(name).classList.add("active");
+ if(!fromBack && tabHistory[tabHistory.length-1]!==name)tabHistory.push(name);
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+ if(button)button.classList.add("active");
+ else{const b=[...document.querySelectorAll("nav button")].find(x=>x.getAttribute("onclick")?.includes("'"+name+"'"));if(b)b.classList.add("active")}
+ document.querySelectorAll(".tt-top-tab").forEach(t=>t.classList.remove("active"));
+ if(name==="videos"){if(videoFeedMode==="following")el("topTabFollowing")?.classList.add("active");else el("topTabVideos")?.classList.add("active")}
+ if(name==="feed")el("topTabFeed")?.classList.add("active");
+ if(name==="chats")el("topTabChats")?.classList.add("active");
+ if(name==="calls")el("topTabCalls")?.classList.add("active");
+
+ if(name==="videos")loadVideos();
+ if(name==="chats"){renderStoriesStrip();loadChats()}
+ if(name==="calls"){loadCallsLog()}
+ if(name==="people"){loadFriendRequestsAndFriends()}
+ if(name==="alerts")loadAlerts();
+ if(name==="profile"){loadStats();loadProfileMediaGrid();loadProfile().catch(e=>msg("profileMessage",e.message))}
+ if(name==="feed")loadPosts();
+ if(name==="admin"){loadAdminTopups();loadAdminWithdrawals();loadAdminRequests();loadReports();loadAdminSupport()}
+}
+
+function showLogin(){
+ stopPresenceLoop();endCall();closeStoryModal();el("mandatoryFollowModal")?.classList.add("hidden");closeAllStandaloneScreens();
+ closePostComments();closeFollowModal();closeUserProfileModal();closeMusicPicker();stopVideoPlayback();
+ el("auth").classList.remove("hidden");el("home").classList.add("hidden");
+ el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
+ currentUser=null;currentProfile=null;activeConversation=null;activeReceiver=null;
+ el("adminNav").classList.add("hidden");el("mainNav").classList.remove("has-admin");
+ stopRealtime();stopAlertsRealtime();stopCallsRealtime();
+}
+
+async function uploadFile(file,folder){
+ if(!file)return null;
+ if(file.size>50*1024*1024)throw new Error("حجم الملف أكبر من 50 ميغابايت");
+ const ext=(file.name.split(".").pop()||"file").toLowerCase().replace(/[^a-z0-9]/g,"")||"bin";
+ const path=currentUser.id+"/"+folder+"/"+crypto.randomUUID()+"."+ext;
+ const {error}=await client.storage.from("posts").upload(path,file,{contentType:file.type||"application/octet-stream"});
+ if(error)throw error;
+ return client.storage.from("posts").getPublicUrl(path).data.publicUrl;
+}
+
+function showAuthForm(mode){
+ el("welcomeScreen").classList.add("hidden");el("authForm").classList.remove("hidden");
+ el("loginBtn").classList.toggle("hidden",mode==="signup");el("signupBtn").classList.toggle("hidden",mode!=="signup");
+ el("resendEmailBtn").classList.add("hidden");msg("message","");
+}
+el("openSignup").onclick=()=>showAuthForm("signup");
+el("openLogin").onclick=()=>showAuthForm("login");
+el("backWelcome").onclick=()=>{el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");msg("message","");el("resendEmailBtn").classList.add("hidden")};
+el("emailMode").onclick=()=>{el("emailMode").classList.add("active");el("phoneMode").classList.remove("active");el("emailArea").classList.remove("hidden");el("phoneArea").classList.add("hidden")};
+el("phoneMode").onclick=()=>{el("phoneMode").classList.add("active");el("emailMode").classList.remove("active");el("emailArea").classList.add("hidden");el("phoneArea").classList.remove("hidden")};
+
+el("recoverAccountBtn").onclick=async()=>{
+ const em=el("email").value.trim().toLowerCase();
+ if(!em||!em.includes("@")){msg("message","اكتب البريد الإلكتروني أولاً لاستعادة كلمة المرور.");return}
+ const b=el("recoverAccountBtn");b.disabled=true;msg("message","جارٍ إرسال رابط استعادة كلمة المرور...");
+ try{const {error}=await client.auth.resetPasswordForEmail(em,{redirectTo:DERT_SITE_URL});if(error)throw error;msg("message","تم إرسال رابط استعادة كلمة المرور إلى بريدك الإلكتروني ✓")}
+ catch(e){msg("message","تعذر إرسال الرابط: "+e.message)}finally{b.disabled=false}
+};
+
+el("signupBtn").onclick=async()=>{
+ const email=el("email").value.trim().toLowerCase(),password=el("password").value;
+ if(!email||!email.includes("@")||password.length<6){msg("message","أدخل بريداً صحيحاً وكلمة مرور 6 أحرف على الأقل");return}
+ const b=el("signupBtn");b.disabled=true;msg("message","جارٍ إنشاء الحساب...");
+ try{
+  const {data,error}=await client.auth.signUp({email,password,options:{emailRedirectTo:DERT_SITE_URL}});
+  if(error)throw error;
+  if(data.session&&data.user)await showHome(data.user);
+  else{el("resendEmailBtn").classList.remove("hidden");msg("message","تم إنشاء الحساب. افتح بريدك لتأكيد الحساب.")}
+ }catch(e){
+  el("resendEmailBtn").classList.remove("hidden");
+  const secMatch=String(e.message||"").match(/after\s+(\d+)\s+seconds/i);
+  if(secMatch)msg("message",`يرجى الانتظار ${secMatch[1]} ثانية ثم المحاولة مرة واحدة.`);
+  else msg("message","تعذر إنشاء الحساب: "+e.message);
+ }finally{b.disabled=false}
+};
+
+el("resendEmailBtn").onclick=async()=>{
+ const email=el("email").value.trim().toLowerCase();
+ if(!email||!email.includes("@")){msg("message","اكتب البريد الإلكتروني أولاً");return}
+ const b=el("resendEmailBtn");b.disabled=true;
+ try{const {error}=await client.auth.resend({type:"signup",email,options:{emailRedirectTo:DERT_SITE_URL}});if(error)throw error;msg("message","تم إعادة إرسال رسالة التأكيد.")}
+ catch(e){msg("message","تعذر إعادة الإرسال: "+e.message)}finally{b.disabled=false}
+};
+
+el("loginBtn").onclick=async()=>{
+ const email=el("email").value.trim().toLowerCase(),password=el("password").value;
+ if(!email||!password){msg("message","أدخل البريد وكلمة المرور");return}
+ const b=el("loginBtn");b.disabled=true;msg("message","جارٍ تسجيل الدخول...");
+ try{const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;await showHome(data.user)}
+ catch(e){msg("message","تعذر تسجيل الدخول: "+e.message)}finally{b.disabled=false}
+};
+
+el("sendOtpBtn").onclick=async()=>{
+ const phone=el("phone").value.trim();if(!/^\+[1-9]\d{7,14}$/.test(phone)){msg("message","اكتب الرقم بالصيغة الدولية مثل +9647XXXXXXXXX");return}
+ pendingPhone=phone;msg("message","جارٍ إرسال الرمز...");
+ try{const {error}=await client.auth.signInWithOtp({phone});if(error)throw error;el("otpArea").classList.remove("hidden");msg("message","تم إرسال الرمز.")}
+ catch(e){msg("message","تعذر إرسال الرمز: "+e.message)}
+};
+el("verifyOtpBtn").onclick=async()=>{
+ const token=el("otp").value.trim();if(!pendingPhone||!token){msg("message","أدخل رمز التحقق");return}
+ try{const {data,error}=await client.auth.verifyOtp({phone:pendingPhone,token,type:"sms"});if(error)throw error;if(data.user)await showHome(data.user)}
+ catch(e){msg("message","تعذر تأكيد الرمز: "+e.message)}
+};
+
+el("logoutBtn").onclick=async()=>{
+ await updatePresence(false);
+ const {error}=await client.auth.signOut();
+ if(error){msg("deleteAccountStatus",error.message);return}
+ showLogin();
+};
+
+el("deleteAccountBtn").onclick=async()=>{
+ if(!currentUser)return;
+ const ok1=confirm("تحذير: سيتم حذف حسابك وجميع بياناتك ومنشوراتك ورسائلك نهائياً ولا يمكن التراجع. هل أنت متأكد؟");
+ if(!ok1)return;
+ const ok2=prompt("اكتب (حذف) لتأكيد الحذف النهائي لحسابك:");
+ if(ok2?.trim()!=="حذف"){msg("deleteAccountStatus","تم إلغاء عملية حذف الحساب.");return}
+ const b=el("deleteAccountBtn");b.disabled=true;msg("deleteAccountStatus","جارٍ حذف الحساب نهائياً...");
+ try{
+  const {error}=await client.rpc("delete_own_account");
+  if(error)throw error;
+  try{localStorage.removeItem("dert_profile_cache_"+currentUser.id);localStorage.removeItem("dert_user_state_"+currentUser.id);localStorage.removeItem("dert_security_v1_"+currentUser.id)}catch(e){}
+  await client.auth.signOut();
+  showLogin();
+ }catch(e){
+  msg("deleteAccountStatus","تعذر الحذف النهائي: "+(e.message||"تأكد من تنفيذ دالة delete_own_account في SQL."));
+  b.disabled=false;
+ }
+};
+
+async function loadProfile(){
+ if(!currentUser)return;
+ const cached=getLocalProfileCache(currentUser.id);
+ if(cached){currentProfile={...(currentProfile||{}),...cached};renderProfileUI(currentProfile)}
+ let data=null;
+ try{
+  const res=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
+  if(res.error)throw res.error;
+  data=res.data;
+ }catch(e){
+  if(cached){el("adminNav").classList.toggle("hidden",!isAdmin());el("mainNav").classList.toggle("has-admin",isAdmin());await loadMyVerificationStatus();return}
+  throw e;
+ }
+ const fallbackUser="user_"+currentUser.id.replace(/-/g,"").slice(0,8);
+ const fallbackName=currentUser.email?currentUser.email.split("@")[0]:"مستخدم DERT";
+ if(!data){
+  const seed={id:currentUser.id,username:cached?.username||fallbackUser,full_name:cached?.full_name||fallbackName,bio:cached?.bio||"",avatar_url:cached?.avatar_url||null,is_online:true,last_seen:new Date().toISOString()};
+  try{const {data:created,error:createErr}=await client.from("profiles").upsert(seed,{onConflict:"id"}).select().single();if(!createErr && created)data=created;else data=seed}catch(e){data=seed}
+ }else if(!data.username){
+  const merged={...data,username:cached?.username||fallbackUser,full_name:data.full_name||cached?.full_name||fallbackName,bio:data.bio||cached?.bio||""};
+  try{const {data:updated}=await client.from("profiles").update({username:merged.username,full_name:merged.full_name,bio:merged.bio}).eq("id",currentUser.id).select().single();data=updated||merged}catch(e){data=merged}
+ }
+ currentProfile={...(cached||{}),...data};
+ saveLocalProfileCache(currentProfile,currentUser.id);
+ renderProfileUI(currentProfile);
+ el("adminNav").classList.toggle("hidden",!isAdmin());el("mainNav").classList.toggle("has-admin",isAdmin());
+ await loadMyVerificationStatus();
+}
+
+async function loadMyVerificationStatus(){
+ const btn=el("requestVerificationBtn");
+ if(currentProfile?.is_verified===true){btn.disabled=true;btn.textContent="✓ حسابك موثّق";msg("verificationMessage","حسابك موثّق بالفعل.");return}
+ const {data,error}=await client.from("verification_requests").select("status").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1);
+ if(error){msg("verificationMessage","تعذر فحص الطلب: "+error.message);return}
+ const latest=data?.[0];
+ if(latest?.status==="pending"){btn.disabled=true;btn.textContent="⏳ طلبك قيد المراجعة";msg("verificationMessage","طلبك قيد المراجعة.")}
+ else{btn.disabled=false;btn.textContent=latest?.status==="rejected"?"إعادة طلب التوثيق":"طلب توثيق الحساب";msg("verificationMessage",latest?.status==="rejected"?"تم رفض الطلب السابق.":"")}
+}
+el("requestVerificationBtn").onclick=async()=>{
+ const b=el("requestVerificationBtn");b.disabled=true;msg("verificationMessage","جارٍ إرسال الطلب...");
+ try{const {error}=await client.from("verification_requests").insert({user_id:currentUser.id,status:"pending"});if(error)throw error;b.textContent="⏳ طلبك قيد المراجعة";msg("verificationMessage","تم إرسال الطلب.")}
+ catch(e){msg("verificationMessage","تعذر إرسال الطلب: "+e.message);b.disabled=false}
+};
+el("editProfileBtn").onclick=()=>{
+ if(currentProfile){
+  if(el("fullName"))el("fullName").value=currentProfile.full_name||"";
+  if(el("username"))el("username").value=currentProfile.username||"";
+  if(el("bio"))el("bio").value=currentProfile.bio||"";
+ }
+ el("profileSettings").classList.remove("hidden");el("editProfileBtn").classList.add("hidden");msg("profileMessage","");
+};
+el("cancelProfileBtn").onclick=()=>{el("profileSettings").classList.add("hidden");el("editProfileBtn").classList.remove("hidden")};
+el("saveProfileBtn").onclick=async()=>{
+ if(!currentUser)return;
+ const newName=el("fullName").value.trim();
+ const rawUsername=el("username").value.trim().toLowerCase().replace(/[^a-z0-9_]/g,"");
+ const username=rawUsername.length>=3?rawUsername:(currentProfile?.username||("user_"+currentUser.id.replace(/-/g,"").slice(0,8)));
+ const newBio=el("bio").value.trim();
+ const b=el("saveProfileBtn");b.disabled=true;msg("profileMessage","جارٍ حفظ التعديلات...");
+ try{
+  let avatar=currentProfile?.avatar_url||getLocalProfileCache(currentUser.id)?.avatar_url||null;
+  const f=el("avatarFile").files[0];
+  if(f){
+   try{avatar=await uploadFile(f,"profile")}
+   catch(upErr){
+    avatar=await new Promise(res=>{
+     const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>res(avatar);r.readAsDataURL(f);
+    });
+   }
+  }
+  const updates={id:currentUser.id,full_name:newName||currentProfile?.full_name||"مستخدم DERT",username,bio:newBio,avatar_url:avatar};
+  let savedData=updates;
+  try{
+   const {data,error}=await client.from("profiles").upsert(updates,{onConflict:"id"}).select().single();
+   if(!error && data)savedData=data;
+   else if(error){
+    const fb=await client.from("profiles").update({full_name:updates.full_name,username:updates.username,bio:updates.bio,avatar_url:updates.avatar_url}).eq("id",currentUser.id).select().single();
+    if(!fb.error && fb.data)savedData=fb.data;
+   }
+  }catch(dbErr){}
+  currentProfile={...(currentProfile||{}),...savedData,...updates};
+  saveLocalProfileCache(currentProfile,currentUser.id);
+  renderProfileUI(currentProfile);
+  if(el("avatarFile"))el("avatarFile").value="";
+  el("profileSettings").classList.add("hidden");el("editProfileBtn").classList.remove("hidden");
+  msg("profileMessage","تم حفظ الاسم والوصف بنجاح ✓");
+ }catch(e){
+  const fallbackProfile={...(currentProfile||{}),full_name:newName,username,bio:newBio};
+  currentProfile=fallbackProfile;saveLocalProfileCache(fallbackProfile,currentUser.id);renderProfileUI(fallbackProfile);
+  msg("profileMessage","تم الحفظ محلياً: "+e.message);
+ }finally{b.disabled=false}
+};
+el("avatarFile").onchange=()=>{const f=el("avatarFile").files[0];if(!f)return;showAvatar(URL.createObjectURL(f),"D");el("profileSettings").classList.remove("hidden");el("editProfileBtn").classList.add("hidden")};
+
+async function openFollowList(mode){
+ if(!currentUser)return;el("followModal").classList.remove("hidden");el("followModalTitle").textContent=mode==="followers"?"المتابعون":"أتابع";
+ const box=el("followModalList");box.textContent="جارٍ التحميل...";
+ try{
+  const {data:rows,error}=mode==="followers"?await client.from("follows").select("follower_id").eq("following_id",currentUser.id):await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
+  if(error)throw error;const targetIds=[...new Set((rows||[]).map(r=>mode==="followers"?r.follower_id:r.following_id))];
+  box.replaceChildren();if(!targetIds.length){box.textContent="القائمة فارغة";return}
+  const {data:profiles,error:pErr}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified,is_online,last_seen").in("id",targetIds);
+  if(pErr)throw pErr;
+  (profiles||[]).forEach(p=>{
+   const row=document.createElement("div");row.className="item";
+   const line=document.createElement("div");line.className="chat-row clickable-user";line.onclick=()=>{closeFollowModal();openUserProfile(p.id)};
+   line.appendChild(makeAvatar(p.avatar_url,p.full_name||p.username));
+   const info=document.createElement("div");info.className="chat-row-info";
+   const title=document.createElement("strong");addVerifiedName(title,(p.full_name||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
+   const bio=document.createElement("div");bio.className="small";bio.innerHTML=`${formatPresenceLabel(p)} ${p.bio?"• "+p.bio:""}`;info.append(title,bio);line.appendChild(info);row.appendChild(line);
+   const actions=document.createElement("div");actions.className="user-row-actions";
+   const viewBtn=document.createElement("button");viewBtn.className="gray";viewBtn.textContent="الملف";viewBtn.onclick=()=>{closeFollowModal();openUserProfile(p.id)};
+   const dmBtn=document.createElement("button");dmBtn.textContent="دردشة";dmBtn.onclick=()=>{closeFollowModal();startChat(p.id,p.username)};
+   const callBtn=document.createElement("button");callBtn.className="green";callBtn.textContent="📞 اتصال";callBtn.onclick=()=>{closeFollowModal();initiateCall(p.id,p.full_name||p.username,p.avatar_url,false)};
+   actions.append(viewBtn,dmBtn,callBtn);row.appendChild(actions);box.appendChild(row);
+  });
+ }catch(e){box.textContent="تعذر تحميل القائمة: "+e.message}
+}
+function closeFollowModal(){el("followModal").classList.add("hidden")}
+
+async function openUserProfile(targetUserId){
+ if(!currentUser||!targetUserId)return;if(targetUserId===currentUser.id){openTab("profile");return}
+ const body=el("userProfileModalBody");el("userProfileModal").classList.remove("hidden");el("userProfileModalTitle").textContent="الملف الشخصي";body.textContent="جارٍ التحميل...";
+ try{
+  const {data:p,error}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified,is_online,last_seen").eq("id",targetUserId).maybeSingle();
+  if(error)throw error;if(!p){body.textContent="المستخدم غير موجود";return}
+  const [{count:postsCount},{count:followersCount},{count:followingCount},{data:followRow},{data:userPosts}]=await Promise.all([
+   client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",targetUserId),
+   client.from("follows").select("*",{count:"exact",head:true}).eq("following_id",targetUserId),
+   client.from("follows").select("*",{count:"exact",head:true}).eq("follower_id",targetUserId),
+   client.from("follows").select("follower_id,status").eq("follower_id",currentUser.id).eq("following_id",targetUserId).maybeSingle(),
+   client.from("posts").select("*").eq("user_id",targetUserId).order("created_at",{ascending:false}).limit(20)
+  ]);
+  body.replaceChildren();
+  const header=document.createElement("div");header.style.textAlign="center";
+  const av=makeAvatar(p.avatar_url,p.full_name||p.username);av.style.cssText="width:82px;height:82px;font-size:30px;margin:0 auto 10px";
+  const name=document.createElement("h2");name.style.margin="6px 0 2px";addVerifiedName(name,p.full_name||"مستخدم DERT",p.is_verified===true);
+  const user=document.createElement("div");user.className="small";user.textContent="@"+(p.username||"user");
+  const pres=document.createElement("div");pres.className="small";pres.style.marginTop="4px";pres.innerHTML=formatPresenceLabel(p);
+  const bio=document.createElement("p");bio.className="small";bio.textContent=p.bio||"";header.append(av,name,user,pres,bio);
+
+  let followers=followersCount||0;const stats=document.createElement("div");stats.className="profile-stats";
+  const fNum=document.createElement("strong");fNum.textContent=followers;
+  const fBox=document.createElement("div");fBox.append(fNum,Object.assign(document.createElement("span"),{textContent:"المتابعون"}));
+  stats.innerHTML=`<div><strong>${postsCount||0}</strong><span>المنشورات</span></div>`;
+  stats.append(fBox,Object.assign(document.createElement("div"),{innerHTML:`<strong>${followingCount||0}</strong><span>أتابع</span>`}));
+
+  const btns=document.createElement("div");btns.className="user-row-actions";btns.style.justifyContent="center";
+  let isFollowing=!!followRow;
+  const followBtn=document.createElement("button");followBtn.type="button";followBtn.textContent=isFollowing?"يتابع":"متابعة";
+  followBtn.onclick=async(e)=>{
+   e.stopPropagation();followBtn.disabled=true;
+   try{
+    if(isFollowing){await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",p.id);isFollowing=false;followBtn.textContent="متابعة";followers=Math.max(0,followers-1)}
+    else{await client.from("follows").insert({follower_id:currentUser.id,following_id:p.id,status:"accepted"});isFollowing=true;followBtn.textContent="يتابع";followers+=1}
+    fNum.textContent=followers;await loadStats();
+   }catch(err){alert(err.message)}finally{followBtn.disabled=false}
+  };
+  const friendReqBtn=document.createElement("button");friendReqBtn.type="button";friendReqBtn.className="gray";friendReqBtn.textContent="🤝 طلب صداقة";
+  friendReqBtn.onclick=async(e)=>{e.stopPropagation();await sendFriendRequest(p.id,p.full_name||p.username);friendReqBtn.textContent="✓ تم الإرسال";friendReqBtn.disabled=true};
+  const dmBtn=document.createElement("button");dmBtn.type="button";dmBtn.className="gray";dmBtn.textContent="💬 دردشة";
+  dmBtn.onclick=(e)=>{e.stopPropagation();closeUserProfileModal();startChat(p.id,p.username)};
+  const callVBtn=document.createElement("button");callVBtn.type="button";callVBtn.className="green";callVBtn.textContent="📞 صوتي";
+  callVBtn.onclick=(e)=>{e.stopPropagation();closeUserProfileModal();initiateCall(p.id,p.full_name||p.username,p.avatar_url,false)};
+  const callVidBtn=document.createElement("button");callVidBtn.type="button";callVidBtn.className="gray";callVidBtn.textContent="📹 فيديو";
+  callVidBtn.onclick=(e)=>{e.stopPropagation();closeUserProfileModal();initiateCall(p.id,p.full_name||p.username,p.avatar_url,true)};
+  const blkBtn=document.createElement("button");blkBtn.type="button";blkBtn.className="gray";
+  let blocked=isUserBlocked(p.id);blkBtn.textContent=blocked?"إلغاء الحظر":"🚫 حظر";
+  blkBtn.onclick=(e)=>{e.stopPropagation();blocked=toggleBlockUser(p.id,p.full_name||p.username);blkBtn.textContent=blocked?"إلغاء الحظر":"🚫 حظر";alert(blocked?"تم حظر المستخدم":"تم إلغاء الحظر")};
+  const repBtn=document.createElement("button");repBtn.type="button";repBtn.className="red";repBtn.textContent="إبلاغ";
+  repBtn.onclick=(e)=>{e.stopPropagation();reportContent("account",p.id)};
+  btns.append(followBtn,friendReqBtn,dmBtn,callVBtn,callVidBtn,blkBtn,repBtn);body.append(header,stats,btns);
+
+  (userPosts||[]).forEach(post=>{
+   const card=document.createElement("div");card.className="post";const parsed=parseSongFromPost(post);
+   if(parsed.cleanContent){const t=document.createElement("p");t.className="post-text";t.textContent=parsed.cleanContent;card.appendChild(t)}
+   if(parsed.song){const b=document.createElement("div");b.className="sound-line";b.textContent="♫ "+parsed.song.title;card.appendChild(b)}
+   const imgs=getPostImages(post);
+   if(imgs.length)card.appendChild(createImageCarousel(imgs));
+   else if(post.image_url && post.media_type==="video"){const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v)}
+   body.appendChild(card);
+  });
+ }catch(e){body.textContent="خطأ: "+e.message}
+}
+function closeUserProfileModal(){el("userProfileModal").classList.add("hidden")}
+
+function getPostImages(post){
+ if(Array.isArray(post.image_urls) && post.image_urls.length)return post.image_urls.filter(Boolean);
+ if(post.image_url && post.media_type!=="video")return [post.image_url];return [];
+}
+function createImageCarousel(images){
+ const wrap=document.createElement("div");wrap.className="carousel-wrap";const track=document.createElement("div");track.className="carousel-track";
+ images.forEach((src,i)=>{const img=document.createElement("img");img.src=src;img.alt="صورة "+(i+1);img.loading="lazy";track.appendChild(img)});
+ wrap.appendChild(track);
+ if(images.length>1){
+  const counter=document.createElement("div");counter.className="carousel-counter";counter.textContent="1 / "+images.length;wrap.appendChild(counter);
+  const dots=document.createElement("div");dots.className="carousel-dots";
+  const dotEls=images.map((_,i)=>{const d=document.createElement("span");d.className="carousel-dot"+(i===0?" active":"");dots.appendChild(d);return d});
+  wrap.appendChild(dots);
+  track.addEventListener("scroll",()=>{const w=track.clientWidth||1;const idx=Math.min(images.length-1,Math.max(0,Math.round(track.scrollLeft/w)));counter.textContent=(idx+1)+" / "+images.length;dotEls.forEach((d,i)=>d.classList.toggle("active",i===idx))},{passive:true});
+ }
+ return wrap;
+}
+function renderMediaPreview(){
+ const box=el("dertPreviewBox");box.replaceChildren();updateMediaPickLabels();
+ if(selectedVideo){
+  box.classList.remove("hidden");const vid=document.createElement("video");vid.className="preview-video";vid.src=URL.createObjectURL(selectedVideo);vid.controls=true;vid.playsInline=true;
+  const rem=document.createElement("button");rem.type="button";rem.className="red";rem.style.marginTop="8px";rem.textContent="إزالة الفيديو";
+  rem.onclick=()=>{selectedVideo=null;el("dertVideoInput").value="";renderMediaPreview()};box.append(vid,rem);return;
+ }
+ if(selectedImages.length){
+  box.classList.remove("hidden");const grid=document.createElement("div");grid.className="preview-grid";
+  selectedImages.forEach((file,idx)=>{
+   const item=document.createElement("div");item.className="preview-item";const img=document.createElement("img");img.src=URL.createObjectURL(file);img.alt="معاينة";
+   const del=document.createElement("button");del.type="button";del.className="preview-remove";del.textContent="✕";
+   del.onclick=()=>{selectedImages.splice(idx,1);renderMediaPreview()};item.append(img,del);grid.appendChild(item);
+  });
+  box.appendChild(grid);return;
+ }
+ box.classList.add("hidden");
+}
+el("dertImagesInput").onchange=(e)=>{const files=[...(e.target.files||[])].filter(f=>f.type.startsWith("image/"));if(files.length){selectedVideo=null;el("dertVideoInput").value="";selectedImages=files}else selectedImages=[];renderMediaPreview()};
+el("dertVideoInput").onchange=(e)=>{const file=(e.target.files||[])[0];if(file && file.type.startsWith("video/")){selectedImages=[];el("dertImagesInput").value="";selectedVideo=file}else selectedVideo=null;renderMediaPreview()};
+el("dertCreateClose").onclick=()=>{el("dertCreateModal").style.display="none"};
+el("dertCreateModal").onclick=(e)=>{if(e.target===el("dertCreateModal"))el("dertCreateModal").style.display="none"};
+
+async function publishNewContent(){
+ if(!currentUser){msg("dertCreateStatus","يرجى تسجيل الدخول أولاً");return}
+ let content=el("dertDescription").value.trim();
+ if(!selectedVideo && !selectedImages.length && !content && !selectedSong){msg("dertCreateStatus","اختر صوراً أو فيديو أو أغنية أو اكتب وصفاً");return}
+ if(selectedSong){const tag=`[🎵 ${selectedSong.title}]`;content=content?`${content}\n${tag}`:tag}
+ const privacy=el("dertPrivacySelect")?.value||"public";const allowComments=el("dertAllowComments")?.checked!==false;const metaNote=[];
+ if(privacy==="followers")metaNote.push("[🔒 للمتابعين]");if(privacy==="private")metaNote.push("[🔐 خاص]");if(!allowComments)metaNote.push("[🔇 بدون تعليقات]");
+ if(metaNote.length)content=(content?content+"\n":"")+metaNote.join(" ");
+ const btn=el("dertPublishButton");const topBtn=el("dertTopPublishBtn");btn.disabled=true;if(topBtn)topBtn.disabled=true;msg("dertCreateStatus","جارٍ النشر...");
+ try{
+  let image_url=null,image_urls=null,media_type=selectedSong && !selectedVideo && !selectedImages.length?"audio":null;
+  if(selectedVideo){image_url=await uploadFile(selectedVideo,"posts");media_type="video"}
+  else if(selectedImages.length){const uploaded=[];for(const f of selectedImages)uploaded.push(await uploadFile(f,"posts"));image_url=uploaded[0];image_urls=uploaded;media_type="image"}
+  const payload={user_id:currentUser.id,content:content||null,image_url,media_type};if(image_urls)payload.image_urls=image_urls;
+  let {error}=await client.from("posts").insert(payload);
+  if(error && image_urls){const fb=await client.from("posts").insert({user_id:currentUser.id,content:content||null,image_url,media_type});error=fb.error}
+  if(error)throw error;
+  msg("dertCreateStatus","تم النشر بنجاح");selectedImages=[];selectedVideo=null;clearSelectedMusic();
+  el("dertImagesInput").value="";el("dertVideoInput").value="";el("dertDescription").value="";updateDescCounter();renderMediaPreview();
+  await loadVideos();await loadPosts();await loadStats();await loadProfileMediaGrid();
+  setTimeout(()=>{el("dertCreateModal").style.display="none";msg("dertCreateStatus","")},700);
+ }catch(error){msg("dertCreateStatus","تعذر النشر: "+error.message)}finally{btn.disabled=false;if(topBtn)topBtn.disabled=false}
+}
+el("dertPublishButton").onclick=publishNewContent;el("dertTopPublishBtn").onclick=publishNewContent;
+
+async function loadVideos(){
+ if(!currentUser)return;const list=el("videosList");stopVideoPlayback();list.replaceChildren();
+ const loading=document.createElement("div");loading.className="video-loading";loading.textContent="جارٍ التحميل...";list.appendChild(loading);
+ try{
+  const {data,error}=await client.from("posts").select("*").eq("media_type","video").not("image_url","is",null).order("created_at",{ascending:false}).limit(100);
+  if(error)throw error;list.replaceChildren();
+  const {data:myFollows,error:followError}=await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
+  if(followError)throw followError;followedIdsSet=new Set((myFollows||[]).map(x=>x.following_id));
+  let allVids=(data||[]).filter(p=>!isUserBlocked(p.user_id));
+  if(videoFeedMode==="following")allVids=allVids.filter(p=>p.user_id===currentUser.id || followedIdsSet.has(p.user_id));
+  else allVids=shuffleArray(allVids);
+  videoPostsCache=allVids;
+  if(!videoPostsCache.length){
+   const empty=document.createElement("div");empty.className="videos-empty";
+   empty.innerHTML=videoFeedMode==="following"?`<strong>لا توجد فيديوهات من الحسابات التي تتابعها</strong><p class="small">تابع حسابات أو انتقل إلى تبويب «لك».</p>`:`<strong>لا توجد فيديوهات حالياً</strong><p class="small">اضغط زر + في الأسفل لرفع أول فيديو.</p>`;
+   const go=document.createElement("button");go.textContent=videoFeedMode==="following"?"العودة إلى «لك»":"+ إنشاء فيديو";
+   go.onclick=videoFeedMode==="following"?()=>switchVideoFeedMode("foryou"):openCreateModal;empty.appendChild(go);list.appendChild(empty);return;
+  }
+  const userIds=[...new Set(videoPostsCache.map(p=>p.user_id))];
+  const {data:profiles,error:profileError}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified").in("id",userIds);
+  if(profileError)throw profileError;const names={};(profiles||[]).forEach(p=>names[p.id]=p);
+  videoPostsCache.forEach(post=>{
+   const profile=names[post.user_id]||{};const parsed=parseSongFromPost(post);
+   const card=document.createElement("article");card.className="video-card";card.dataset.postId=post.id;
+   const video=document.createElement("video");video.src=post.image_url;video.autoplay=true;video.muted=true;video.loop=true;video.playsInline=true;video.preload="metadata";
+   video.setAttribute("playsinline","");video.setAttribute("webkit-playsinline","");
+   video.addEventListener("click",()=>{if(video.paused)video.play().catch(()=>{});else video.pause()});
+   const overlay=document.createElement("div");overlay.className="video-overlay";const details=document.createElement("div");details.className="video-details";
+   const author=document.createElement("div");author.className="video-author";addVerifiedName(author,"@"+(profile.username||profile.full_name||"user"),profile.is_verified===true);
+   author.onclick=()=>openUserProfile(post.user_id);
+   const description=document.createElement("div");description.className="video-description";description.textContent=parsed.cleanContent||"";
+   const songEl=document.createElement("div");songEl.className="sound-line";songEl.textContent="♫ "+(parsed.song?.title||"الصوت الأصلي - "+(profile.username||"DERT"));songEl.onclick=openMusicPicker;
+   const date=document.createElement("div");date.className="video-date";date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");
+   details.append(author);if(parsed.cleanContent)details.appendChild(description);details.append(songEl,date);overlay.appendChild(details);
+   const sound=document.createElement("button");sound.className="video-sound";sound.textContent="🔇";
+   sound.onclick=()=>{video.muted=!video.muted;sound.textContent=video.muted?"🔇":"🔊";if(!video.paused)video.play().catch(()=>{})};
+   const actions=document.createElement("div");actions.className="video-side-actions";
+   const avWrap=document.createElement("div");avWrap.className="tt-avatar-wrap";avWrap.appendChild(makeAvatar(profile.avatar_url,profile.full_name||profile.username));
+   if(post.user_id!==currentUser.id){
+    const badge=document.createElement("span");badge.className="tt-plus-badge";badge.textContent=followedIdsSet.has(post.user_id)?"✓":"+";
+    badge.onclick=(e)=>{e.stopPropagation();followUser(post.user_id,badge)};avWrap.appendChild(badge);
+   }
+   avWrap.onclick=()=>openUserProfile(post.user_id);
+   const likedNow=isPostLiked(post.id);const likeItem=document.createElement("div");likeItem.className="tt-side-item";
+   const likeBtn=document.createElement("button");likeBtn.className="tt-side-btn";likeBtn.type="button";
+   const likeCircle=document.createElement("span");likeCircle.className="tt-action-circle"+(likedNow?" active":"");likeCircle.textContent="❤️";
+   likeBtn.appendChild(likeCircle);const likeLbl=document.createElement("span");likeLbl.className="tt-side-label";likeLbl.textContent=likedNow?"أعجبني":"إعجاب";
+   likeBtn.onclick=()=>toggleLikePost(post.id,likeCircle,likeLbl);likeItem.append(likeBtn,likeLbl);
+   const commentItem=document.createElement("div");commentItem.className="tt-side-item";
+   const commentBtn=document.createElement("button");commentBtn.className="tt-side-btn";commentBtn.type="button";
+   commentBtn.innerHTML=`<span class="violet-icon violet-icon-lg"><svg viewBox="0 0 24 24"><use href="#ico-chat"></use></svg></span>`;
+   commentBtn.onclick=()=>openPostComments(post);const cLbl=document.createElement("span");cLbl.className="tt-side-label";cLbl.textContent="تعليق";
+   updatePostCommentCount(post.id,cLbl);commentItem.append(commentBtn,cLbl);
+   const savedNow=isPostSaved(post.id);const saveItem=document.createElement("div");saveItem.className="tt-side-item";
+   const saveBtn=document.createElement("button");saveBtn.className="tt-side-btn";saveBtn.type="button";
+   const saveCircle=document.createElement("span");saveCircle.className="tt-action-circle"+(savedNow?" active":"");saveCircle.textContent="🔖";
+   saveBtn.appendChild(saveCircle);const saveLbl=document.createElement("span");saveLbl.className="tt-side-label";saveLbl.textContent=savedNow?"محفوظ":"حفظ";
+   saveBtn.onclick=()=>toggleSavePost(post,saveCircle,saveLbl);saveItem.append(saveBtn,saveLbl);
+   const shareItem=document.createElement("div");shareItem.className="tt-side-item";
+   const shareBtn=document.createElement("button");shareBtn.className="tt-side-btn";shareBtn.type="button";
+   shareBtn.innerHTML=`<span class="violet-icon violet-icon-lg"><svg viewBox="0 0 24 24"><use href="#ico-share"></use></svg></span>`;
+   shareBtn.onclick=()=>sharePost(post.id);const sLbl=document.createElement("span");sLbl.className="tt-side-label";sLbl.textContent="مشاركة";
+   shareItem.append(shareBtn,sLbl);
+   const disc=document.createElement("div");disc.className="tt-disc";disc.title="الأغاني";disc.textContent="♫";disc.onclick=openMusicPicker;
+   actions.append(avWrap,likeItem,commentItem,saveItem,shareItem,disc);card.append(video,overlay,sound,actions);list.appendChild(card);
+  });
+  setupVideoObserver();
+ }catch(e){
+  list.replaceChildren();const error=document.createElement("div");error.className="videos-empty";
+  error.innerHTML=`<strong>تعذر تحميل الفيديوهات</strong><p class="small">${e.message||""}</p>`;
+  const retry=document.createElement("button");retry.textContent="إعادة المحاولة";retry.onclick=loadVideos;error.appendChild(retry);list.appendChild(error);
+ }
+}
+
+function setupVideoObserver(){
+ if(videoObserver)videoObserver.disconnect();const videos=[...document.querySelectorAll("#videosList video")];if(!videos.length)return;
+ videoObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{const video=entry.target;if(entry.isIntersecting&&entry.intersectionRatio>=0.65){videos.forEach(other=>{if(other!==video)other.pause()});video.play().catch(()=>{})}else video.pause()})},{root:el("videosList"),threshold:[0,0.35,0.65,0.9]});
+ videos.forEach(video=>videoObserver.observe(video));
+}
+
+async function loadPosts(){
+ const list=el("postsList");list.textContent="جارٍ تحميل المنشورات...";
+ const {data,error}=await client.from("posts").select("*").order("created_at",{ascending:false});
+ if(error){list.textContent="تعذر تحميل المنشورات: "+error.message;return}list.replaceChildren();
+ const filtered=(data||[]).filter(p=>!isUserBlocked(p.user_id));
+ if(!filtered.length){list.textContent="لا توجد منشورات حتى الآن";return}
+ const ids=[...new Set(filtered.map(p=>p.user_id))];
+ const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
+ const names={};(profiles||[]).forEach(p=>names[p.id]=p);
+ for(const post of filtered){
+  const card=document.createElement("article");card.className="post";card.id="post-"+post.id;
+  const author=document.createElement("strong"),p=names[post.user_id];
+  author.className="clickable-user";author.onclick=()=>openUserProfile(post.user_id);
+  addVerifiedName(author,p?(p.full_name||"مستخدم")+" @"+(p.username||""):"مستخدم DERT",p?.is_verified===true);card.appendChild(author);
+  const parsed=parseSongFromPost(post);
+  if(parsed.cleanContent){const t=document.createElement("p");t.className="post-text";t.textContent=parsed.cleanContent;card.appendChild(t)}
+  if(parsed.song){const b=document.createElement("div");b.className="sound-line";b.textContent="♫ "+parsed.song.title;card.appendChild(b)}
+  const imgs=getPostImages(post);
+  if(imgs.length)card.appendChild(createImageCarousel(imgs));
+  else if(post.image_url && post.media_type==="video"){const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v)}
+  const date=document.createElement("div");date.className="post-date";date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");card.appendChild(date);
+  const bottom=document.createElement("div");bottom.className="post-bottom";
+  const likePostBtn=document.createElement("button");likePostBtn.textContent=isPostLiked(post.id)?"❤️ أعجبني":"🤍 إعجاب";
+  likePostBtn.onclick=()=>{toggleLikePost(post.id,null,null);likePostBtn.textContent=isPostLiked(post.id)?"❤️ أعجبني":"🤍 إعجاب"};bottom.appendChild(likePostBtn);
+  const commentBtn=document.createElement("button");commentBtn.className="comment-open";commentBtn.textContent="التعليقات";
+  const count=document.createElement("span");count.className="small";count.textContent="...";commentBtn.appendChild(count);commentBtn.onclick=()=>openPostComments(post);bottom.appendChild(commentBtn);
+  const savePostBtn=document.createElement("button");savePostBtn.textContent=isPostSaved(post.id)?"🔖 محفوظ":"🔖 حفظ";
+  savePostBtn.onclick=()=>{toggleSavePost(post,null,null);savePostBtn.textContent=isPostSaved(post.id)?"🔖 محفوظ":"🔖 حفظ"};bottom.appendChild(savePostBtn);
+  const menuWrap=document.createElement("div");menuWrap.className="post-menu-wrap";const menuBtn=document.createElement("button");menuBtn.textContent="⋮";
+  const menu=document.createElement("div");menu.className="post-menu hidden";
+  function addMenuItem(label,handler,cls=""){const b=document.createElement("button");b.textContent=label;if(cls)b.className=cls;b.onclick=()=>{menu.classList.add("hidden");handler()};menu.appendChild(b)}
+  if(post.user_id===currentUser.id){addMenuItem("تعديل المنشور",()=>editPost(post));addMenuItem("حذف المنشور",()=>deletePost(post.id,menuBtn),"red")}
+  addMenuItem("مشاركة",()=>sharePost(post.id));addMenuItem("نسخ الرابط",()=>copyPostLink(post.id));addMenuItem("إبلاغ",()=>reportContent("post",post.id));
+  menuBtn.onclick=(e)=>{e.stopPropagation();document.querySelectorAll(".post-menu").forEach(m=>{if(m!==menu)m.classList.add("hidden")});menu.classList.toggle("hidden")};
+  menu.onclick=e=>e.stopPropagation();menuWrap.append(menuBtn,menu);bottom.appendChild(menuWrap);card.appendChild(bottom);list.appendChild(card);
+  updatePostCommentCount(post.id,count);
+ }
+ applyScreenShield();
+}
+document.addEventListener("click",()=>document.querySelectorAll(".post-menu").forEach(m=>m.classList.add("hidden")));
+
+async function updatePostCommentCount(postId,element){const {count,error}=await client.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",postId);if(error){element.textContent="";return}element.textContent=" ("+(count||0)+")"}
+async function openPostComments(post){if(!currentUser)return;activeCommentPost=post;clearReplyTarget();el("commentModal").classList.remove("hidden");el("commentModalTitle").textContent="التعليقات والردود";el("commentModalList").textContent="جارٍ تحميل التعليقات...";el("commentInput").value="";document.body.style.overflow="hidden";await loadComments(post,el("commentModalList"))}
+function closePostComments(){clearReplyTarget();el("commentModal").classList.add("hidden");document.body.style.overflow="";activeCommentPost=null}
+
+el("sendCommentBtn").onclick=async()=>{
+ if(!activeCommentPost||!currentUser)return;
+ const input=el("commentInput"),rawText=input.value.trim();if(!rawText){alert("اكتب تعليقك أو ردك أولاً");return}
+ const finalText=encodeCommentPayload(rawText,replyTarget);const b=el("sendCommentBtn");b.disabled=true;
+ try{
+  const {error}=await client.from("post_comments").insert({post_id:activeCommentPost.id,user_id:currentUser.id,content:finalText});
+  if(error)throw error;input.value="";clearReplyTarget();
+  await loadComments(activeCommentPost,el("commentModalList"));
+  const countElement=document.querySelector("#post-"+activeCommentPost.id+" .comment-open span");
+  if(countElement)await updatePostCommentCount(activeCommentPost.id,countElement);
+  el("commentModalList").scrollTop=el("commentModalList").scrollHeight;
+ }catch(e){alert("تعذر إضافة التعليق: "+e.message)}finally{b.disabled=false}
+};
+el("commentInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();el("sendCommentBtn").click()}});
+
+async function loadComments(post,container){
+ const {data,error}=await client.from("post_comments").select("*").eq("post_id",post.id).order("created_at",{ascending:true});
+ container.replaceChildren();if(error){container.textContent="تعذر تحميل التعليقات: "+error.message;return}
+ const visibleComments=(data||[]).filter(c=>!isUserBlocked(c.user_id));
+ if(!visibleComments.length){container.textContent="لا توجد تعليقات بعد. كن أول من يعلق!";return}
+ const ids=[...new Set(visibleComments.map(c=>c.user_id))];
+ const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ visibleComments.forEach(c=>{
+  const profile=map[c.user_id]||{};const displayUser=profile.username||profile.full_name||"مستخدم";const parsed=decodeCommentPayload(c.content);
+  const row=document.createElement("div");row.className="comment"+(parsed.isReply?" comment-reply":"");
+  const head=document.createElement("div");head.className="comment-head";
+  const name=document.createElement("strong");name.className="clickable-user";name.onclick=()=>{closePostComments();openUserProfile(c.user_id)};
+  addVerifiedName(name,(profile.full_name||displayUser)+" @"+displayUser,profile.is_verified===true);
+  const date=document.createElement("span");date.className="small";date.textContent=new Date(c.created_at).toLocaleString("ar-IQ");head.append(name,date);row.appendChild(head);
+  if(parsed.isReply){const badge=document.createElement("div");badge.className="reply-target-badge";badge.textContent=`↩ رد على @${parsed.replyToName}${parsed.replyToSnippet?` (${parsed.replyToSnippet})`:""}`;row.appendChild(badge)}
+  const text=document.createElement("p");text.className="comment-body-text";text.textContent=parsed.body;row.appendChild(text);
+  const tools=document.createElement("div");tools.className="comment-actions";
+  const likeBtn=document.createElement("button");likeBtn.type="button";likeBtn.className="gray";likeBtn.textContent=isCommentLiked(c.id)?"❤️ أعجبني":"🤍 إعجاب";likeBtn.onclick=()=>toggleCommentLike(c.id,likeBtn);
+  const replyBtn=document.createElement("button");replyBtn.type="button";replyBtn.className="gray";replyBtn.textContent="↩ رد";replyBtn.onclick=()=>setReplyTarget(c.id,displayUser,parsed.body);
+  const report=document.createElement("button");report.type="button";report.className="gray";report.textContent="إبلاغ";report.onclick=()=>reportContent("comment",c.id);
+  tools.append(likeBtn,replyBtn,report);
+  if(c.user_id===currentUser.id||post.user_id===currentUser.id){
+   const del=document.createElement("button");del.type="button";del.className="red";del.textContent="حذف";
+   del.onclick=async()=>{
+    if(!confirm("حذف التعليق؟"))return;del.disabled=true;
+    const {error:delErr}=await client.from("post_comments").delete().eq("id",c.id);
+    if(delErr){alert("تعذر الحذف: "+delErr.message);del.disabled=false;return}
+    await loadComments(post,container);const countElement=document.querySelector("#post-"+post.id+" .comment-open span");if(countElement)await updatePostCommentCount(post.id,countElement);
+   };
+   tools.appendChild(del);
+  }
+  row.appendChild(tools);container.appendChild(row);
+ });
+}
+
+async function sharePost(postId){const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(postId);try{if(navigator.share)await navigator.share({title:"DERT",url});else await copyPostLink(postId)}catch(e){}}
+async function copyPostLink(postId){const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(postId);try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(url);else{const t=document.createElement("textarea");t.value=url;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}alert("تم نسخ الرابط")}catch(e){prompt("انسخ الرابط:",url)}}
+async function editPost(post){if(post.user_id!==currentUser.id)return;const content=prompt("عدّل النص:",post.content||"");if(content===null)return;const {error}=await client.from("posts").update({content:content.trim()||null}).eq("id",post.id).eq("user_id",currentUser.id);if(error){alert(error.message);return}await loadPosts();await loadProfileMediaGrid()}
+async function deletePost(id,button){if(!confirm("حذف المنشور؟"))return;button.disabled=true;const {error}=await client.from("posts").delete().eq("id",id).eq("user_id",currentUser.id);if(error){alert(error.message);button.disabled=false;return}await loadPosts();await loadStats();await loadVideos();await loadProfileMediaGrid()}
+async function reportContent(type,id){const reason=prompt("سبب الإبلاغ:");if(!reason?.trim())return;const {error}=await client.from("content_reports").insert({reporter_id:currentUser.id,target_type:type,target_id:id,reason:reason.trim()});if(error)alert(error.message);else alert("تم إرسال البلاغ")}
+
+async function loadStats(){
+ if(!currentUser)return;
+ const {count:posts}=await client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id);
+ const {count:followers}=await client.from("follows").select("*",{count:"exact",head:true}).eq("following_id",currentUser.id);
+ const {count:following}=await client.from("follows").select("*",{count:"exact",head:true}).eq("follower_id",currentUser.id);
+ el("postsCount").textContent=posts||0;el("followersCount").textContent=followers||0;el("followingCount").textContent=following||0;
+}
+
+/* ==================== الأصدقاء وطلبات الصداقة ==================== */
+async function sendFriendRequest(targetUserId,targetName="مستخدم"){
+ if(!currentUser || !targetUserId || targetUserId===currentUser.id)return;
+ try{
+  const {error}=await client.from("follows").upsert({follower_id:currentUser.id,following_id:targetUserId,status:"pending"},{onConflict:"follower_id,following_id"});
+  if(error)throw error;
+  if(getAppPrefs().notifFriend!==false){
+   await pushNotification(targetUserId,"friend_request",`${currentProfile?.full_name||currentProfile?.username||"مستخدم"} أرسل لك طلب صداقة 🤝`);
+  }
+  alert(`تم إرسال طلب الصداقة إلى ${targetName} ✓`);
+  await loadFriendRequestsAndFriends();
+ }catch(e){alert("تعذر إرسال طلب الصداقة: "+e.message)}
+}
+
+async function acceptFriendRequest(requesterId){
+ if(!currentUser || !requesterId)return;
+ try{
+  await client.from("follows").update({status:"accepted"}).eq("follower_id",requesterId).eq("following_id",currentUser.id);
+  await client.from("follows").upsert({follower_id:currentUser.id,following_id:requesterId,status:"accepted"},{onConflict:"follower_id,following_id"});
+  await pushNotification(requesterId,"friend_accepted",`${currentProfile?.full_name||currentProfile?.username||"مستخدم"} قبل طلب الصداقة 🎉`);
+  await loadFriendRequestsAndFriends();
+  await loadStats();
+ }catch(e){alert("تعذر قبول الطلب: "+e.message)}
+}
+
+async function declineFriendRequest(requesterId){
+ if(!currentUser || !requesterId)return;
+ try{
+  await client.from("follows").delete().eq("follower_id",requesterId).eq("following_id",currentUser.id);
+  await loadFriendRequestsAndFriends();
+ }catch(e){alert("تعذر رفض الطلب: "+e.message)}
+}
+
+async function loadFriendRequestsAndFriends(){
+ if(!currentUser)return;
+ const reqBox=el("friendRequestsList");
+ const friBox=el("friendsDirectoryList");
+ if(!reqBox || !friBox)return;
+ try{
+  const {data:incoming}=await client.from("follows").select("follower_id,status,created_at").eq("following_id",currentUser.id).eq("status","pending");
+  const {data:outgoingAccepted}=await client.from("follows").select("following_id").eq("follower_id",currentUser.id).eq("status","accepted");
+  const {data:incomingAccepted}=await client.from("follows").select("follower_id").eq("following_id",currentUser.id).eq("status","accepted");
+
+  const reqIds=[...(incoming||[]).map(x=>x.follower_id)].filter(id=>!isUserBlocked(id));
+  const friendIds=[...new Set([...(outgoingAccepted||[]).map(x=>x.following_id),...(incomingAccepted||[]).map(x=>x.follower_id)])].filter(id=>id!==currentUser.id && !isUserBlocked(id));
+
+  const allIds=[...new Set([...reqIds,...friendIds])];
+  let profMap={};
+  if(allIds.length){
+   const {data:profs}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified,is_online,last_seen").in("id",allIds);
+   (profs||[]).forEach(p=>profMap[p.id]=p);
+  }
+
+  reqBox.replaceChildren();
+  if(!reqIds.length){reqBox.textContent="لا توجد طلبات صداقة واردة حالياً."}
+  else{
+   reqIds.forEach(uid=>{
+    const p=profMap[uid]||{};
+    const row=document.createElement("div");row.className="item";
+    const name=document.createElement("strong");addVerifiedName(name,(p.full_name||p.username||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
+    const acts=document.createElement("div");acts.className="user-row-actions";
+    const acc=document.createElement("button");acc.type="button";acc.className="green";acc.textContent="قبول";acc.onclick=()=>acceptFriendRequest(uid);
+    const dec=document.createElement("button");dec.type="button";dec.className="red";dec.textContent="رفض";dec.onclick=()=>declineFriendRequest(uid);
+    acts.append(acc,dec);row.append(name,acts);reqBox.appendChild(row);
+   });
+  }
+
+  friBox.replaceChildren();
+  if(!friendIds.length){friBox.textContent="لا يوجد أصدقاء مضافون بعد. ابحث عن مستخدمين وأرسل طلب صداقة."}
+  else{
+   friendIds.forEach(uid=>{
+    const p=profMap[uid]||{};
+    const label=p.full_name||p.username||"مستخدم DERT";
+    const row=document.createElement("div");row.className="item";
+    const top=document.createElement("div");top.className="chat-row";
+    top.appendChild(makeAvatar(p.avatar_url,label));
+    const info=document.createElement("div");info.className="chat-row-info";
+    const nm=document.createElement("strong");nm.className="clickable-user";addVerifiedName(nm,label+" @"+(p.username||"user"),p.is_verified===true);nm.onclick=()=>openUserProfile(uid);
+    const pr=document.createElement("div");pr.className="small";pr.innerHTML=formatPresenceLabel(p);
+    info.append(nm,pr);top.appendChild(info);
+    const acts=document.createElement("div");acts.className="user-row-actions";
+    const chatB=document.createElement("button");chatB.type="button";chatB.textContent="💬 دردشة";chatB.onclick=()=>startChat(uid,p.username||label);
+    const callVB=document.createElement("button");callVB.type="button";callVB.className="green";callVB.textContent="📞 صوتي";callVB.onclick=()=>initiateCall(uid,label,p.avatar_url,false);
+    const callVidB=document.createElement("button");callVidB.type="button";callVidB.className="gray";callVidB.textContent="📹 فيديو";callVidB.onclick=()=>initiateCall(uid,label,p.avatar_url,true);
+    acts.append(chatB,callVB,callVidB);row.append(top,acts);friBox.appendChild(row);
+   });
+  }
+ }catch(e){
+  reqBox.textContent="تعذر تحميل الطلبات: "+e.message;
+ }
+}
+
+async function searchUsers(){
+ const q=el("searchUser").value.trim(),list=el("peopleList");list.textContent="جارٍ البحث...";
+ let query=client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified,is_online,last_seen").neq("id",currentUser.id).limit(30);
+ if(q)query=query.or("username.ilike.%"+q+"%,full_name.ilike.%"+q+"%");
+ const {data,error}=await query;if(error){list.textContent=error.message;return}list.replaceChildren();
+ const rows=(data||[]).filter(u=>!isUserBlocked(u.id));
+ if(!rows.length){list.textContent="لا توجد نتائج";return}
+ const {data:follows}=await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
+ const following=new Set((follows||[]).map(x=>x.following_id));
+ rows.forEach(u=>{
+  const row=document.createElement("div");row.className="item";const label=u.full_name||u.username||"مستخدم DERT";
+  const top=document.createElement("div");top.className="chat-row clickable-user";top.onclick=()=>openUserProfile(u.id);
+  top.appendChild(makeAvatar(u.avatar_url,label));const info=document.createElement("div");info.className="chat-row-info";
+  const name=document.createElement("strong");addVerifiedName(name,label+" @"+(u.username||"user"),u.is_verified===true);
+  const pres=document.createElement("div");pres.className="small";pres.innerHTML=formatPresenceLabel(u)+(u.bio?" • "+u.bio:"");
+  info.append(name,pres);top.appendChild(info);row.appendChild(top);
+  const actions=document.createElement("div");actions.className="user-row-actions";
+  const f=document.createElement("button");f.textContent=following.has(u.id)?"يتابع":"متابعة";f.onclick=()=>followUser(u.id,f);
+  const fr=document.createElement("button");fr.className="gray";fr.textContent="🤝 طلب صداقة";fr.onclick=()=>sendFriendRequest(u.id,label);
+  const m=document.createElement("button");m.className="gray";m.textContent="💬 دردشة";m.onclick=()=>startChat(u.id,u.username||label);
+  const cv=document.createElement("button");cv.className="green";cv.textContent="📞 اتصال";cv.onclick=()=>initiateCall(u.id,label,u.avatar_url,false);
+  const rep=document.createElement("button");rep.className="red";rep.textContent="إبلاغ";rep.onclick=()=>reportContent("account",u.id);
+  actions.append(f,fr,m,cv,rep);row.appendChild(actions);list.appendChild(row);
+ });
+}
+async function followUser(userId,button){
+ if(userId===currentUser.id)return;
+ const {data:existing}=await client.from("follows").select("follower_id").eq("follower_id",currentUser.id).eq("following_id",userId).maybeSingle();
+ if(existing){await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",userId);if(button)button.textContent="متابعة"}
+ else{await client.from("follows").insert({follower_id:currentUser.id,following_id:userId,status:"accepted"});if(button)button.textContent="يتابع"}
+ await loadStats();
+}
+el("searchBtn").onclick=searchUsers;el("searchUser").onkeydown=e=>{if(e.key==="Enter")searchUsers()};
+
+/* ==================== الدردشات المتقدمة (بحث، تثبيت، تعديل، حذف، صوت، ملفات، قراءة) ==================== */
+function getPinnedChatIds(){
+ try{return new Set(JSON.parse(localStorage.getItem("dert_pinned_chats_"+(currentUser?.id||""))||"[]").map(String))}catch(e){return new Set()}
+}
+function togglePinChat(peerId){
+ const set=getPinnedChatIds();const k=String(peerId);
+ if(set.has(k))set.delete(k);else set.add(k);
+ localStorage.setItem("dert_pinned_chats_"+(currentUser?.id||""),JSON.stringify([...set]));
+ loadChats();
+}
+
+function getMsgReactions(msgId){
+ try{const all=JSON.parse(localStorage.getItem("dert_msg_reactions_v1")||"{}");return all[String(msgId)]||{}}catch(e){return {}}
+}
+function toggleMsgReaction(msgId,emoji){
+ if(!currentUser)return;
+ const all=JSON.parse(localStorage.getItem("dert_msg_reactions_v1")||"{}");
+ const cur=all[String(msgId)]||{};
+ const users=new Set(cur[emoji]||[]);
+ if(users.has(currentUser.id))users.delete(currentUser.id);else users.add(currentUser.id);
+ if(users.size)cur[emoji]=[...users];else delete cur[emoji];
+ all[String(msgId)]=cur;
+ localStorage.setItem("dert_msg_reactions_v1",JSON.stringify(all));
+ loadMessages();
+}
+function setChatReply(m){
+ chatReplyTarget={id:m.id,sender:m.sender_id===currentUser.id?"أنت":"الطرف الآخر",preview:(decryptText(m.content)||"مرفق").slice(0,45)};
+ el("chatReplyBannerText").textContent=`الرد على ${chatReplyTarget.sender}: ${chatReplyTarget.preview}`;
+ el("chatReplyBanner").classList.remove("hidden");el("chatText").focus();
+}
+function clearChatReply(){chatReplyTarget=null;el("chatReplyBanner")?.classList.add("hidden")}
+
+el("pickChatMediaBtn").onclick=()=>el("chatFile").click();
+el("pickChatDocBtn").onclick=()=>el("chatDocFile").click();
+el("chatFile").onchange=()=>{const f=el("chatFile").files[0];if(!f)return;selectedDocFile=null;recordedVoiceFile=null;el("chatDocFile").value="";el("chatAttachPreview").textContent="مرفق جاهز: "+f.name};
+el("chatDocFile").onchange=()=>{const f=el("chatDocFile").files[0];if(!f)return;selectedDocFile=f;recordedVoiceFile=null;el("chatFile").value="";el("chatAttachPreview").textContent="ملف جاهز: "+f.name};
+el("voiceRecordBtn").onclick=async()=>{
+ if(mediaRecorderRef && mediaRecorderRef.state==="recording"){mediaRecorderRef.stop();return}
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({audio:true});voiceChunksRef=[];
+  const rec=new MediaRecorder(stream);mediaRecorderRef=rec;
+  rec.ondataavailable=e=>{if(e.data && e.data.size>0)voiceChunksRef.push(e.data)};
+  rec.onstop=()=>{
+   stream.getTracks().forEach(t=>t.stop());
+   const blob=new Blob(voiceChunksRef,{type:"audio/webm"});
+   recordedVoiceFile=new File([blob],"voice_"+Date.now()+".webm",{type:"audio/webm"});
+   selectedDocFile=null;el("chatFile").value="";el("chatDocFile").value="";
+   el("chatAttachPreview").textContent="🎤 تم تسجيل رسالة صوتية جاهزة للإرسال";
+   el("voiceRecordBtn").textContent="🎤 رسالة صوتية";mediaRecorderRef=null;
+  };
+  rec.start();el("voiceRecordBtn").textContent="⏹ إيقاف التسجيل";el("chatAttachPreview").textContent="جارٍ تسجيل رسالة صوتية...";
+ }catch(e){alert("تعذر الوصول للمايكروفون: "+e.message)}
+};
+
+async function loadChats(){
+ if(!currentUser)return;
+ const list=el("chatList");
+ const q=(el("chatSearch")?.value||"").trim().toLowerCase();
+ const {data,error}=await client.from("messages").select("*").or("sender_id.eq."+currentUser.id+",receiver_id.eq."+currentUser.id).order("created_at",{ascending:false}).limit(300);
+ if(error){list.textContent=error.message;return}
+ const map=new Map(),unreadMap=new Map();
+ (data||[]).forEach(m=>{
+  const other=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;
+  if(!other || other===currentUser.id || isUserBlocked(other))return;
+  if(!map.has(other))map.set(other,m);
+  if(m.receiver_id===currentUser.id && m.is_read===false)unreadMap.set(other,(unreadMap.get(other)||0)+1);
+ });
+ const totalUnread=[...unreadMap.values()].reduce((a,b)=>a+b,0);
+ const navBadge=el("navChatsUnread");
+ if(navBadge){navBadge.textContent=totalUnread>99?"99+":String(totalUnread);navBadge.classList.toggle("hidden",totalUnread===0)}
+
+ list.replaceChildren();
+ const pinnedSet=getPinnedChatIds();
+ const entries=[...map.entries()].sort((a,b)=>{
+  const pa=pinnedSet.has(String(a[0]))?1:0;
+  const pb=pinnedSet.has(String(b[0]))?1:0;
+  if(pa!==pb)return pb-pa;
+  return new Date(b[1].created_at)-new Date(a[1].created_at);
+ });
+
+ if(!entries.length){
+  if(el("chatsTotalBadge"))el("chatsTotalBadge").textContent="0 محادثة";
+  list.innerHTML=`<div class="small" style="text-align:center;padding:20px">لا توجد محادثات بعد. ابدأ محادثة جديدة من الأسفل.</div>`;
+  return;
+ }
+
+ const ids=entries.map(([id])=>id);
+ const {data:profiles}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified,is_online,last_seen").in("id",ids);
+ const pmap={};(profiles||[]).forEach(p=>pmap[p.id]=p);
+
+ const filtered=entries.filter(([id,lastMsg])=>{
+  if(!q)return true;
+  const p=pmap[id]||{};
+  const n=(p.full_name||"").toLowerCase();
+  const u=(p.username||"").toLowerCase();
+  const txt=decryptText(lastMsg.content||"").toLowerCase();
+  return n.includes(q) || u.includes(q) || txt.includes(q);
+ });
+
+ if(el("chatsTotalBadge"))el("chatsTotalBadge").textContent=`${filtered.length} محادثة`;
+ if(!filtered.length){list.innerHTML=`<div class="small" style="text-align:center;padding:18px">لا توجد محادثات مطابقة للبحث</div>`;return}
+
+ filtered.forEach(([id,lastMsg])=>{
+  const p=pmap[id]||{};const label=p.full_name||p.username||"مستخدم DERT";const isPinned=pinnedSet.has(String(id));const uCnt=unreadMap.get(id)||0;
+  const row=document.createElement("div");row.className="chat-entry"+(isPinned?" pinned":"");
+  const av=makeAvatar(p.avatar_url,label);av.onclick=(e)=>{e.stopPropagation();openUserProfile(id)};
+  const info=document.createElement("div");info.className="chat-entry-info";
+  const titleRow=document.createElement("div");titleRow.className="chat-title-row";
+  const strong=document.createElement("strong");addVerifiedName(strong,label,p.is_verified===true);
+  if(isPinned){const pinTag=document.createElement("span");pinTag.className="small";pinTag.style.color="#25f4ee";pinTag.textContent="📌 مثبت";titleRow.append(strong,pinTag)}
+  else titleRow.appendChild(strong);
+
+  const decLast=decryptText(lastMsg.content||"");
+  const lastPreview=decLast || (lastMsg.media_type==="audio"?"🎤 رسالة صوتية":(lastMsg.media_type==="video"?"🎬 فيديو":(lastMsg.media_type==="image"?"🖼️ صورة":(lastMsg.media_type==="file"?"📎 ملف":"مرفق"))));
+  const last=document.createElement("div");last.className="chat-last";last.textContent=(lastMsg.sender_id===currentUser.id?"أنت: ":"")+lastPreview;
+
+  const actRow=document.createElement("div");actRow.className="chat-entry-actions";
+  const pinBtn=document.createElement("button");pinBtn.type="button";pinBtn.className="chat-mini-act";pinBtn.textContent=isPinned?"إلغاء التثبيت":"📌 تثبيت";
+  pinBtn.onclick=(e)=>{e.stopPropagation();togglePinChat(id)};
+  const callBtn=document.createElement("button");callBtn.type="button";callBtn.className="chat-mini-act";callBtn.textContent="📞 اتصال";
+  callBtn.onclick=(e)=>{e.stopPropagation();initiateCall(id,label,p.avatar_url,false)};
+  actRow.append(pinBtn,callBtn);
+  info.append(titleRow,last,actRow);
+
+  const metaCol=document.createElement("div");metaCol.className="chat-meta-col";
+  const timeEl=document.createElement("span");timeEl.className="chat-time";timeEl.textContent=formatSmartDate(lastMsg.created_at);
+  metaCol.appendChild(timeEl);
+  if(uCnt>0){const ub=document.createElement("span");ub.className="unread-badge";ub.textContent=String(uCnt);metaCol.appendChild(ub)}
+
+  row.append(av,info,metaCol);
+  row.onclick=()=>startChat(id,p.username||label);
+  list.appendChild(row);
+ });
+}
+el("chatSearch").oninput=loadChats;
+
+el("newChatBtn").onclick=async()=>{
+ const q=prompt("ابحث باسم المستخدم أو الاسم الكامل:");if(q===null)return;
+ const {data,error}=await client.from("profiles").select("id,username,full_name").neq("id",currentUser.id).or("username.ilike.%"+q.trim()+"%,full_name.ilike.%"+q.trim()+"%").limit(20);
+ if(error){alert(error.message);return}
+ const rows=(data||[]).filter(u=>!isUserBlocked(u.id));
+ if(!rows.length){alert("لم يتم العثور على مستخدمين");return}
+ const pick=prompt(rows.map((u,i)=>(i+1)+" - "+(u.full_name||u.username)+" (@"+(u.username||"user")+")").join("\n")+"\n\nاكتب رقم المستخدم:");
+ const u=rows[(parseInt(pick,10)||0)-1];if(u)startChat(u.id,u.username||u.full_name);
+};
+el("newGroupBtn").onclick=async()=>{
+ const title=prompt("اكتب اسم مجموعة الدردشة:");if(!title?.trim())return;
+ const {data:profs}=await client.from("profiles").select("id,username,full_name").neq("id",currentUser.id).limit(20);
+ if(!profs?.length){alert("لا يوجد أعضاء متاحون");return}
+ const pick=prompt("اختر عضواً لبدء المجموعة:\n"+profs.map((u,i)=>(i+1)+" - "+(u.full_name||u.username)).join("\n"));
+ const member=profs[(parseInt(pick,10)||0)-1];if(!member)return;
+ alert(`تم إنشاء مجموعة "${title.trim()}" مع ${member.full_name||member.username} ✓`);
+ startChat(member.id,member.username||member.full_name);
+};
+
+async function startChat(userId,username){
+ if(!currentUser || !userId || userId===currentUser.id)return;
+ if(isUserBlocked(userId)){alert("هذا المستخدم محظور.");return}
+ activeReceiver=userId;activeConversation=getDirectRoomId(currentUser.id,userId);
+ el("chatsDirectoryCard").classList.add("hidden");el("chatPanel").classList.remove("hidden");
+ clearChatReply();selectedDocFile=null;recordedVoiceFile=null;el("chatAttachPreview").textContent="";
+ const {data:p}=await client.from("profiles").select("username,full_name,avatar_url,is_verified,is_online,last_seen").eq("id",userId).maybeSingle();
+ const avContainer=el("chatAvatar");const newAv=makeAvatar(p?.avatar_url,p?.full_name||p?.username||username);newAv.id="chatAvatar";avContainer.replaceWith(newAv);
+ addVerifiedName(el("chatTitle"),p?.full_name||p?.username||username||"محادثة",p?.is_verified===true);
+ el("chatUsername").innerHTML=`@${p?.username||username||"user"} • ${formatPresenceLabel(p||{})}`;
+ el("chatBlockUserBtn").textContent=isUserBlocked(userId)?"إلغاء الحظر":"🚫 حظر";
+ el("chatBlockUserBtn").onclick=()=>{const now=toggleBlockUser(userId,p?.full_name||username);el("chatBlockUserBtn").textContent=now?"إلغاء الحظر":"🚫 حظر";if(now){alert("تم حظر المستخدم");el("closeChatBtn").click()}};
+ el("chatVoiceCallBtn").onclick=()=>initiateCall(userId,p?.full_name||username||"مستخدم",p?.avatar_url||null,false);
+ el("chatVideoCallBtn").onclick=()=>initiateCall(userId,p?.full_name||username||"مستخدم",p?.avatar_url||null,true);
+ msg("chatStatus","");await markIncomingMessagesRead(userId);await loadMessages();subscribeMessages();await loadChats();
+}
+
+async function markIncomingMessagesRead(senderId){
+ if(!currentUser || !senderId)return;
+ try{await client.from("messages").update({is_read:true}).eq("sender_id",senderId).eq("receiver_id",currentUser.id).eq("is_read",false)}catch(e){}
+}
+
+el("closeChatBtn").onclick=()=>{
+ activeConversation=null;activeReceiver=null;clearChatReply();
+ el("chatPanel").classList.add("hidden");el("chatsDirectoryCard").classList.remove("hidden");
+ stopRealtime();loadChats();
+};
+
+async function loadMessages(){
+ if(!currentUser || !activeReceiver)return;
+ const box=el("chatMessages");
+ const {data,error}=await client.from("messages").select("*").or(`and(sender_id.eq.${currentUser.id},receiver_id.eq.${activeReceiver}),and(sender_id.eq.${activeReceiver},receiver_id.eq.${currentUser.id})`).order("created_at",{ascending:true}).limit(100);
+ if(error){box.textContent=error.message;return}
+ chatCache=data||[];box.replaceChildren();
+ if(!chatCache.length){const empty=document.createElement("div");empty.className="small";empty.style.textAlign="center";empty.textContent="ابدأ المحادثة الآن...";box.appendChild(empty);return}
+
+ chatCache.forEach(m=>{
+  const mine=m.sender_id===currentUser.id;
+  const div=document.createElement("div");div.className="bubble"+(mine?" mine":"");
+  let plainText=decryptText(m.content||"");
+  const replyMatch=plainText.match(/^\[REPLY_TO:([^\]]+)\]\n?([\s\S]*)$/);
+  if(replyMatch){const q=document.createElement("div");q.className="msg-reply-quote";q.textContent="↩ "+replyMatch[1];div.appendChild(q);plainText=replyMatch[2]}
+  if(plainText){const txt=document.createElement("div");txt.textContent=plainText;div.appendChild(txt)}
+
+  if(m.media_url){
+   if(m.media_type==="image"){const img=document.createElement("img");img.className="media protected-media";img.src=m.media_url;img.loading="lazy";div.appendChild(img)}
+   else if(m.media_type==="video"){const v=document.createElement("video");v.src=m.media_url;v.controls=true;v.playsInline=true;v.style.cssText="width:100%;max-height:240px;border-radius:10px;margin-top:8px";div.appendChild(v)}
+   else if(m.media_type==="audio"){const aud=document.createElement("audio");aud.src=m.media_url;aud.controls=true;aud.style.cssText="width:100%;max-width:260px;margin-top:8px";div.appendChild(aud)}
+   else{const a=document.createElement("a");a.href=m.media_url;a.target="_blank";a.rel="noopener";a.className="file-chip";a.textContent="📎 تحميل الملف المرفق";div.appendChild(a)}
+  }
+
+  const reactions=getMsgReactions(m.id);
+  const emojiKeys=Object.keys(reactions).filter(k=>(reactions[k]||[]).length>0);
+  if(emojiKeys.length){
+   const rBar=document.createElement("div");rBar.className="msg-reactions-bar";
+   emojiKeys.forEach(em=>{
+    const uList=reactions[em]||[];const pill=document.createElement("button");pill.type="button";
+    pill.className="msg-react-pill"+(uList.includes(currentUser.id)?" active":"");
+    pill.textContent=`${em} ${uList.length}`;pill.onclick=()=>toggleMsgReaction(m.id,em);rBar.appendChild(pill);
+   });
+   div.appendChild(rBar);
+  }
+
+  const meta=document.createElement("div");meta.className="message-meta";
+  const statusMark=mine?(m.is_read?"✓✓ مقروءة":"✓ مرسلة"):"";
+  meta.innerHTML=`<span>${formatSmartDate(m.created_at)}</span><span>${statusMark}</span>`;
+  div.appendChild(meta);
+
+  const tools=document.createElement("div");tools.className="msg-toolbar";
+  const repBtn=document.createElement("button");repBtn.type="button";repBtn.className="msg-mini-btn";repBtn.textContent="↩ رد";repBtn.onclick=()=>setChatReply(m);
+  const reactBtn=document.createElement("button");reactBtn.type="button";reactBtn.className="msg-mini-btn";reactBtn.textContent="❤️";reactBtn.onclick=()=>toggleMsgReaction(m.id,"❤️");
+  tools.append(repBtn,reactBtn);
+
+  if(mine){
+   const editBtn=document.createElement("button");editBtn.type="button";editBtn.className="msg-mini-btn";editBtn.textContent="✏️ تعديل";
+   editBtn.onclick=async()=>{
+    const nextTxt=prompt("تعديل الرسالة:",plainText);
+    if(nextTxt===null || !nextTxt.trim())return;
+    const enc=encryptText(replyMatch?`[REPLY_TO:${replyMatch[1]}]\n${nextTxt.trim()}`:nextTxt.trim());
+    const {error:uErr}=await client.from("messages").update({content:enc}).eq("id",m.id).eq("sender_id",currentUser.id);
+    if(uErr){alert(uErr.message);return}
+    await loadMessages();
+   };
+   const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="msg-mini-btn";delBtn.textContent="🗑️ حذف";
+   delBtn.onclick=async()=>{
+    if(!confirm("حذف هذه الرسالة؟"))return;
+    const {error:dErr}=await client.from("messages").delete().eq("id",m.id).eq("sender_id",currentUser.id);
+    if(dErr){alert(dErr.message);return}
+    await loadMessages();
+   };
+   tools.append(editBtn,delBtn);
+  }
+
+  div.appendChild(tools);
+  box.appendChild(div);
+ });
+ box.scrollTop=box.scrollHeight;applyScreenShield();
+}
+
+el("sendMessageBtn").onclick=async()=>{
+ if(!currentUser||!activeReceiver)return;
+ if(isUserBlocked(activeReceiver)){msg("chatStatus","هذا المستخدم محظور.");return}
+ let text=el("chatText").value.trim();
+ const mediaFile=el("chatFile").files[0];
+ const attachFile=recordedVoiceFile || selectedDocFile || mediaFile;
+ if(!text && !attachFile){msg("chatStatus","اكتب رسالة أو اختر ملفاً أو سجّل صوتاً");return}
+ if(chatReplyTarget){text=`[REPLY_TO:${chatReplyTarget.sender}: ${chatReplyTarget.preview}]\n${text||"مرفق"}`}
+ const b=el("sendMessageBtn");b.disabled=true;msg("chatStatus","جارٍ الإرسال...");
+ try{
+  let mediaUrl=null,mediaType=null;
+  if(attachFile){
+   mediaUrl=await uploadFile(attachFile,"chat");
+   if(recordedVoiceFile || attachFile.type.startsWith("audio/"))mediaType="audio";
+   else if(attachFile.type.startsWith("video/"))mediaType="video";
+   else if(attachFile.type.startsWith("image/"))mediaType="image";
+   else mediaType="file";
+  }
+  const payload={sender_id:currentUser.id,receiver_id:activeReceiver,content:text?encryptText(text):null,media_url:mediaUrl,media_type:mediaType,is_read:false};
+  const {error}=await client.from("messages").insert(payload);if(error)throw error;
+  if(getAppPrefs().notifMsg!==false){
+   await pushNotification(activeReceiver,"message",`${currentProfile?.full_name||currentProfile?.username||"مستخدم"} أرسل لك رسالة جديدة 💬`);
+  }
+  el("chatText").value="";el("chatFile").value="";el("chatDocFile").value="";selectedDocFile=null;recordedVoiceFile=null;el("chatAttachPreview").textContent="";
+  clearChatReply();msg("chatStatus","");await loadMessages();await loadChats();
+ }catch(e){msg("chatStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
+};
+
+function subscribeMessages(){
+ stopRealtime();if(!currentUser)return;
+ activeChannel=client.channel("dert-msgs-"+currentUser.id)
+  .on("postgres_changes",{event:"*",schema:"public",table:"messages"},async payload=>{
+   const row=payload.new||payload.old||{};
+   const involvesMe=row.sender_id===currentUser.id || row.receiver_id===currentUser.id;
+   if(!involvesMe)return;
+   if(activeReceiver && (row.sender_id===activeReceiver || row.receiver_id===activeReceiver)){
+    if(row.sender_id===activeReceiver && row.receiver_id===currentUser.id)await markIncomingMessagesRead(activeReceiver);
+    await loadMessages();
+   }
+   await loadChats();
+  }).subscribe();
+}
+function stopRealtime(){if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}}
+
+async function pushNotification(targetUserId,type,contentText){
+ if(!targetUserId || !contentText)return;
+ try{await client.from("notifications").insert({user_id:targetUserId,actor_id:currentUser?.id||null,type,content:contentText,is_read:false})}catch(e){}
+}
+
+function startAlertsRealtime(){
+ stopAlertsRealtime();if(!currentUser)return;
+ alertsChannel=client.channel("dert-alerts-"+currentUser.id)
+  .on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:"user_id=eq."+currentUser.id},()=>{
+   loadAlerts();
+  }).subscribe();
+}
+function stopAlertsRealtime(){if(alertsChannel){client.removeChannel(alertsChannel);alertsChannel=null}}
+
+async function loadAlerts(){
+ if(!currentUser)return;const list=el("alertsList");list.textContent="جارٍ تحميل الإشعارات...";
+ const {data,error}=await client.from("notifications").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
+ if(error){list.textContent=error.message;return}
+ const prefs=getAppPrefs();
+ const rows=(data||[]).filter(n=>{
+  if(n.type==="message" && prefs.notifMsg===false)return false;
+  if(n.type==="call" && prefs.notifCall===false)return false;
+  if(n.type==="friend_request" && prefs.notifFriend===false)return false;
+  return true;
+ });
+ const unreadCount=rows.filter(n=>n.is_read===false).length;
+ const badge=el("navAlertsUnread");
+ if(badge){badge.textContent=unreadCount>99?"99+":String(unreadCount);badge.classList.toggle("hidden",unreadCount===0)}
+ list.replaceChildren();if(!rows.length){list.textContent="لا توجد إشعارات";return}
+ rows.forEach(n=>{
+  const div=document.createElement("div");div.className="item";
+  if(n.is_read===false)div.style.borderInlineStart="3px solid #fe2c55";
+  const t=document.createElement("div");t.textContent=n.content||"إشعار جديد";
+  const d=document.createElement("div");d.className="small";d.textContent=formatSmartDate(n.created_at);
+  div.append(t,d);list.appendChild(div);
+ });
+}
+el("refreshAlerts").onclick=loadAlerts;
+el("markAllAlertsReadBtn").onclick=async()=>{
+ if(!currentUser)return;
+ try{await client.from("notifications").update({is_read:true}).eq("user_id",currentUser.id).eq("is_read",false);await loadAlerts()}catch(e){}
+};
+
+el("sendSupportBtn").onclick=async()=>{
+ const text=el("supportText").value.trim();if(!text){msg("supportStatus","اكتب رسالتك أولاً");return}
+ const b=el("sendSupportBtn");b.disabled=true;msg("supportStatus","جارٍ الإرسال...");
+ try{const {error}=await client.from("support_messages").insert({user_id:currentUser.id,sender_id:currentUser.id,message:text});if(error)throw error;el("supportText").value="";msg("supportStatus","تم إرسال رسالتك إلى الدعم ✓");await loadMySupport()}
+ catch(e){msg("supportStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
+};
+async function loadMySupport(){
+ const box=el("mySupportMessages");box.textContent="جارٍ التحميل...";
+ const {data,error}=await client.from("support_messages").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:true});
+ if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد رسائل بعد";return}
+ data.forEach(m=>{const div=document.createElement("div");div.className="support-message"+(m.sender_id===currentUser.id?" mine":"");const t=document.createElement("div");t.textContent=m.message;const d=document.createElement("div");d.className="small";d.textContent=new Date(m.created_at).toLocaleString("ar-IQ");div.append(t,d);box.appendChild(div)});
+}
+el("loadMySupport").onclick=loadMySupport;
+
+async function loadAdminTopups(){
+ if(!isAdmin())return;const box=el("adminTopups");box.textContent="جارٍ التحميل...";
+ const {data,error}=await client.from("payment_intents").select("*").order("created_at",{ascending:false}).limit(50);
+ if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد عمليات شحن";return}
+ data.forEach(t=>{const div=document.createElement("div");div.className="request-card";div.innerHTML=`<strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع)<div class="small">المستخدم: ${t.user_id}</div><div class="small status-${t.status}">الحالة: ${t.status}</div>`;box.appendChild(div)});
+}
+el("refreshTopups").onclick=loadAdminTopups;
+
+async function loadAdminWithdrawals(){
+ if(!isAdmin())return;const box=el("adminWithdrawals");box.textContent="جارٍ التحميل...";
+ const {data,error}=await client.from("withdrawal_requests").select("*").order("created_at",{ascending:false});
+ if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد طلبات سحب";return}
+ data.forEach(w=>{
+  const div=document.createElement("div");div.className="request-card";div.innerHTML=`<strong>مبلغ السحب: ${w.amount}</strong> • ${w.method_details}<div class="small">المستخدم: ${w.user_id}</div><div class="small status-${w.status}">الحالة: ${w.status}</div>`;
+  if(w.status==="pending"){
+   const act=document.createElement("div");act.className="admin-actions";
+   const ok=document.createElement("button");ok.className="green";ok.textContent="تأكيد الدفع";
+   ok.onclick=async()=>{await client.from("withdrawal_requests").update({status:"approved"}).eq("id",w.id);await pushNotification(w.user_id,"withdrawal","تمت الموافقة على طلب سحب الأرباح ("+w.amount+") ✓");loadAdminWithdrawals()};
+   const no=document.createElement("button");no.className="red";no.textContent="رفض";
+   no.onclick=async()=>{await client.from("withdrawal_requests").update({status:"rejected"}).eq("id",w.id);await pushNotification(w.user_id,"withdrawal","تم رفض طلب سحب الأرباح ("+w.amount+")");loadAdminWithdrawals()};
+   act.append(ok,no);div.appendChild(act);
+  }
+  box.appendChild(div);
+ });
+}
+el("refreshWithdrawals").onclick=loadAdminWithdrawals;
+
+async function loadAdminRequests(){
+ if(!isAdmin())return;const box=el("adminRequests");box.textContent="جارٍ التحميل...";msg("adminMessage","");
+ const {data,error}=await client.from("verification_requests").select("*").order("created_at",{ascending:false});
+ if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد طلبات توثيق";return}
+ const ids=[...new Set(data.map(r=>r.user_id))];const {data:profiles}=await client.from("profiles").select("id,username,full_name").in("id",ids);
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ data.forEach(r=>{
+  const p=map[r.user_id];const card=document.createElement("div");card.className="request-card";
+  card.innerHTML=`<strong>${(p?.full_name||"مستخدم")} @${(p?.username||"user")}</strong><div class="small status-${r.status}">الحالة: ${r.status}</div>`;
+  const act=document.createElement("div");act.className="admin-actions";
+  const ok=document.createElement("button");ok.className="green";ok.textContent="موافقة وتوثيق";
+  ok.onclick=async()=>{
+   ok.disabled=true;no.disabled=true;
+   const {error:pErr}=await client.from("profiles").update({is_verified:true}).eq("id",r.user_id);if(pErr){msg("adminMessage",pErr.message);ok.disabled=false;no.disabled=false;return}
+   const {error:rErr}=await client.from("verification_requests").update({status:"approved",reviewed_at:new Date().toISOString()}).eq("id",r.id);if(rErr){msg("adminMessage",rErr.message);ok.disabled=false;no.disabled=false;return}
+   await pushNotification(r.user_id,"verification","تم توثيق حسابك في DERT ✓");msg("adminMessage","تم توثيق الحساب ✓");loadAdminRequests();
+  };
+  const no=document.createElement("button");no.className="red";no.textContent="رفض";
+  no.onclick=async()=>{
+   ok.disabled=true;no.disabled=true;
+   await client.from("profiles").update({is_verified:false}).eq("id",r.user_id);
+   await client.from("verification_requests").update({status:"rejected",reviewed_at:new Date().toISOString()}).eq("id",r.id);
+   await pushNotification(r.user_id,"verification","تم رفض طلب توثيق الحساب");msg("adminMessage","تم رفض الطلب");loadAdminRequests();
+  };
+  act.append(ok,no);card.appendChild(act);box.appendChild(card);
+ });
+}
+el("refreshAdmin").onclick=loadAdminRequests;
+
+async function loadReports(){
+ if(!isAdmin())return;const box=el("adminReports");box.textContent="جارٍ التحميل...";
+ const {data,error}=await client.from("content_reports").select("*").order("created_at",{ascending:false});
+ if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد بلاغات";return}
+ data.forEach(r=>{const div=document.createElement("div");div.className="request-card";div.innerHTML=`<strong>${r.target_type}</strong> — ${r.reason}<div class="small">الهدف: ${r.target_id}</div>`;box.appendChild(div)});
+}
+el("refreshReports").onclick=loadReports;
+
+async function loadAdminSupport(){
+ if(!isAdmin())return;const box=el("adminSupport");box.textContent="جارٍ التحميل...";
+ const {data,error}=await client.from("support_messages").select("*").order("created_at",{ascending:true});
+ if(error){box.textContent=error.message;return}box.replaceChildren();if(!data?.length){box.textContent="لا توجد رسائل دعم";return}
+ data.forEach(m=>{
+  const card=document.createElement("div");card.className="request-card";
+  card.innerHTML=`<div class="small">المستخدم: ${m.user_id}</div><p>${m.message}</p>`;
+  const reply=document.createElement("button");reply.textContent="رد على المستخدم";
+  reply.onclick=async()=>{const ans=prompt("اكتب ردك:");if(!ans?.trim())return;await client.from("support_messages").insert({user_id:m.user_id,sender_id:currentUser.id,message:ans.trim()});await pushNotification(m.user_id,"support","رد جديد من الدعم: "+ans.trim());loadAdminSupport()};
+  card.appendChild(reply);box.appendChild(card);
+ });
+}
+el("refreshSupportAdmin").onclick=loadAdminSupport;
+
+async function showHome(user){
+ currentUser=user;
+ el("auth").classList.add("hidden");el("home").classList.remove("hidden");
+ el("adminNav").classList.toggle("hidden",!isAdmin());el("mainNav").classList.toggle("has-admin",isAdmin());
+ registerCurrentDevice();applyScreenShield();startPresenceLoop();
+ const cached=getLocalProfileCache(user.id);
+ if(cached){currentProfile={...(currentProfile||{}),...cached};renderProfileUI(currentProfile)}
+ try{await loadProfile()}catch(e){if(!cached)msg("profileMessage",e.message)}
+ await enforceMandatoryFollow();
+ await Promise.all([loadVideos(),loadPosts(),loadStats(),loadChats(),loadCallsLog(),loadAlerts(),loadFriendRequestsAndFriends(),loadProfileMediaGrid()]);
+ renderStoriesStrip();
+ subscribeMessages();startCallsRealtime();startAlertsRealtime();
+}
+
+initPrefsListeners();
+client.auth.getSession().then(async({data})=>{if(data.session?.user)await showHome(data.session.user);else showLogin()});
+client.auth.onAuthStateChange(async(event,session)=>{
+ if(event==="SIGNED_IN"&&session?.user)await showHome(session.user);
+ else if(event==="SIGNED_OUT")showLogin();
+});
+</script>
+</body>
+</html>

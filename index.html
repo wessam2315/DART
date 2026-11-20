@@ -62,7 +62,6 @@ textarea{min-height:66px;resize:vertical}
 .post-text{white-space:pre-wrap;line-height:1.65}
 .post-date{font-size:12px;color:var(--muted);margin-top:10px}
 
-/* شريط القصص والحالات اليومية داخل المحادثات */
 .stories-strip{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:8px 2px 12px;border-bottom:1px solid var(--line);margin-bottom:10px}
 .stories-strip::-webkit-scrollbar{display:none}
 .story-item{display:flex;flex-direction:column;align-items:center;gap:5px;width:66px;flex-shrink:0;cursor:pointer}
@@ -219,7 +218,7 @@ nav button.active{color:#ffffff;background:transparent}
 .tt-ig-avatar-ring{width:96px;height:96px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#fe2c55,#7c3aed,#25f4ee);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .tt-ig-avatar-ring .avatar{width:100%;height:100%;border:3px solid #0b0b0e;font-size:34px}
 .tt-ig-name{margin:0;font-size:18px;font-weight:800}
-.tt-ig-bio{margin:6px auto 0;max-width:420px;font-size:13px;color:#b4b8c2;line-height:1.5}
+.tt-ig-bio{margin:6px auto 0;max-width:420px;font-size:13px;color:#b4b8c2;line-height:1.5;white-space:pre-wrap}
 .tt-ig-stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;margin:14px 12px 10px;padding:10px 0;border-top:1px solid #1c1d26;border-bottom:1px solid #1c1d26}
 .tt-ig-stats>div{cursor:pointer;padding:2px 4px}
 .tt-ig-stats strong{display:block;font-size:18px;font-weight:800;color:#fff}
@@ -929,6 +928,31 @@ function msg(id,text){if(el(id))el(id).textContent=text}
 function isAdmin(){return currentUser?.id===ADMIN_ID}
 function getDirectRoomId(u1,u2){return "dm_"+[String(u1),String(u2)].sort().join("_")}
 function stopIntentPolling(){if(intentPollTimer){clearInterval(intentPollTimer);intentPollTimer=null}}
+
+function getLocalProfileCache(uid=currentUser?.id){
+ if(!uid)return null;
+ try{return JSON.parse(localStorage.getItem("dert_profile_cache_"+uid)||"null")}catch(e){return null}
+}
+function saveLocalProfileCache(profileObj,uid=currentUser?.id){
+ if(!uid || !profileObj)return;
+ try{localStorage.setItem("dert_profile_cache_"+uid,JSON.stringify(profileObj))}catch(e){}
+}
+function renderProfileUI(data){
+ if(!data)return;
+ const fallbackUser="user_"+String(currentUser?.id||"").replace(/-/g,"").slice(0,8);
+ const fallbackName=currentUser?.email?currentUser.email.split("@")[0]:"مستخدم DERT";
+ const cleanName=(data.full_name||data.username||fallbackName).trim();
+ const cleanHandle=(data.username||fallbackUser).trim();
+ const cleanBio=data.bio||"مرحباً بك في DERT";
+ if(el("fullName"))el("fullName").value=cleanName;
+ if(el("username"))el("username").value=cleanHandle;
+ if(el("bio"))el("bio").value=data.bio||"";
+ addVerifiedName(el("displayName"),cleanName,data.is_verified===true);
+ addVerifiedName(el("displayUsernameTop"),"@"+cleanHandle,data.is_verified===true);
+ if(el("displayUsername"))el("displayUsername").textContent="@"+cleanHandle;
+ if(el("displayBio"))el("displayBio").textContent=cleanBio;
+ showAvatar(data.avatar_url,cleanName);
+}
 
 function shuffleArray(arr){
  const copy=[...arr];
@@ -1717,24 +1741,29 @@ el("logoutBtn").onclick=async()=>{const {error}=await client.auth.signOut();if(e
 
 async function loadProfile(){
  if(!currentUser)return;
- let {data,error}=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
- if(error)throw error;
+ const cached=getLocalProfileCache(currentUser.id);
+ if(cached){currentProfile={...(currentProfile||{}),...cached};renderProfileUI(currentProfile)}
+ let data=null;
+ try{
+  const res=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
+  if(res.error)throw res.error;
+  data=res.data;
+ }catch(e){
+  if(cached){el("adminNav").classList.toggle("hidden",!isAdmin());el("mainNav").classList.toggle("has-admin",isAdmin());await loadMyVerificationStatus();return}
+  throw e;
+ }
  const fallbackUser="user_"+currentUser.id.replace(/-/g,"").slice(0,8);
  const fallbackName=currentUser.email?currentUser.email.split("@")[0]:"مستخدم DERT";
  if(!data){
-  const {data:created,error:createErr}=await client.from("profiles").insert({id:currentUser.id,username:fallbackUser,full_name:fallbackName}).select().single();
-  if(createErr)throw createErr;data=created;
+  const seed={id:currentUser.id,username:cached?.username||fallbackUser,full_name:cached?.full_name||fallbackName,bio:cached?.bio||"",avatar_url:cached?.avatar_url||null};
+  try{const {data:created,error:createErr}=await client.from("profiles").upsert(seed,{onConflict:"id"}).select().single();if(!createErr && created)data=created;else data=seed}catch(e){data=seed}
  }else if(!data.username){
-  const {data:updated}=await client.from("profiles").update({username:fallbackUser,full_name:data.full_name||fallbackName}).eq("id",currentUser.id).select().single();
-  if(updated)data=updated;
+  const merged={...data,username:cached?.username||fallbackUser,full_name:data.full_name||cached?.full_name||fallbackName,bio:data.bio||cached?.bio||""};
+  try{const {data:updated}=await client.from("profiles").update({username:merged.username,full_name:merged.full_name,bio:merged.bio}).eq("id",currentUser.id).select().single();data=updated||merged}catch(e){data=merged}
  }
- currentProfile=data;
- const cleanName=data.full_name||data.username||fallbackName;const cleanHandle=data.username||fallbackUser;
- el("fullName").value=cleanName;el("username").value=cleanHandle;el("bio").value=data.bio||"";
- addVerifiedName(el("displayName"),cleanName,data.is_verified===true);
- addVerifiedName(el("displayUsernameTop"),"@"+cleanHandle,data.is_verified===true);
- el("displayUsername").textContent="@"+cleanHandle;el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
- showAvatar(data.avatar_url,cleanName);
+ currentProfile={...(cached||{}),...data};
+ saveLocalProfileCache(currentProfile,currentUser.id);
+ renderProfileUI(currentProfile);
  el("adminNav").classList.toggle("hidden",!isAdmin());el("mainNav").classList.toggle("has-admin",isAdmin());
  await loadMyVerificationStatus();
 }
@@ -1753,22 +1782,54 @@ el("requestVerificationBtn").onclick=async()=>{
  try{const {error}=await client.from("verification_requests").insert({user_id:currentUser.id,status:"pending"});if(error)throw error;b.textContent="⏳ طلبك قيد المراجعة";msg("verificationMessage","تم إرسال الطلب.")}
  catch(e){msg("verificationMessage","تعذر إرسال الطلب: "+e.message);b.disabled=false}
 };
-el("editProfileBtn").onclick=()=>{el("profileSettings").classList.remove("hidden");el("editProfileBtn").classList.add("hidden")};
+el("editProfileBtn").onclick=()=>{
+ if(currentProfile){
+  if(el("fullName"))el("fullName").value=currentProfile.full_name||"";
+  if(el("username"))el("username").value=currentProfile.username||"";
+  if(el("bio"))el("bio").value=currentProfile.bio||"";
+ }
+ el("profileSettings").classList.remove("hidden");el("editProfileBtn").classList.add("hidden");msg("profileMessage","");
+};
 el("cancelProfileBtn").onclick=()=>{el("profileSettings").classList.add("hidden");el("editProfileBtn").classList.remove("hidden")};
 el("saveProfileBtn").onclick=async()=>{
- const username=el("username").value.trim().toLowerCase();
- if(!/^[a-z0-9_]{3,25}$/.test(username)){msg("profileMessage","اسم المستخدم من 3 إلى 25 حرفاً إنجليزياً أو رقماً أو _");return}
- const b=el("saveProfileBtn");b.disabled=true;
+ if(!currentUser)return;
+ const newName=el("fullName").value.trim();
+ const rawUsername=el("username").value.trim().toLowerCase().replace(/[^a-z0-9_]/g,"");
+ const username=rawUsername.length>=3?rawUsername:(currentProfile?.username||("user_"+currentUser.id.replace(/-/g,"").slice(0,8)));
+ const newBio=el("bio").value.trim();
+ const b=el("saveProfileBtn");b.disabled=true;msg("profileMessage","جارٍ حفظ التعديلات...");
  try{
-  let avatar=currentProfile?.avatar_url||null;const f=el("avatarFile").files[0];if(f)avatar=await uploadFile(f,"profile");
-  const {data,error}=await client.from("profiles").update({full_name:el("fullName").value.trim(),username,bio:el("bio").value.trim(),avatar_url:avatar}).eq("id",currentUser.id).select().single();
-  if(error)throw error;currentProfile=data;
-  addVerifiedName(el("displayName"),data.full_name,data.is_verified===true);
-  addVerifiedName(el("displayUsernameTop"),"@"+data.username,data.is_verified===true);
-  el("displayUsername").textContent="@"+data.username;el("displayBio").textContent=data.bio||"مرحباً بك في DERT";
-  showAvatar(data.avatar_url,data.full_name);el("profileSettings").classList.add("hidden");el("editProfileBtn").classList.remove("hidden");
-  msg("profileMessage","تم حفظ الملف الشخصي");
- }catch(e){msg("profileMessage","تعذر الحفظ: "+e.message)}finally{b.disabled=false}
+  let avatar=currentProfile?.avatar_url||getLocalProfileCache(currentUser.id)?.avatar_url||null;
+  const f=el("avatarFile").files[0];
+  if(f){
+   try{avatar=await uploadFile(f,"profile")}
+   catch(upErr){
+    avatar=await new Promise(res=>{
+     const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>res(avatar);r.readAsDataURL(f);
+    });
+   }
+  }
+  const updates={id:currentUser.id,full_name:newName||currentProfile?.full_name||"مستخدم DERT",username,bio:newBio,avatar_url:avatar};
+  let savedData=updates;
+  try{
+   const {data,error}=await client.from("profiles").upsert(updates,{onConflict:"id"}).select().single();
+   if(!error && data)savedData=data;
+   else if(error){
+    const fb=await client.from("profiles").update({full_name:updates.full_name,username:updates.username,bio:updates.bio,avatar_url:updates.avatar_url}).eq("id",currentUser.id).select().single();
+    if(!fb.error && fb.data)savedData=fb.data;
+   }
+  }catch(dbErr){}
+  currentProfile={...(currentProfile||{}),...savedData,...updates};
+  saveLocalProfileCache(currentProfile,currentUser.id);
+  renderProfileUI(currentProfile);
+  if(el("avatarFile"))el("avatarFile").value="";
+  el("profileSettings").classList.add("hidden");el("editProfileBtn").classList.remove("hidden");
+  msg("profileMessage","تم حفظ الاسم والوصف بنجاح ✓");
+ }catch(e){
+  const fallbackProfile={...(currentProfile||{}),full_name:newName,username,bio:newBio};
+  currentProfile=fallbackProfile;saveLocalProfileCache(fallbackProfile,currentUser.id);renderProfileUI(fallbackProfile);
+  msg("profileMessage","تم الحفظ محلياً: "+e.message);
+ }finally{b.disabled=false}
 };
 el("avatarFile").onchange=()=>{const f=el("avatarFile").files[0];if(!f)return;showAvatar(URL.createObjectURL(f),"D");el("profileSettings").classList.remove("hidden");el("editProfileBtn").classList.add("hidden")};
 

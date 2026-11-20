@@ -1,1646 +1,1045 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Home, Search, PlusSquare, MessageCircle, User, Heart,
-  Share2, Bookmark, UserPlus, Check, Sun, Moon, Play,
-  Volume2, VolumeX, Settings, Edit3, Grid, Film, ArrowLeft,
-  Send, Sparkles, X, Camera, Image as ImageIcon, ShieldCheck
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+<meta name="google-site-verification" content="VoZ2mrh8ouou83SzxXvIWkET2pq4lfmWEYaLivj0_IM">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DERT 🌍</title>
 
-// --- Types ---
-type TabType = 'home' | 'explore' | 'create' | 'chats' | 'profile';
-type FeedFilter = 'all' | 'photos' | 'videos';
+<link rel="icon" type="image/png" href="app-icon.png">
+<link rel="apple-touch-icon" href="app-icon.png">
+<meta property="og:title" content="DERT 🌍">
+<meta property="og:description" content="Connect • Share • Explore">
+<meta property="og:image" content="https://wessam2315.github.io/DART/app-icon.png">
 
-interface PostItem {
-  id: string;
-  type: 'video' | 'photo';
-  author: {
-    name: string;
-    handle: string;
-    avatar: string;
-    verified?: boolean;
-  };
-  caption: string;
-  mediaUrl: string;
-  thumbnailUrl?: string;
-  likes: number;
-  comments: { id: string; user: string; text: string; time: string }[];
-  shares: number;
-  isLiked: boolean;
-  isSaved: boolean;
-  isFollowing: boolean;
-  timestamp: string;
-  soundName?: string;
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#000000;
+  --panel:#121216;
+  --panel-2:#171820;
+  --accent:#fe2c55;
+  --blue:#25f4ee;
+  --muted:#a8abb3;
+  --line:#23242a;
+  --text:#ffffff;
+  --input-bg:#14151a;
+  --nav-bg:#000000;
 }
-
-interface ChatThread {
-  id: string;
-  user: {
-    name: string;
-    handle: string;
-    avatar: string;
-    online: boolean;
-  };
-  lastMessage: string;
-  time: string;
-  unread: number;
-  messages: { id: string; sender: 'me' | 'them'; text: string; time: string }[];
+html[data-theme="light"]{
+  --bg:#f4f5f8;
+  --panel:#ffffff;
+  --panel-2:#eef0f5;
+  --accent:#fe2c55;
+  --blue:#0891b2;
+  --muted:#5b6070;
+  --line:#dfe2ec;
+  --text:#11131a;
+  --input-bg:#f8f9fc;
+  --nav-bg:#ffffff;
 }
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;transition:background .2s,color .2s}
+body.sensitive-blur .chatbox,body.sensitive-blur .comment-modal{filter:blur(12px);transition:filter .15s}
+.hidden{display:none!important}
+button{border:0;border-radius:10px;padding:11px 14px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:transform .12s,opacity .15s}
+button:active{transform:scale(.96)}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,textarea,select{width:100%;padding:12px;margin:6px 0;border:1px solid var(--line);border-radius:10px;background:var(--input-bg);color:var(--text);font-size:15px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{min-height:66px;resize:vertical}
+.full{width:100%}.gray{background:#2a2c37;color:#fff}.red{background:#fe2c55;color:#fff}.green{background:#18a968;color:#fff}
+html[data-theme="light"] .gray{background:#e4e7f0;color:#11131a}
+.small{font-size:12px;color:var(--muted)}
+.card,.post{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
 
-// --- Brand Logo & Loader Components ---
-const BrandLogo: React.FC<{ size?: 'sm' | 'md' | 'lg'; darkMode: boolean }> = ({
-  size = 'md',
-  darkMode,
-}) => {
-  const dimensions = size === 'sm' ? 28 : size === 'md' ? 36 : 64;
-  return (
-    <div className="inline-flex items-center gap-2.5 select-none" dir="rtl">
-      <div
-        style={{ width: dimensions, height: dimensions }}
-        className="relative flex items-center justify-center rounded-2xl bg-gradient-to-tr from-[#FF0055] via-[#FF4D00] to-[#00F2FE] p-[2px] shadow-lg shadow-[#FF0055]/20"
-      >
-        <div
-          className={`w-full h-full rounded-[14px] flex items-center justify-center ${
-            darkMode ? 'bg-[#0B0D12]' : 'bg-white'
-          }`}
-        >
-          {/* Custom Geometric Brand Mark: Pulse Frame + Play/Lens */}
-          <svg
-            viewBox="0 0 36 36"
-            className="w-[65%] h-[65%]"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M10 8H22C25.3137 8 28 10.6863 28 14V22C28 25.3137 25.3137 28 22 28H10C8.89543 28 8 27.1046 8 26V10C8 8.89543 8.89543 8 10 8Z"
-              stroke="url(#dertGrad)"
-              strokeWidth="2.8"
-            />
-            <path
-              d="M15.5 13.5L22.5 18L15.5 22.5V13.5Z"
-              fill="url(#dertGrad)"
-            />
-            <circle cx="24" cy="11" r="2.2" fill="#00F2FE" />
-            <defs>
-              <linearGradient
-                id="dertGrad"
-                x1="8"
-                y1="8"
-                x2="28"
-                y2="28"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop stopColor="#FF0055" />
-                <stop offset="0.5" stopColor="#FF5E00" />
-                <stop offset="1" stopColor="#00E5FF" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-      </div>
-      {size !== 'sm' && (
-        <div className="flex flex-col leading-none">
-          <span
-            className={`font-black tracking-tight ${
-              size === 'lg' ? 'text-3xl' : 'text-xl'
-            } bg-gradient-to-l from-[#FF0055] via-[#FF5E00] to-[#00C8FF] bg-clip-text text-transparent`}
-          >
-            DERT
-          </span>
-          <span
-            className={`text-[10px] font-medium tracking-wider ${
-              darkMode ? 'text-slate-400' : 'text-slate-500'
-            }`}
-          >
-            نبض المحتوى واللحظة
-          </span>
-        </div>
-      )}
-    </div>
-  );
-};
+.online-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#18a968;margin-inline-end:5px;box-shadow:0 0 6px #18a968}
+.offline-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#757988;margin-inline-end:5px}
 
-const BrandLoader: React.FC<{ darkMode: boolean; label?: string }> = ({
-  darkMode,
-  label = 'جاري التحميل...',
-}) => (
-  <div className="flex flex-col items-center justify-center gap-3 py-8" dir="rtl">
-    <div className="relative w-12 h-12 flex items-center justify-center">
-      <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#FF0055] border-r-[#00E5FF] animate-spin" />
-      <div
-        className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#FF0055] to-[#FF5E00] flex items-center justify-center shadow-md"
-        style={{ animation: 'pulse 1.6s ease-in-out infinite' }}
-      >
-        <Sparkles className="w-4 h-4 text-white" />
-      </div>
-    </div>
-    <span className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-      {label}
-    </span>
+.mandatory-follow-backdrop{position:fixed;inset:0;z-index:3000;background:#000000e6;backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:18px}
+.mandatory-follow-card{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px 18px;text-align:center;box-shadow:0 20px 50px #000c}
+.mandatory-follow-card .avatar{width:84px;height:84px;font-size:32px;margin:0 auto 12px;border:2px solid #fe2c55}
+
+.app-lock-backdrop{position:fixed;inset:0;z-index:4000;background:radial-gradient(circle at 50% 25%,#1f1833,#050508 75%);display:flex;align-items:center;justify-content:center;padding:20px}
+.app-lock-card{width:100%;max-width:380px;background:#111219;border:1px solid #2d2a42;border-radius:22px;padding:22px 18px;text-align:center;color:#fff;box-shadow:0 20px 50px #000d}
+
+.tt-topbar{position:fixed;top:0;left:0;right:0;z-index:20;max-width:720px;margin:auto;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:linear-gradient(to bottom,rgba(0,0,0,.78),rgba(0,0,0,0));pointer-events:none}
+.tt-topbar>*{pointer-events:auto}
+.tt-top-right{display:flex;align-items:center;gap:8px}
+.tt-back-mini{width:30px;height:30px;padding:0;border-radius:50%;background:#ffffff24;backdrop-filter:blur(8px);color:#fff;font-size:16px;display:inline-flex;align-items:center;justify-content:center}
+.tt-live-pill{padding:4px 8px;border-radius:6px;background:#fe2c55;color:#fff;font-size:11px;font-weight:800;letter-spacing:.5px;cursor:pointer}
+.tt-tabs-scroll{display:flex;align-items:center;gap:12px;overflow-x:auto;scrollbar-width:none;padding:2px 0}
+.tt-tabs-scroll::-webkit-scrollbar{display:none}
+.tt-top-tab{background:transparent;padding:4px 2px;border-radius:0;color:#ffffffc4;font-size:14px;font-weight:700;white-space:nowrap;position:relative}
+.tt-top-tab.active{color:#ffffff;font-size:15px}
+.tt-top-tab.active::after{content:"";position:absolute;bottom:-4px;left:15%;right:15%;height:3px;border-radius:3px;background:#ffffff}
+.tt-search-btn{width:36px;height:36px;padding:0;border-radius:10px;background:transparent;color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+
+.search-box{position:relative;display:flex;align-items:center;margin:8px 0}
+.search-box input{padding-inline-start:38px;border-radius:22px;background:var(--panel-2);border-color:var(--line);font-size:14px;padding-top:10px;padding-bottom:10px}
+.search-icon{position:absolute;inset-inline-start:13px;font-size:15px;color:var(--muted);pointer-events:none}
+
+.container{max-width:720px;margin:auto;padding:58px 12px 96px}
+.section{display:none}.section.active{display:block}
+.avatar{width:46px;height:46px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#fe2c55,#25f4ee);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.clickable-user{cursor:pointer}
+.post img,.media{width:100%;max-height:420px;object-fit:contain;border-radius:12px;margin-top:10px}
+.protected-media{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.post video{width:100%;max-height:440px;object-fit:contain;border-radius:12px;margin-top:10px;background:#000}
+.post-text{white-space:pre-wrap;line-height:1.65}
+.post-date{font-size:12px;color:var(--muted);margin-top:10px}
+
+.stories-strip{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:8px 2px 12px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.stories-strip::-webkit-scrollbar{display:none}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:5px;width:66px;flex-shrink:0;cursor:pointer}
+.story-ring{width:58px;height:58px;border-radius:50%;padding:2.5px;background:linear-gradient(135deg,#fe2c55,#8b5cf6,#25f4ee);display:flex;align-items:center;justify-content:center;position:relative}
+.story-ring.add-ring{background:var(--panel-2);border:1.5px dashed var(--muted)}
+.story-ring .avatar{width:100%;height:100%;border:2px solid var(--panel);font-size:18px}
+.story-plus{position:absolute;bottom:-2px;inset-inline-start:-2px;width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.story-label{font-size:11px;color:var(--text);max-width:66px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+
+/* الدردشات المستقلة */
+.chat-entry{display:flex;align-items:center;gap:11px;padding:12px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:12px;transition:background .15s}
+.chat-entry:active{background:var(--panel-2)}
+.chat-entry.pinned{background:var(--panel-2);border-inline-start:3px solid #25f4ee;padding-inline-start:8px}
+.chat-entry-info{flex:1;min-width:0}
+.chat-title-row{display:flex;align-items:center;gap:6px}
+.chat-last{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+.chat-meta-col{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.chat-time{font-size:11px;color:var(--muted)}
+.unread-badge{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#fe2c55;color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.chat-entry-actions{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.chat-mini-act{background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:4px 8px;font-size:11px;border-radius:8px}
+.chat-mini-act.danger{color:#ff5c77;border-color:#fe2c5544}
+
+/* قسم الاتصالات المستقل */
+.calls-filter-row{display:flex;gap:6px;margin:10px 0;overflow-x:auto;scrollbar-width:none}
+.calls-filter-row::-webkit-scrollbar{display:none}
+.call-filter-btn{flex:1;background:var(--panel-2);color:var(--muted);border:1px solid var(--line);padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap}
+.call-filter-btn.active{background:#fe2c55;color:#fff;border-color:#fe2c55}
+.call-log-row{display:flex;align-items:center;gap:11px;padding:12px 6px;border-bottom:1px solid var(--line)}
+.call-log-row.missed{background:#fe2c5512;border-radius:12px;padding-inline:8px}
+.call-log-info{flex:1;min-width:0}
+.call-status-line{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:4px;color:var(--muted)}
+.call-status-line.missed{color:#ff5c77;font-weight:700}
+.call-status-line.incoming{color:#18a968}
+.call-status-line.outgoing{color:#0891b2}
+html[data-theme="dark"] .call-status-line.outgoing{color:#25f4ee}
+.call-quick-btns{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.call-icon-btn{width:38px;height:38px;padding:0;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-size:16px;display:inline-flex;align-items:center;justify-content:center}
+.call-icon-btn.voice:hover{background:#18a968;border-color:#18a968;color:#fff}
+.call-icon-btn.video:hover{background:#fe2c55;border-color:#fe2c55;color:#fff}
+
+.sound-line{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 10px;border-radius:16px;background:rgba(128,128,128,.16);color:var(--text);font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.music-picker-btn{width:100%;margin-top:12px;padding:13px 14px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);color:var(--text);display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:14px}
+.music-selected-bar{margin-top:8px;padding:9px 12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px}
+.music-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;border-bottom:1px solid var(--line)}
+.music-row-info{flex:1;min-width:0}
+.music-row-actions{display:flex;gap:6px}
+.music-row-actions button{padding:7px 11px;font-size:12px}
+
+.carousel-wrap{position:relative;margin-top:10px;border-radius:12px;overflow:hidden;background:#000;border:1px solid var(--line)}
+.carousel-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
+.carousel-track::-webkit-scrollbar{display:none}
+.carousel-track img{flex:0 0 100%;width:100%;max-height:420px;object-fit:contain;scroll-snap-align:start;margin-top:0;border-radius:0}
+.carousel-counter{position:absolute;top:10px;inset-inline-start:10px;background:#0009;color:#fff;font-size:11px;padding:4px 9px;border-radius:12px}
+.carousel-dots{display:flex;justify-content:center;gap:6px;padding:8px}
+.carousel-dot{width:7px;height:7px;border-radius:50%;background:#666a7a}
+.carousel-dot.active{background:#fff}
+
+.preview-box{margin-top:12px;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--panel-2)}
+.preview-grid{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.preview-item{position:relative;flex:0 0 105px;height:105px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.preview-item img,.preview-item video{width:100%;height:100%;object-fit:cover;display:block}
+.preview-remove{position:absolute;top:4px;inset-inline-start:4px;width:22px;height:22px;padding:0;border-radius:50%;background:#fe2c55;font-size:12px;line-height:22px;text-align:center}
+.preview-video{width:100%;max-height:220px;border-radius:10px;background:#000;display:block}
+
+.tt-extra-options{margin-top:10px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:grid;gap:8px}
+.tt-opt-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+.tt-opt-row select{width:auto;min-width:130px;margin:0;padding:7px 10px;font-size:12px}
+.tt-switch-label{display:flex;align-items:center;justify-content:space-between;width:100%;font-size:13px;cursor:pointer}
+.tt-switch-label input[type="checkbox"]{width:18px;height:18px;margin:0;accent-color:#fe2c55}
+
+.comment{background:var(--panel-2);padding:10px 12px;border-radius:12px;margin:8px 0;border:1px solid var(--line)}
+.comment-reply{margin-inline-start:22px;border-inline-start:2px solid #fe2c55}
+.comment-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.comment-body-text{margin:6px 0 0;white-space:pre-wrap;line-height:1.5;font-size:14px}
+.reply-target-badge{display:inline-block;font-size:11px;color:#0891b2;margin-bottom:4px;font-weight:700}
+html[data-theme="dark"] .reply-target-badge{color:#25f4ee}
+.comment-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.comment-actions button{padding:5px 10px;font-size:11px;border-radius:8px}
+.reply-banner{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin:0 12px 6px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--text)}
+.reply-banner button{padding:3px 8px;font-size:11px}
+
+.post-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.post-bottom button{background:transparent;padding:8px 8px;color:var(--text);font-size:12px}
+.post-bottom .comment-open{background:var(--panel-2);border:1px solid var(--line);flex:1;text-align:center}
+.post-menu-wrap{position:relative}
+.post-menu{position:absolute;inset-inline-start:0;top:40px;z-index:8;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;width:170px;box-shadow:0 10px 28px #0006}
+.post-menu button{display:block;width:100%;text-align:start;background:transparent;padding:10px;color:var(--text);border-radius:8px}
+.post-menu button:hover{background:var(--panel-2)}
+
+.comment-modal{position:fixed;inset:0;z-index:1000;background:#0009;display:flex;align-items:flex-end;justify-content:center}
+.comment-sheet{width:100%;max-width:720px;height:80vh;height:min(80dvh,740px);background:var(--panel);border:1px solid var(--line);border-bottom:0;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:sheetUp .2s ease-out}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.comment-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid var(--line)}
+.comment-sheet-list{flex:1;overflow-y:auto;padding:12px}
+.comment-sheet-form{padding:10px 12px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;background:var(--panel-2)}
+.comment-sheet-form input{margin:0;flex:1}
+
+.item{padding:12px;border-bottom:1px solid var(--line)}
+.user-row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.user-row-actions button{padding:8px 12px;font-size:12px}
+.chat-row{display:flex;align-items:center;gap:10px}
+.chat-row-info{flex:1;min-width:0}
+.chatbox{height:360px;overflow:auto;background:var(--panel-2);padding:12px;border-radius:12px;display:flex;flex-direction:column;border:1px solid var(--line)}
+.bubble{padding:10px 13px;border-radius:16px;margin:6px 0;max-width:86%;background:var(--panel);border:1px solid var(--line);white-space:pre-wrap;align-self:flex-start}
+.bubble.mine{background:#fe2c55;color:#fff;border-color:#fe2c55;align-self:flex-end}
+.msg-reply-quote{font-size:11px;background:rgba(0,0,0,.25);border-inline-start:2px solid #25f4ee;padding:4px 8px;border-radius:6px;margin-bottom:5px;color:#fff}
+.msg-reactions-bar{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.msg-react-pill{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:11px;padding:2px 7px;border-radius:999px}
+.msg-react-pill.active{border-color:#25f4ee;background:rgba(37,244,238,.2)}
+.msg-toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+.msg-mini-btn{background:rgba(128,128,128,.22)!important;color:inherit!important;padding:3px 7px!important;font-size:11px!important;border-radius:7px!important}
+.chat-attach-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.chat-attach-row button{padding:7px 10px;font-size:12px}
+.file-chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel-2);border:1px solid var(--line);padding:8px 11px;border-radius:10px;margin-top:8px;font-size:12px;color:#25f4ee}
+.message-meta{font-size:11px;opacity:.85;margin-top:6px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+#avatarFile{display:none}
+
+.violet-icon{width:26px;height:26px;border-radius:8px;background:radial-gradient(circle at 50% 88%,#6d28d988,#161522 72%);border:1px solid #4c2d8280;box-shadow:0 3px 10px #5b21b655;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s}
+.violet-icon svg{width:17px;height:17px;display:block}
+nav button.active .violet-icon{border-color:#8b5cf6;transform:translateY(-1px)}
+.violet-icon-sm{width:26px;height:26px;border-radius:8px}
+.violet-icon-lg{width:40px;height:40px;border-radius:12px}
+.violet-icon-lg svg{width:27px;height:27px}
+
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:center;padding:6px 2px calc(8px + env(safe-area-inset-bottom));background:var(--nav-bg);border-top:1px solid var(--line);max-width:720px;margin:auto}
+nav.has-admin{grid-template-columns:repeat(8,minmax(0,1fr))}
+nav button{margin:0;padding:4px 1px;background:transparent;color:var(--muted);border-radius:8px;font-size:9px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+nav button.active{color:var(--text);background:transparent}
+.nav-badge{position:absolute;top:1px;inset-inline-start:14%;min-width:15px;height:15px;padding:0 3px;border-radius:999px;background:#fe2c55;color:#fff;font-size:9px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.tt-plus-btn{width:36px;height:24px;border-radius:8px;padding:0;background:#ffffff;color:#000000;display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;line-height:1;box-shadow:-2px 0 0 #25f4ee,2px 0 0 #fe2c55;margin:1px auto}
+
+#videos{margin:-58px -12px -96px}
+.videos-feed{height:100vh;height:100dvh;width:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain;scrollbar-width:none;background:#000}
+.videos-feed::-webkit-scrollbar{display:none}
+.video-card{height:100%;width:100%;position:relative;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;background:#000}
+.video-card video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+.video-overlay{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:flex-end;padding:16px 14px 90px;background:linear-gradient(transparent 50%,#0004 72%,#000d 100%)}
+.video-details{max-width:82%;color:#fff;text-shadow:0 1px 4px #000;pointer-events:auto}
+.video-author{font-weight:800;font-size:16px;margin-bottom:6px;cursor:pointer}
+.video-description{font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.video-date{font-size:11px;color:#c7cbd4;margin-top:6px}
+
+.video-side-actions{position:absolute;inset-inline-start:10px;bottom:96px;display:flex;flex-direction:column;gap:12px;align-items:center;pointer-events:auto}
+.tt-avatar-wrap{position:relative;width:48px;height:48px;margin-bottom:4px;cursor:pointer}
+.tt-avatar-wrap .avatar{width:48px;height:48px;border:2px solid #fff}
+.tt-plus-badge{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:#fe2c55;color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;line-height:1}
+.tt-side-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.tt-side-btn{padding:0;background:transparent;color:#fff;border:0;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 6px #000)}
+.tt-action-circle{width:40px;height:40px;border-radius:50%;background:#181922cc;border:1px solid #ffffff2b;display:inline-flex;align-items:center;justify-content:center;font-size:19px}
+.tt-action-circle.active{background:#fe2c5533;border-color:#fe2c55;color:#fe2c55}
+.tt-side-label{font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000}
+.tt-disc{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,#1e1f26 30%,#7c3aed 33%,#141418 38%,#8b5cf6 41%,#111 45%);border:5px solid #24252d;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;animation:spinDisc 6s linear infinite}
+@keyframes spinDisc{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+.video-sound{position:absolute;top:64px;inset-inline-start:12px;width:36px;height:36px;border-radius:50%;background:#0008;border:1px solid #ffffff38;color:#fff;font-size:16px;padding:0;display:flex;align-items:center;justify-content:center}
+.videos-empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:var(--bg);color:var(--text)}
+.video-loading{height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+
+.auth-screen{min-height:100vh;min-height:100dvh;background:radial-gradient(circle at 50% 25%,#1b1c26,#000 72%);color:#fff;display:flex;align-items:center;justify-content:center;padding:22px}
+.auth-inner{width:100%;max-width:390px;text-align:center}
+.brand-mark{width:150px;height:150px;margin:0 auto 14px;border-radius:36px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid #8b5cf6;background:#111218;box-shadow:0 12px 32px #6d28d955}
+.brand-mark img{width:100%;height:100%;object-fit:cover;display:block}
+.brand-name{font-size:48px;font-weight:900;letter-spacing:6px}
+.auth-tag{color:#a8abb3;font-size:12px;letter-spacing:3px;margin:8px 0 28px}
+.auth-actions{display:grid;gap:12px}
+.auth-actions button{padding:15px;border-radius:28px;font-size:16px;font-weight:700}
+.auth-primary{background:#fe2c55;color:#fff}
+.auth-purple{background:#25262e;color:#fff}
+.auth-outline{background:transparent;border:1px solid #444759;color:#fff}
+.auth-panel{background:#111217;border:1px solid #23242a;border-radius:18px;padding:16px;text-align:start;margin-top:18px}
+.auth-switch{display:flex;gap:6px;margin-bottom:12px}
+.auth-switch button{flex:1;background:#1e1f28;color:#a8abb3;font-size:13px}
+.auth-switch button.active{background:#fe2c55;color:#fff}
+.auth-message{font-size:13px;color:#ffd0da;min-height:20px}
+
+.tt-ig-profile-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;padding-bottom:14px}
+.tt-ig-top-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px}
+.tt-ig-handle{font-size:16px;font-weight:800;display:flex;align-items:center;gap:4px}
+.tt-ig-top-btns{display:flex;gap:8px}
+.tt-ig-icon-btn{width:34px;height:34px;padding:0;border-radius:50%;background:var(--panel-2);color:var(--text);font-size:16px;display:inline-flex;align-items:center;justify-content:center}
+.tt-ig-hero{text-align:center;padding:8px 16px 4px}
+.tt-ig-avatar-ring{width:96px;height:96px;border-radius:50%;padding:3px;background:linear-gradient(135deg,#fe2c55,#7c3aed,#25f4ee);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tt-ig-avatar-ring .avatar{width:100%;height:100%;border:3px solid var(--panel);font-size:34px}
+.tt-ig-name{margin:0;font-size:18px;font-weight:800}
+.tt-ig-bio{margin:6px auto 0;max-width:420px;font-size:13px;color:var(--muted);line-height:1.5;white-space:pre-wrap}
+.tt-ig-stats{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;margin:14px 12px 10px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tt-ig-stats>div{cursor:pointer;padding:2px 4px}
+.tt-ig-stats strong{display:block;font-size:18px;font-weight:800;color:var(--text)}
+.tt-ig-stats span{font-size:12px;color:var(--muted)}
+.tt-ig-cta-row{display:flex;gap:8px;padding:4px 14px 10px}
+.tt-ig-cta-btn{flex:1;padding:10px 12px;border-radius:10px;background:var(--panel-2);color:var(--text);font-size:13px;font-weight:700;border:1px solid var(--line)}
+.tt-ig-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line);margin-top:4px}
+.tt-ig-tab{background:transparent;border-radius:0;padding:11px 4px;color:var(--muted);font-size:12px;font-weight:700;position:relative}
+.tt-ig-tab.active{color:var(--text)}
+.tt-ig-tab.active::after{content:"";position:absolute;bottom:0;left:22%;right:22%;height:2.5px;background:var(--text);border-radius:2px}
+.tt-ig-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:6px 6px 0}
+.tt-ig-tile{aspect-ratio:1/1;background:var(--panel-2);overflow:hidden;position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text);padding:6px;text-align:center}
+.tt-ig-tile img,.tt-ig-tile video{width:100%;height:100%;object-fit:cover;display:block}
+.tt-ig-badge{position:absolute;top:5px;inset-inline-start:5px;background:#000a;color:#fff;font-size:10px;padding:2px 6px;border-radius:6px}
+
+.verified-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;min-width:18px;margin-inline-start:5px;border-radius:50%;background:#20d5ec;color:#000;font-size:12px;font-weight:900}
+.profile-stats{display:flex;justify-content:center;text-align:center;padding:14px 4px;border-block:1px solid var(--line);margin-bottom:14px}
+.profile-stats>div{flex:1;border-inline-end:1px solid var(--line);cursor:pointer;padding:4px}
+.profile-stats>div:last-child{border:0}
+.profile-stats strong{display:block;font-size:20px;color:var(--text)}
+.profile-stats span{font-size:12px;color:var(--muted)}
+.profile-settings{margin:12px 0;padding:14px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px}
+
+.standalone-page{position:fixed;inset:0;z-index:45;background:var(--bg);color:var(--text);max-width:720px;margin:auto;overflow-y:auto;padding:calc(14px + env(safe-area-inset-top)) 14px calc(32px + env(safe-area-inset-bottom))}
+.standalone-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:5;padding-top:4px;border-radius:12px;padding-inline:8px}
+.standalone-header h2{margin:0;font-size:17px;font-weight:800}
+.tt-menu-group-title{font-size:12px;font-weight:700;color:var(--muted);padding:10px 4px 6px}
+.tt-menu-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tt-menu-item{width:100%;background:transparent;border-radius:0;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--text);border-bottom:1px solid var(--line);text-align:start}
+.tt-menu-item:last-child{border-bottom:0}
+.tt-menu-item:active{background:var(--panel-2)}
+.tt-menu-left{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:600}
+.tt-menu-arrow{color:var(--muted);font-size:18px}
+.tt-sub-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.tt-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.tt-stat-tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+.tt-stat-tile strong{display:block;font-size:18px;color:var(--text)}
+.tt-stat-tile span{font-size:11px;color:var(--muted)}
+.tt-qr-box{background:#ffffff;color:#000;border-radius:14px;padding:16px;text-align:center;margin:10px 0}
+
+.pay-methods-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
+.pay-method-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:10px;border-radius:10px;font-size:12px;font-weight:700}
+.pay-method-btn.active{background:#fe2c55;border-color:#fe2c55;color:#fff}
+.packages-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0}
+.pkg-btn{background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:10px 6px;border-radius:10px;font-size:12px}
+.pkg-btn.active{background:#18a968;border-color:#18a968;color:#fff}
+
+.tt-live-stage{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}
+.tt-live-screen{position:relative;height:210px;border-radius:12px;background:radial-gradient(circle at 50% 30%,#3b1d7a,#09090d 75%);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;text-align:center;padding:12px}
+.tt-live-screen video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tt-live-badge-top{position:relative;z-index:2;background:#fe2c55;color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;margin-bottom:8px}
+.tt-split-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.tt-split-box{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.tt-split-box strong{display:block;font-size:16px;color:var(--text)}
+.tt-split-box span{font-size:11px;color:var(--muted)}
+.tt-live-chat{max-height:170px;overflow-y:auto;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:10px}
+.tt-live-gifts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tt-live-gifts button{padding:7px 11px;font-size:12px;background:var(--panel-2);color:var(--text);border:1px solid var(--line)}
+
+.request-card{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}
+.status-pending{color:#d98a00}.status-paid,.status-approved{color:#18a968}.status-rejected,.status-failed,.status-expired{color:#fe2c55}
+.admin-actions{display:flex;gap:8px;margin-top:10px}
+.admin-actions button{flex:1}
+.support-message{padding:10px 12px;border-radius:12px;background:var(--panel-2);margin:8px 0;white-space:pre-wrap}
+.support-message.mine{background:#fe2c55;color:#fff}
+
+.overlay-modal{position:fixed;inset:0;z-index:1500;background:#000b;display:flex;align-items:center;justify-content:center;padding:14px}
+.modal-card{width:100%;max-width:560px;max-height:86vh;max-height:86dvh;overflow-y:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:16px}
+.modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.modal-top button{background:var(--panel-2);color:var(--text);padding:7px 11px}
+
+#dertCreateModal{position:fixed;inset:0;z-index:2000;background:#000000cc;backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center}
+#dertCreateBox{width:100%;max-width:720px;max-height:94vh;max-height:94dvh;overflow-y:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;padding:14px 16px calc(24px + env(safe-area-inset-bottom));animation:sheetUp .22s ease-out}
+.tt-create-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:4}
+.tt-create-top h3{margin:0;font-size:16px;font-weight:800}
+#dertCreateClose{width:34px;height:34px;padding:0;border-radius:50%;background:var(--panel-2);color:var(--text);font-size:15px;display:inline-flex;align-items:center;justify-content:center}
+.tt-create-top-pub{padding:8px 16px;border-radius:999px;font-size:13px;font-weight:800}
+.tt-media-pick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.tt-pick-card{background:var(--panel-2);border:1px dashed var(--muted);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}
+.tt-pick-icon{font-size:24px}
+.tt-pick-title{font-size:13px;font-weight:800;color:var(--text)}
+.tt-pick-sub{font-size:11px;color:var(--muted)}
+.tt-hidden-file{display:none}
+.tt-desc-wrap{margin-top:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.tt-desc-wrap textarea{border:0;background:transparent;padding:0;margin:0;min-height:84px;font-size:14px}
+.tt-hashtag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.tt-tag-chip{background:var(--panel);color:var(--text);border:1px solid var(--line);padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700}
+.tt-publish-main{margin-top:14px;padding:14px;border-radius:14px;font-size:15px;font-weight:800}
+#dertCreateStatus{color:var(--muted);font-size:13px;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div id="appLockModal" class="app-lock-backdrop hidden">
+ <div class="app-lock-card">
+  <div style="font-size:34px;margin-bottom:8px">🛡️</div>
+  <h3 style="margin:0 0 6px" data-i18n="lock_title">DERT مقفل للأمان</h3>
+  <p class="small" style="margin:0 0 14px;color:#b4b8c2" data-i18n="lock_sub">أدخل رمز القفل السريع أو استخدم البصمة / Face ID للمتابعة.</p>
+  <input id="unlockPinInput" type="password" inputmode="numeric" maxlength="8" placeholder="رمز القفل (PIN)" dir="ltr">
+  <button type="button" class="full" id="unlockByPinBtn" data-i18n="unlock_pin">فتح القفل بالرمز</button>
+  <button type="button" class="full gray" id="unlockByBioBtn" style="margin-top:8px" data-i18n="unlock_bio">🔓 فتح بالبصمة / Face ID</button>
+  <p id="appLockStatus" class="small" style="margin-top:10px;color:#ffd0da"></p>
+ </div>
+</div>
+
+<div id="mandatoryFollowModal" class="mandatory-follow-backdrop hidden">
+ <div class="mandatory-follow-card">
+  <div class="small" style="color:#fe2c55;font-weight:700;margin-bottom:8px">مطلوب للمتابعة</div>
+  <div id="mandatoryTargetAvatar" class="avatar">D</div>
+  <h3 id="mandatoryTargetName" style="margin:6px 0 2px">حساب DERT</h3>
+  <div id="mandatoryTargetUsername" class="small">@admin</div>
+  <p id="mandatoryTargetBio" class="small" style="margin:8px 0 14px">تابع هذا الحساب للمتابعة واستخدام المنصة.</p>
+  <button type="button" id="mandatoryFollowBtn" class="full" style="padding:13px;font-weight:800;border-radius:14px">متابعة</button>
+  <p id="mandatoryFollowStatus" class="small" style="margin-top:10px"></p>
+ </div>
+</div>
+
+<svg width="0" height="0" style="position:absolute;visibility:hidden" aria-hidden="true">
+ <defs>
+  <linearGradient id="vGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+   <stop offset="0%" stop-color="#f3f0ff"/>
+   <stop offset="55%" stop-color="#c4b5fd"/>
+   <stop offset="100%" stop-color="#8b5cf6"/>
+  </linearGradient>
+  <linearGradient id="vAccent" x1="0%" y1="0%" x2="0%" y2="100%">
+   <stop offset="0%" stop-color="#a78bfa"/>
+   <stop offset="100%" stop-color="#6d28d9"/>
+  </linearGradient>
+  <g id="ico-home"><path d="M3 10.5L12 3l9 7.5" fill="none" stroke="url(#vAccent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 9.5V19a1.5 1.5 0 0 0 1.5 1.5h3V15h4v5.5h3A1.5 1.5 0 0 0 18.5 19V9.5L12 4.2 5.5 9.5z" fill="url(#vGrad)"/></g>
+  <g id="ico-user"><circle cx="12" cy="6.5" r="3.4" fill="url(#vGrad)"/><path d="M5 19.5c0-3.5 3.1-6 7-6s7 2.5 7 6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" fill="url(#vGrad)"/><polygon points="12,14.2 10.4,17 12,20.2 13.6,17" fill="url(#vAccent)"/></g>
+  <g id="ico-search"><circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="url(#vGrad)" stroke-width="2.6"/><line x1="15.2" y1="15.2" x2="20" y2="20" stroke="url(#vAccent)" stroke-width="3.2" stroke-linecap="round"/></g>
+  <g id="ico-chat"><path d="M4.5 5.5h15A2.5 2.5 0 0 1 22 8v7.5a2.5 2.5 0 0 1-2.5 2.5H9.5L5 21.5v-3.5A2.5 2.5 0 0 1 2.5 15.5V8A2.5 2.5 0 0 1 4.5 5.5z" fill="url(#vGrad)"/><circle cx="8.5" cy="11.8" r="1.4" fill="#3b1d7a"/><circle cx="12.2" cy="11.8" r="1.4" fill="#3b1d7a"/><circle cx="15.9" cy="11.8" r="1.4" fill="#3b1d7a"/></g>
+  <g id="ico-call"><path d="M6.6 10.8a15.2 15.2 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.12.37 2.33.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.27.2 2.48.57 3.6a1 1 0 0 1-.25 1l-2.22 2.2z" fill="url(#vGrad)"/></g>
+  <g id="ico-bell"><path d="M12 3a6 6 0 0 0-6 6v4.2l-1.7 2.5a1 1 0 0 0 .83 1.55h13.74a1 1 0 0 0 .83-1.55L18 13.2V9a6 6 0 0 0-6-6z" fill="url(#vGrad)"/><circle cx="12" cy="20" r="2.2" fill="url(#vAccent)"/></g>
+  <g id="ico-admin"><path d="M12 3.5l1.4 2.1 2.5-.5.5 2.5 2.1 1.4-1.2 2.2 1.2 2.2-2.1 1.4-.5 2.5-2.5-.5L12 20.5l-1.4-2.1-2.5.5-.5-2.5-2.1-1.4 1.2-2.2-1.2-2.2 2.1-1.4.5-2.5 2.5.5L12 3.5z" fill="url(#vGrad)"/><circle cx="12" cy="12" r="3.4" fill="url(#vAccent)"/></g>
+  <g id="ico-share"><line x1="8.2" y1="10.8" x2="15.8" y2="6.8" stroke="url(#vGrad)" stroke-width="2.2"/><line x1="8.2" y1="13.2" x2="15.8" y2="17.2" stroke="url(#vGrad)" stroke-width="2.2"/><circle cx="6.5" cy="12" r="2.8" fill="url(#vGrad)"/><circle cx="17.5" cy="5.8" r="2.8" fill="url(#vAccent)"/><circle cx="17.5" cy="18.2" r="2.8" fill="url(#vAccent)"/></g>
+ </defs>
+</svg>
+
+<section id="auth" class="auth-screen">
+<div class="auth-inner">
+<div id="welcomeScreen">
+<div class="brand-mark"><img src="app-icon.png" alt="DERT"></div>
+<div class="brand-name">DERT</div>
+<div class="auth-tag">CONNECT • SHARE • EXPLORE</div>
+<div class="auth-actions">
+<button class="auth-primary" id="openSignup" data-i18n="signup">إنشاء حساب</button>
+<button class="auth-purple" id="openLogin" data-i18n="login">تسجيل الدخول</button>
+</div>
+</div>
+<div id="authForm" class="hidden">
+<div class="brand-name" style="font-size:34px">DERT</div>
+<p class="small" style="color:#a8abb3">مرحباً بك في عالم DERT</p>
+<div class="auth-panel">
+<button id="backWelcome" class="gray full">← رجوع</button>
+<div class="auth-switch">
+<button id="emailMode" class="active">البريد الإلكتروني</button>
+<button id="phoneMode">رقم الهاتف</button>
+</div>
+<div id="emailArea">
+<input id="email" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
+<input id="password" type="password" placeholder="كلمة المرور" autocomplete="new-password">
+<button class="full auth-primary" id="loginBtn">تسجيل الدخول</button>
+<button class="full auth-outline" id="signupBtn">إنشاء حساب جديد</button>
+<button class="full gray hidden" id="resendEmailBtn" style="margin-top:8px">إعادة إرسال رسالة تأكيد البريد</button>
+<button class="full gray" id="recoverAccountBtn" style="margin-top:8px">🔑 استعادة كلمة المرور</button>
+</div>
+<div id="phoneArea" class="hidden">
+<input id="phone" type="tel" placeholder="+9647XXXXXXXXX" dir="ltr">
+<button class="full auth-primary" id="sendOtpBtn">إرسال رمز التحقق</button>
+<div id="otpArea" class="hidden">
+<input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="رمز التحقق SMS" dir="ltr">
+<button class="full auth-primary" id="verifyOtpBtn">تأكيد الرمز والدخول</button>
+</div>
+</div>
+<p id="message" class="auth-message"></p>
+</div>
+</div>
+</section>
+
+<div id="home" class="hidden">
+<div class="tt-topbar">
+ <div class="tt-top-right">
+  <button type="button" class="tt-back-mini" title="رجوع" onclick="goBackSmart()">‹</button>
+  <span class="tt-live-pill" onclick="openLiveRoom()">LIVE</span>
+ </div>
+ <div class="tt-tabs-scroll">
+  <button type="button" class="tt-top-tab" id="topTabFollowing" onclick="switchVideoFeedMode('following')" data-i18n="tab_following">أتابع</button>
+  <button type="button" class="tt-top-tab active" id="topTabVideos" onclick="switchVideoFeedMode('foryou')" data-i18n="tab_foryou">لك</button>
+  <button type="button" class="tt-top-tab" id="topTabFeed" onclick="openTab('feed',null)" data-i18n="tab_posts">المنشورات</button>
+  <button type="button" class="tt-top-tab" id="topTabChats" onclick="openTab('chats',null)" data-i18n="tab_chats">الدردشات</button>
+  <button type="button" class="tt-top-tab" id="topTabCalls" onclick="openTab('calls',null)" data-i18n="tab_calls">الاتصالات</button>
+ </div>
+ <button type="button" class="tt-search-btn" title="بحث" onclick="openTab('people',null)">
+  <span class="violet-icon violet-icon-sm"><svg viewBox="0 0 24 24"><use href="#ico-search"></use></svg></span>
+ </button>
+</div>
+
+<div class="container">
+
+<section id="videos" class="section active">
+<div id="videosList" class="videos-feed">
+<div class="video-loading">جارٍ تحميل الفيديوهات...</div>
+</div>
+</section>
+
+<!-- ==================== 1. الدردشات المستقلة ==================== -->
+<section id="chats" class="section">
+<div class="card" id="chatsDirectoryCard">
+ <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+  <h2 style="margin:0" data-i18n="chats_title">💬 الدردشات</h2>
+  <span class="small" id="chatsTotalBadge">0 محادثة</span>
+ </div>
+ <div id="storiesStrip" class="stories-strip" style="margin-top:8px"></div>
+ <div class="search-box">
+  <span class="search-icon">🔍</span>
+  <input id="chatSearch" placeholder="ابحث عن محادثة بالاسم أو اسم المستخدم...">
+ </div>
+ <div id="chatList">جارٍ تحميل الدردشات...</div>
+ <div class="user-row-actions">
+  <button class="full" id="newChatBtn" style="flex:1">＋ دردشة جديدة</button>
+  <button class="full gray" id="newGroupBtn" style="flex:1">👥 مجموعة دردشة</button>
+ </div>
+</div>
+
+<div class="card hidden" id="chatPanel">
+ <div class="chat-row">
+  <button type="button" class="tt-back-mini" title="رجوع للدردشات" onclick="el('closeChatBtn').click()">‹</button>
+  <div id="chatAvatar" class="avatar">D</div>
+  <div style="flex:1;min-width:0">
+   <strong id="chatTitle">المحادثة</strong>
+   <div class="small" id="chatUsername"></div>
   </div>
-);
-
-// --- Initial Mock Data ---
-const INITIAL_POSTS: PostItem[] = [
-  {
-    id: 'p1',
-    type: 'video',
-    author: {
-      name: 'وسام السالم',
-      handle: '@wisam_sec',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-      verified: true,
-    },
-    caption: 'تأمين واجهات الـ API وحماية تدفق البيانات في التطبيقات الحديثة ⚡🛡️ #أمن_المعلومات #تطوير',
-    mediaUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80',
-    likes: 1420,
-    comments: [
-      { id: 'c1', user: 'علي الكاظمي', text: 'شرح واضح ومرتب جداً، استمر!', time: 'منذ 12 دقيقة' },
-      { id: 'c2', user: 'نور الهدى', text: 'الواجهة والانتقالات رهيبة 🔥', time: 'منذ 5 دقائق' },
-    ],
-    shares: 84,
-    isLiked: false,
-    isSaved: false,
-    isFollowing: false,
-    timestamp: 'منذ ساعتين',
-    soundName: 'إيقاع رقمي سريع - DERT Originals',
-  },
-  {
-    id: 'p2',
-    type: 'photo',
-    author: {
-      name: 'مجد العاني',
-      handle: '@majd_design',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-      verified: true,
-    },
-    caption: 'لقطة معمارية حديثة ممزوجة بإضاءة غروب دافئة في قلب المدينة 🌇✨ #تصوير #هوية_بصرية',
-    mediaUrl: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=900&q=80',
-    likes: 895,
-    comments: [
-      { id: 'c3', user: 'يوسف حيدر', text: 'تناسق الألوان خرافي!', time: 'منذ ساعة' },
-    ],
-    shares: 31,
-    isLiked: true,
-    isSaved: true,
-    isFollowing: true,
-    timestamp: 'منذ 4 ساعات',
-  },
-  {
-    id: 'p3',
-    type: 'video',
-    author: {
-      name: 'سارة المنصور',
-      handle: '@sara_motion',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
-      verified: false,
-    },
-    caption: 'كواليس تجهيز مشاهد الحركة والانتقالات السريعة للتطبيقات التفاعلية 🎬🚀 #موشن #واجهة_مستخدم',
-    mediaUrl: 'https://images.unsplash.com/photo-1574717024653-61fd3113850d?w=800&q=80',
-    likes: 2310,
-    comments: [
-      { id: 'c4', user: 'مصطفى الربيعي', text: 'انسيابية الحركة تفتح النفس', time: 'منذ 25 دقيقة' },
-    ],
-    shares: 142,
-    isLiked: false,
-    isSaved: false,
-    isFollowing: false,
-    timestamp: 'منذ 6 ساعات',
-    soundName: 'نبض المستقبل - صوت أصلي',
-  },
-  {
-    id: 'p4',
-    type: 'photo',
-    author: {
-      name: 'حيدر الجبوري',
-      handle: '@haidar_tech',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
-      verified: true,
-    },
-    caption: 'إعداد بيئة العمل الليلية للبرمجة والاختبار المباشر 💻🌙 #برمجة #إنتاجية',
-    mediaUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80',
-    likes: 640,
-    comments: [],
-    shares: 19,
-    isLiked: false,
-    isSaved: false,
-    isFollowing: false,
-    timestamp: 'منذ يوم',
-  },
-];
-
-const INITIAL_CHATS: ChatThread[] = [
-  {
-    id: 'ch1',
-    user: {
-      name: 'علي الكاظمي',
-      handle: '@ali_dev',
-      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=150&q=80',
-      online: true,
-    },
-    lastMessage: 'شفت التحديث الجديد لنظام الفيديوهات؟ جداً سلس!',
-    time: '14:32',
-    unread: 2,
-    messages: [
-      { id: 'm1', sender: 'them', text: 'مرحباً وسام، كيف ماشي تطوير DERT؟', time: '14:30' },
-      { id: 'm2', sender: 'me', text: 'أهلاً علي، شغالين على صقل الواجهات والتجربة الكاملة.', time: '14:31' },
-      { id: 'm3', sender: 'them', text: 'شفت التحديث الجديد لنظام الفيديوهات؟ جداً سلس!', time: '14:32' },
-    ],
-  },
-  {
-    id: 'ch2',
-    user: {
-      name: 'مجد العاني',
-      handle: '@majd_design',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
-      online: false,
-    },
-    lastMessage: 'رسلت لك ملفات الأيقونات الموحدة.',
-    time: 'أمس',
-    unread: 0,
-    messages: [
-      { id: 'm4', sender: 'them', text: 'رسلت لك ملفات الأيقونات الموحدة.', time: 'أمس' },
-    ],
-  },
-];
-
-// --- Main Application ---
-export default function App() {
-  // Theme & Splash State
-  const [darkMode, setDarkMode] = useState<boolean>(true);
-  const [showSplash, setShowSplash] = useState<boolean>(true);
-
-  // Navigation & Sub-modes
-  const [activeTab, setActiveTab] = useState<TabType>('home');
-  const [videoFeedMode, setVideoFeedMode] = useState<boolean>(false);
-  const [feedFilter, setFeedFilter] = useState<FeedFilter>('all');
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-
-  // Data State
-  const [posts, setPosts] = useState<PostItem[]>(INITIAL_POSTS);
-  const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
-  const [newCommentText, setNewCommentText] = useState<string>('');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Explore State
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('الكل');
-
-  // Create Post State
-  const [newPostType, setNewPostType] = useState<'video' | 'photo'>('video');
-  const [newPostCaption, setNewPostCaption] = useState<string>('');
-  const [newPostMedia, setNewPostMedia] = useState<string>(
-    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80'
-  );
-  const [newPostSound, setNewPostSound] = useState<string>('موسيقى هادئة - DERT Sound');
-
-  // Chats State
-  const [chats, setChats] = useState<ChatThread[]>(INITIAL_CHATS);
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [chatInput, setChatInput] = useState<string>('');
-
-  // Profile State
-  const [profile, setProfile] = useState({
-    name: 'وسام السالم',
-    handle: '@wisam_sec',
-    bio: 'مطور تطبيقات ومهتم بأمن المعلومات وتصميم التجارب الرقمية التفاعلية 🚀🛡️',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
-    cover: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1000&q=80',
-    followers: 4820,
-    following: 318,
-  });
-  const [isEditingProfile, setIsEditingProfile] = useState<boolean>(false);
-  const [profileTab, setProfileTab] = useState<'all' | 'videos' | 'saved'>('all');
-  const [editForm, setEditForm] = useState({
-    name: profile.name,
-    bio: profile.bio,
-    avatar: profile.avatar,
-    cover: profile.cover,
-  });
-
-  // Video Feed Ref
-  const videoContainerRef = useRef<HTMLDivElement | null>(null);
-  const [mutedVideos, setMutedVideos] = useState<boolean>(false);
-
-  // Splash Screen Timer
-  useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 1700);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Toast Helper
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage((prev) => (prev === msg ? null : prev));
-    }, 2400);
-  };
-
-  // --- Post Interactions ---
-  const handleToggleLike = (postId: string) => {
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id !== postId) return p;
-        const nextLiked = !p.isLiked;
-        return {
-          ...p,
-          isLiked: nextLiked,
-          likes: nextLiked ? p.likes + 1 : Math.max(0, p.likes - 1),
-        };
-      })
-    );
-  };
-
-  const handleToggleSave = (postId: string) => {
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id !== postId) return p;
-        const nextSaved = !p.isSaved;
-        triggerToast(nextSaved ? 'تم حفظ المنشور في المفضلة' : 'تمت إزالة المنشور من المحفوظات');
-        return { ...p, isSaved: nextSaved };
-      })
-    );
-  };
-
-  const handleToggleFollow = (postId: string) => {
-    setPosts((prev) => {
-      const target = prev.find((p) => p.id === postId);
-      const nextFollowState = target ? !target.isFollowing : true;
-      setProfile((prof) => ({
-        ...prof,
-        following: nextFollowState ? prof.following + 1 : Math.max(0, prof.following - 1),
-      }));
-      triggerToast(nextFollowState ? `تمت متابعة ${target?.author.name}` : `تم إلغاء متابعة ${target?.author.name}`);
-      return prev.map((p) =>
-        p.author.handle === target?.author.handle ? { ...p, isFollowing: nextFollowState } : p
-      );
-    });
-  };
-
-  const handleSharePost = (post: PostItem) => {
-    setPosts((prev) =>
-      prev.map((p) => (p.id === post.id ? { ...p, shares: p.shares + 1 } : p))
-    );
-    triggerToast(`تم نسخ رابط منشور ${post.author.name}`);
-  };
-
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeCommentPostId || !newCommentText.trim()) return;
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id !== activeCommentPostId) return p;
-        return {
-          ...p,
-          comments: [
-            ...p.comments,
-            {
-              id: `c_${Date.now()}`,
-              user: profile.name,
-              text: newCommentText.trim(),
-              time: 'الآن',
-            },
-          ],
-        };
-      })
-    );
-    setNewCommentText('');
-    triggerToast('تم إضافة تعليقك');
-  };
-
-  const handleRefreshFeed = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setPosts((prev) => [...prev].sort(() => Math.random() - 0.5));
-      setIsRefreshing(false);
-      triggerToast('تم تحديث المحتوى بنجاح');
-    }, 700);
-  };
-
-  const handleCreatePost = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPostCaption.trim()) {
-      triggerToast('يرجى كتابة وصف للمنشور أولاً');
-      return;
-    }
-    const created: PostItem = {
-      id: `post_${Date.now()}`,
-      type: newPostType,
-      author: {
-        name: profile.name,
-        handle: profile.handle,
-        avatar: profile.avatar,
-        verified: true,
-      },
-      caption: newPostCaption.trim(),
-      mediaUrl: newPostMedia,
-      likes: 1,
-      comments: [],
-      shares: 0,
-      isLiked: false,
-      isSaved: false,
-      isFollowing: true,
-      timestamp: 'الآن',
-      soundName: newPostType === 'video' ? newPostSound : undefined,
-    };
-    setPosts((prev) => [created, ...prev]);
-    setNewPostCaption('');
-    setActiveTab('home');
-    setVideoFeedMode(newPostType === 'video');
-    triggerToast('تم نشر المحتوى بنجاح!');
-  };
-
-  // --- Chat Interactions ---
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeChatId || !chatInput.trim()) return;
-    const text = chatInput.trim();
-    setChats((prev) =>
-      prev.map((ch) => {
-        if (ch.id !== activeChatId) return ch;
-        return {
-          ...ch,
-          lastMessage: text,
-          time: 'الآن',
-          unread: 0,
-          messages: [
-            ...ch.messages,
-            { id: `m_${Date.now()}`, sender: 'me', text, time: 'الآن' },
-          ],
-        };
-      })
-    );
-    setChatInput('');
-  };
-
-  // --- Profile Save ---
-  const handleSaveProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    setProfile((prev) => ({
-      ...prev,
-      name: editForm.name.trim() || prev.name,
-      bio: editForm.bio.trim(),
-      avatar: editForm.avatar.trim() || prev.avatar,
-      cover: editForm.cover.trim() || prev.cover,
-    }));
-    setIsEditingProfile(false);
-    triggerToast('تم حفظ بيانات الملف الشخصي');
-  };
-
-  // --- Splash Screen ---
-  if (showSplash) {
-    return (
-      <div
-        dir="rtl"
-        className={`min-h-screen w-full flex flex-col items-center justify-center transition-colors duration-500 ${
-          darkMode ? 'bg-[#0B0D12] text-white' : 'bg-[#F8FAFC] text-slate-900'
-        }`}
-      >
-        <div className="animate-bounce">
-          <BrandLogo size="lg" darkMode={darkMode} />
-        </div>
-        <div className="mt-8 w-44 h-1.5 rounded-full overflow-hidden bg-slate-500/20">
-          <div className="h-full w-full bg-gradient-to-r from-[#FF0055] via-[#FF5E00] to-[#00E5FF] animate-pulse" />
-        </div>
-        <p className={`mt-3 text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-          تجربة متكاملة للصور والفيديوهات القصيرة
-        </p>
-      </div>
-    );
-  }
-
-  // Filtered lists
-  const filteredHomePosts = posts.filter((p) => {
-    if (feedFilter === 'photos') return p.type === 'photo';
-    if (feedFilter === 'videos') return p.type === 'video';
-    return true;
-  });
-
-  const videoPosts = posts.filter((p) => p.type === 'video');
-
-  const explorePosts = posts.filter((p) => {
-    const matchesQuery =
-      !searchQuery.trim() ||
-      p.caption.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.author.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.author.handle.toLowerCase().includes(searchQuery.toLowerCase());
-    if (selectedCategory === 'فيديوهات') return matchesQuery && p.type === 'video';
-    if (selectedCategory === 'صور') return matchesQuery && p.type === 'photo';
-    return matchesQuery;
-  });
-
-  const activeChat = chats.find((c) => c.id === activeChatId) || null;
-  const activeCommentPost = posts.find((p) => p.id === activeCommentPostId) || null;
-
-  const userProfilePosts = posts.filter((p) => {
-    if (profileTab === 'videos') return p.type === 'video';
-    if (profileTab === 'saved') return p.isSaved;
-    return true;
-  });
-
-  return (
-    <div
-      dir="rtl"
-      className={`min-h-screen w-full flex justify-center transition-colors duration-300 ${
-        darkMode ? 'bg-[#07090E] text-slate-100' : 'bg-[#EEF2F6] text-slate-900'
-      }`}
-    >
-      {/* Responsive App Shell (Mobile-first frame on desktop, full viewport on mobile) */}
-      <div
-        className={`relative w-full max-w-md min-h-screen flex flex-col shadow-2xl overflow-hidden transition-colors duration-300 ${
-          darkMode
-            ? 'bg-[#0B0D12] border-x border-white/10'
-            : 'bg-white border-x border-slate-200'
-        }`}
-      >
-        {/* Toast Banner */}
-        {toastMessage && (
-          <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-gradient-to-r from-[#FF0055] to-[#FF5E00] text-white text-xs font-semibold shadow-xl flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{toastMessage}</span>
-          </div>
-        )}
-
-        {/* --- Top Header (Hidden inside full-screen Video Mode & Active Chat Thread) --- */}
-        {!(activeTab === 'home' && videoFeedMode) && !(activeTab === 'chats' && activeChat) && (
-          <header
-            className={`sticky top-0 z-30 px-4 py-3 flex items-center justify-between backdrop-blur-xl border-b transition-colors ${
-              darkMode
-                ? 'bg-[#0B0D12]/85 border-white/10'
-                : 'bg-white/85 border-slate-200/80'
-            }`}
-          >
-            <BrandLogo size="md" darkMode={darkMode} />
-
-            <div className="flex items-center gap-2">
-              {activeTab === 'home' && (
-                <button
-                  onClick={() => setVideoFeedMode(true)}
-                  className="px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-[#FF0055] to-[#FF5E00] text-white flex items-center gap-1.5 shadow-md shadow-[#FF0055]/25 active:scale-95 transition"
-                >
-                  <Film className="w-3.5 h-3.5" />
-                  <span>وضع الفيديوهات</span>
-                </button>
-              )}
-
-              <button
-                onClick={() => setDarkMode((prev) => !prev)}
-                aria-label="تبديل الوضع الليلي والنهاري"
-                className={`p-2 rounded-full border transition active:scale-95 ${
-                  darkMode
-                    ? 'bg-white/5 border-white/10 text-amber-300 hover:bg-white/10'
-                    : 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200/70'
-                }`}
-              >
-                {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-            </div>
-          </header>
-        )}
-
-        {/* --- Main Content Area --- */}
-        <main className="flex-1 flex flex-col overflow-y-auto pb-20">
-          {/* ============================================================
-              3 & 4. HOME TAB (Standard Feed + Full-Screen Vertical Reels Mode)
-             ============================================================ */}
-          {activeTab === 'home' && !videoFeedMode && (
-            <div className="flex-1 flex flex-col">
-              {/* Filter & Refresh Strip */}
-              <div
-                className={`px-4 py-2.5 flex items-center justify-between border-b ${
-                  darkMode ? 'border-white/5 bg-[#0F1219]' : 'border-slate-100 bg-slate-50/70'
-                }`}
-              >
-                <div className="flex items-center gap-1.5">
-                  {(
-                    [
-                      { id: 'all', label: 'الكل' },
-                      { id: 'photos', label: 'الصور' },
-                      { id: 'videos', label: 'الفيديوهات' },
-                    ] as { id: FeedFilter; label: string }[]
-                  ).map((item) => {
-                    const active = feedFilter === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => setFeedFilter(item.id)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
-                          active
-                            ? 'bg-gradient-to-r from-[#FF0055] to-[#FF5E00] text-white shadow-sm'
-                            : darkMode
-                            ? 'bg-white/5 text-slate-300 hover:bg-white/10'
-                            : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  onClick={handleRefreshFeed}
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition ${
-                    darkMode
-                      ? 'text-[#00E5FF] hover:bg-white/5'
-                      : 'text-[#FF0055] hover:bg-rose-50'
-                  }`}
-                >
-                  تحديث المحتوى
-                </button>
-              </div>
-
-              {isRefreshing ? (
-                <BrandLoader darkMode={darkMode} label="جاري جلب أحدث المنشورات..." />
-              ) : (
-                <div className="divide-y divide-slate-500/10">
-                  {filteredHomePosts.map((post) => (
-                    <article key={post.id} className="py-4">
-                      {/* Post Header */}
-                      <div className="px-4 flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="p-[2px] rounded-full bg-gradient-to-tr from-[#FF0055] via-[#FF5E00] to-[#00E5FF]">
-                            <img
-                              src={post.author.avatar}
-                              alt={post.author.name}
-                              className="w-10 h-10 rounded-full object-cover border-2 border-[#0B0D12]"
-                            />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm font-bold">{post.author.name}</span>
-                              {post.author.verified && (
-                                <ShieldCheck className="w-3.5 h-3.5 text-[#00E5FF]" />
-                              )}
-                            </div>
-                            <span
-                              className={`text-[11px] ${
-                                darkMode ? 'text-slate-400' : 'text-slate-500'
-                              }`}
-                            >
-                              {post.author.handle} • {post.timestamp}
-                            </span>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => handleToggleFollow(post.id)}
-                          className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition active:scale-95 ${
-                            post.isFollowing
-                              ? darkMode
-                                ? 'bg-white/10 text-slate-200'
-                                : 'bg-slate-200 text-slate-800'
-                              : 'bg-gradient-to-r from-[#FF0055] to-[#FF5E00] text-white shadow-sm'
-                          }`}
-                        >
-                          {post.isFollowing ? (
-                            <>
-                              <Check className="w-3.5 h-3.5" />
-                              <span>متابَع</span>
-                            </>
-                          ) : (
-                            <>
-                              <UserPlus className="w-3.5 h-3.5" />
-                              <span>متابعة</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      {/* Caption */}
-                      <p className="px-4 mb-3 text-sm leading-relaxed">{post.caption}</p>
-
-                      {/* Media Frame */}
-                      <div
-                        onClick={() => {
-                          if (post.type === 'video') setVideoFeedMode(true);
-                        }}
-                        className={`relative w-full aspect-[4/4.3] overflow-hidden cursor-pointer group ${
-                          darkMode ? 'bg-slate-900' : 'bg-slate-100'
-                        }`}
-                      >
-                        <img
-                          src={post.mediaUrl}
-                          alt={post.caption}
-                          className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.02]"
-                        />
-                        {post.type === 'video' && (
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                            <div className="w-14 h-14 rounded-full bg-black/55 backdrop-blur-md border border-white/25 flex items-center justify-center text-white shadow-xl">
-                              <Play className="w-6 h-6 fill-white translate-x-[-1px]" />
-                            </div>
-                            <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-bold bg-black/60 text-white backdrop-blur-md">
-                              فيديو قصير
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Action Bar */}
-                      <div className="px-4 pt-3 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <button
-                            onClick={() => handleToggleLike(post.id)}
-                            className="flex items-center gap-1.5 text-xs font-bold transition active:scale-90"
-                          >
-                            <Heart
-                              className={`w-6 h-6 transition ${
-                                post.isLiked
-                                  ? 'fill-[#FF0055] text-[#FF0055] scale-110'
-                                  : darkMode
-                                  ? 'text-slate-200'
-                                  : 'text-slate-700'
-                              }`}
-                            />
-                            <span>{post.likes}</span>
-                          </button>
-
-                          <button
-                            onClick={() => setActiveCommentPostId(post.id)}
-                            className="flex items-center gap-1.5 text-xs font-bold transition active:scale-90"
-                          >
-                            <MessageCircle className="w-6 h-6" />
-                            <span>{post.comments.length}</span>
-                          </button>
-
-                          <button
-                            onClick={() => handleSharePost(post)}
-                            className="flex items-center gap-1.5 text-xs font-bold transition active:scale-90"
-                          >
-                            <Share2 className="w-5 h-5" />
-                            <span>{post.shares}</span>
-                          </button>
-                        </div>
-
-                        <button
-                          onClick={() => handleToggleSave(post.id)}
-                          className="transition active:scale-90"
-                          aria-label="حفظ المنشور"
-                        >
-                          <Bookmark
-                            className={`w-6 h-6 ${
-                              post.isSaved ? 'fill-[#00E5FF] text-[#00E5FF]' : ''
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* --- Full-Screen Vertical TikTok-Style Video System --- */}
-          {activeTab === 'home' && videoFeedMode && (
-            <div className="fixed inset-0 z-40 max-w-md mx-auto bg-black text-white flex flex-col">
-              {/* Top Overlay Controls */}
-              <div className="absolute top-0 inset-x-0 z-20 p-4 flex items-center justify-between bg-gradient-to-b from-black/75 via-black/30 to-transparent">
-                <button
-                  onClick={() => setVideoFeedMode(false)}
-                  className="px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold flex items-center gap-1.5 hover:bg-white/25 transition"
-                >
-                  <ArrowLeft className="w-4 h-4 rotate-180" />
-                  <span>العودة للرئيسية</span>
-                </button>
-
-                <span className="text-xs font-extrabold tracking-wide px-3 py-1 rounded-full bg-gradient-to-r from-[#FF0055] to-[#FF5E00]">
-                  DERT REELS
-                </span>
-
-                <button
-                  onClick={() => setMutedVideos((m) => !m)}
-                  className="p-2 rounded-full bg-white/15 backdrop-blur-md hover:bg-white/25 transition"
-                  aria-label="كتم أو تشغيل الصوت"
-                >
-                  {mutedVideos ? (
-                    <VolumeX className="w-4 h-4 text-rose-400" />
-                  ) : (
-                    <Volume2 className="w-4 h-4 text-[#00E5FF]" />
-                  )}
-                </button>
-              </div>
-
-              {/* Snap Scroll Vertical Container */}
-              <div
-                ref={videoContainerRef}
-                className="flex-1 overflow-y-scroll snap-y snap-mandatory scroll-smooth"
-              >
-                {videoPosts.map((vid) => (
-                  <section
-                    key={vid.id}
-                    className="relative w-full h-screen snap-start flex items-end justify-between p-4 pb-24"
-                  >
-                    <img
-                      src={vid.mediaUrl}
-                      alt={vid.caption}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-black/35" />
-
-                    {/* Left Info Overlay */}
-                    <div className="relative z-10 max-w-[76%] space-y-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <img
-                          src={vid.author.avatar}
-                          alt={vid.author.name}
-                          className="w-10 h-10 rounded-full object-cover border-2 border-[#00E5FF]"
-                        />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold">{vid.author.name}</span>
-                            <button
-                              onClick={() => handleToggleFollow(vid.id)}
-                              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold transition ${
-                                vid.isFollowing
-                                  ? 'bg-white/20 text-white'
-                                  : 'bg-[#FF0055] text-white'
-                              }`}
-                            >
-                              {vid.isFollowing ? 'متابَع' : '+ متابعة'}
-                            </button>
-                          </div>
-                          <span className="text-[11px] text-white/75">{vid.author.handle}</span>
-                        </div>
-                      </div>
-
-                      <p className="text-xs leading-relaxed text-white/95">{vid.caption}</p>
-
-                      {vid.soundName && (
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md text-[11px] text-[#00E5FF]">
-                          <Sparkles className="w-3 h-3" />
-                          <span className="truncate max-w-[200px]">{vid.soundName}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right Action Column */}
-                    <div className="relative z-10 flex flex-col items-center gap-4">
-                      <button
-                        onClick={() => handleToggleLike(vid.id)}
-                        className="flex flex-col items-center gap-1 active:scale-90 transition"
-                      >
-                        <div className="w-11 h-11 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center border border-white/15">
-                          <Heart
-                            className={`w-6 h-6 ${
-                              vid.isLiked ? 'fill-[#FF0055] text-[#FF0055]' : 'text-white'
-                            }`}
-                          />
-                        </div>
-                        <span className="text-[11px] font-bold">{vid.likes}</span>
-                      </button>
-
-                      <button
-                        onClick={() => setActiveCommentPostId(vid.id)}
-                        className="flex flex-col items-center gap-1 active:scale-90 transition"
-                      >
-                        <div className="w-11 h-11 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center border border-white/15">
-                          <MessageCircle className="w-6 h-6 text-white" />
-                        </div>
-                        <span className="text-[11px] font-bold">{vid.comments.length}</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleToggleSave(vid.id)}
-                        className="flex flex-col items-center gap-1 active:scale-90 transition"
-                      >
-                        <div className="w-11 h-11 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center border border-white/15">
-                          <Bookmark
-                            className={`w-6 h-6 ${
-                              vid.isSaved ? 'fill-[#00E5FF] text-[#00E5FF]' : 'text-white'
-                            }`}
-                          />
-                        </div>
-                        <span className="text-[11px] font-bold">حفظ</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleSharePost(vid)}
-                        className="flex flex-col items-center gap-1 active:scale-90 transition"
-                      >
-                        <div className="w-11 h-11 rounded-full bg-black/45 backdrop-blur-md flex items-center justify-center border border-white/15">
-                          <Share2 className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-[11px] font-bold">{vid.shares}</span>
-                      </button>
-                    </div>
-                  </section>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ============================================================
-              EXPLORE TAB (Search + Trending Categories + Grid)
-             ============================================================ */}
-          {activeTab === 'explore' && (
-            <div className="p-4 space-y-4">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ابحث عن محتوى، هاشتاغ، أو حساب..."
-                  className={`w-full pr-10 pl-4 py-2.5 rounded-2xl text-sm outline-none border transition ${
-                    darkMode
-                      ? 'bg-white/5 border-white/10 focus:border-[#00E5FF] text-white'
-                      : 'bg-slate-100 border-slate-200 focus:border-[#FF0055] text-slate-900'
-                  }`}
-                />
-              </div>
-
-              <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {['الكل', 'فيديوهات', 'صور'].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition ${
-                      selectedCategory === cat
-                        ? 'bg-gradient-to-r from-[#FF0055] to-[#FF5E00] text-white'
-                        : darkMode
-                        ? 'bg-white/5 text-slate-300'
-                        : 'bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                {explorePosts.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => {
-                      setActiveTab('home');
-                      if (item.type === 'video') setVideoFeedMode(true);
-                    }}
-                    className="relative aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer group border border-white/10"
-                  >
-                    <img
-                      src={item.mediaUrl}
-                      alt={item.caption}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
-                    {item.type === 'video' && (
-                      <span className="absolute top-2.5 left-2.5 p-1.5 rounded-full bg-black/55 text-white">
-                        <Play className="w-3.5 h-3.5 fill-white" />
-                      </span>
-                    )}
-                    <div className="absolute bottom-2.5 inset-x-2.5 text-white">
-                      <p className="text-[11px] font-bold truncate">{item.author.name}</p>
-                      <p className="text-[10px] text-white/80 line-clamp-1">{item.caption}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ============================================================
-              CREATE POST TAB (Photos & Videos Composer)
-             ============================================================ */}
-          {activeTab === 'create' && (
-            <form onSubmit={handleCreatePost} className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-extrabold">إنشاء منشور جديد</h2>
-                <span className="text-xs text-[#00E5FF] font-semibold">هوية DERT</span>
-              </div>
-
-              {/* Type Selector */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewPostType('video');
-                    setNewPostMedia(
-                      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80'
-                    );
-                  }}
-                  className={`py-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition ${
-                    newPostType === 'video'
-                      ? 'border-[#FF0055] bg-[#FF0055]/15 text-[#FF0055]'
-                      : darkMode
-                      ? 'border-white/10 bg-white/5 text-slate-300'
-                      : 'border-slate-200 bg-slate-50 text-slate-700'
-                  }`}
-                >
-                  <Camera className="w-4 h-4" />
-                  <span>فيديو قصير</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewPostType('photo');
-                    setNewPostMedia(
-                      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80'
-                    );
-                  }}
-                  className={`py-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition ${
-                    newPostType === 'photo'
-                      ? 'border-[#00E5FF] bg-[#00E5FF]/15 text-[#00E5FF]'
-                      : darkMode
-                      ? 'border-white/10 bg-white/5 text-slate-300'
-                      : 'border-slate-200 bg-slate-50 text-slate-700'
-                  }`}
-                >
-                  <ImageIcon className="w-4 h-4" />
-                  <span>صورة احترافية</span>
-                </button>
-              </div>
-
-              {/* Preview */}
-              <div className="relative aspect-[16/10] rounded-2xl overflow-hidden border border-white/10">
-                <img
-                  src={newPostMedia}
-                  alt="معاينة المنشور"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/65 text-white text-[11px] font-bold">
-                  {newPostType === 'video' ? 'معاينة الفيديو' : 'معاينة الصورة'}
-                </div>
-              </div>
-
-              {/* Sample Presets */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold">اختر وسائط جاهزة للتجربة:</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=700&q=80',
-                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=700&q=80',
-                    'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=700&q=80',
-                  ].map((url, idx) => (
-                    <button
-                      type="button"
-                      key={url}
-                      onClick={() => setNewPostMedia(url)}
-                      className={`h-16 rounded-xl overflow-hidden border-2 transition ${
-                        newPostMedia === url ? 'border-[#FF0055]' : 'border-transparent opacity-75'
-                      }`}
-                    >
-                      <img src={url} alt={`نموذج ${idx + 1}`} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Caption */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold">الوصف والوسوم</label>
-                <textarea
-                  rows={3}
-                  value={newPostCaption}
-                  onChange={(e) => setNewPostCaption(e.target.value)}
-                  placeholder="اكتب وصفاً جذاباً لمنشورك..."
-                  className={`w-full p-3 rounded-2xl text-sm outline-none border transition ${
-                    darkMode
-                      ? 'bg-white/5 border-white/10 focus:border-[#00E5FF]'
-                      : 'bg-slate-50 border-slate-200 focus:border-[#FF0055]'
-                  }`}
-                />
-              </div>
-
-              {newPostType === 'video' && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold">المقطع الصوتي المرفق</label>
-                  <input
-                    type="text"
-                    value={newPostSound}
-                    onChange={(e) => setNewPostSound(e.target.value)}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs outline-none border ${
-                      darkMode
-                        ? 'bg-white/5 border-white/10'
-                        : 'bg-slate-50 border-slate-200'
-                    }`}
-                  />
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#FF0055] via-[#FF5E00] to-[#00C8FF] text-white font-extrabold text-sm shadow-lg shadow-[#FF0055]/25 active:scale-[0.99] transition"
-              >
-                نشر الآن
-              </button>
-            </form>
-          )}
-
-          {/* ============================================================
-              CHATS TAB (Conversations List & Active Thread)
-             ============================================================ */}
-          {activeTab === 'chats' && !activeChat && (
-            <div className="p-4 space-y-3">
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-base font-extrabold">الدردشات</h2>
-                <span className="text-xs text-slate-400">{chats.length} محادثات</span>
-              </div>
-
-              {chats.map((ch) => (
-                <button
-                  key={ch.id}
-                  onClick={() => {
-                    setActiveChatId(ch.id);
-                    setChats((prev) =>
-                      prev.map((item) => (item.id === ch.id ? { ...item, unread: 0 } : item))
-                    );
-                  }}
-                  className={`w-full p-3 rounded-2xl flex items-center justify-between text-right border transition ${
-                    darkMode
-                      ? 'bg-white/5 border-white/10 hover:bg-white/10'
-                      : 'bg-slate-50 border-slate-200/70 hover:bg-slate-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative shrink-0">
-                      <img
-                        src={ch.user.avatar}
-                        alt={ch.user.name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                      {ch.user.online && (
-                        <span className="w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0B0D12] absolute bottom-0 left-0" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold truncate">{ch.user.name}</p>
-                      <p
-                        className={`text-xs truncate ${
-                          darkMode ? 'text-slate-400' : 'text-slate-500'
-                        }`}
-                      >
-                        {ch.lastMessage}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-1.5 shrink-0 mr-2">
-                    <span className="text-[11px] text-slate-400">{ch.time}</span>
-                    {ch.unread > 0 && (
-                      <span className="w-5 h-5 rounded-full bg-[#FF0055] text-white text-[10px] font-bold flex items-center justify-center">
-                        {ch.unread}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {activeTab === 'chats' && activeChat && (
-            <div className="flex-1 flex flex-col justify-between min-h-[calc(100vh-5rem)]">
-              {/* Chat Thread Header */}
-              <div
-                className={`px-4 py-3 flex items-center justify-between border-b ${
-                  darkMode ? 'bg-[#0F1219] border-white/10' : 'bg-slate-50 border-slate-200'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setActiveChatId(null)}
-                    className="p-1.5 rounded-full hover:bg-white/10"
-                    aria-label="رجوع"
-                  >
-                    <ArrowLeft className="w-5 h-5 rotate-180" />
-                  </button>
-                  <img
-                    src={activeChat.user.avatar}
-                    alt={activeChat.user.name}
-                    className="w-9 h-9 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-sm font-bold leading-tight">{activeChat.user.name}</p>
-                    <span className="text-[11px] text-emerald-400">
-                      {activeChat.user.online ? 'متصل الآن' : activeChat.user.handle}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div className="flex-1 p-4 space-y-3 overflow-y-auto">
-                {activeChat.messages.map((msg) => {
-                  const isMe = msg.sender === 'me';
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex flex-col max-w-[78%] ${
-                        isMe ? 'mr-auto items-end' : 'ml-auto items-start'
-                      }`}
-                    >
-                      <div
-                        className={`px-3.5 py-2 rounded-2xl text-xs leading-relaxed ${
-                          isMe
-                            ? 'bg-gradient-to-r from-[#FF0055] to-[#FF5E00] text-white rounded-br-sm'
-                            : darkMode
-                            ? 'bg-white/10 text-slate-100 rounded-bl-sm'
-                            : 'bg-slate-100 text-slate-900 rounded-bl-sm'
-                        }`}
-                      >
-                        {msg.text}
-                      </div>
-                      <span className="text-[10px] text-slate-400 mt-1">{msg.time}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Message Input */}
-              <form
-                onSubmit={handleSendMessage}
-                className={`p-3 border-t flex items-center gap-2 ${
-                  darkMode ? 'bg-[#0F1219] border-white/10' : 'bg-white border-slate-200'
-                }`}
-              >
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="اكتب رسالتك..."
-                  className={`flex-1 px-4 py-2 rounded-full text-xs outline-none border ${
-                    darkMode
-                      ? 'bg-white/5 border-white/10 text-white'
-                      : 'bg-slate-100 border-slate-200 text-slate-900'
-                  }`}
-                />
-                <button
-                  type="submit"
-                  className="p-2.5 rounded-full bg-gradient-to-r from-[#FF0055] to-[#FF5E00] text-white active:scale-95 transition"
-                  aria-label="إرسال"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          )}
-
-          {/* ============================================================
-              5. PROFILE TAB (Cover, Avatar, Stats, Edit, Posts & Videos)
-             ============================================================ */}
-          {activeTab === 'profile' && (
-            <div className="pb-6">
-              {/* Cover + Avatar */}
-              <div className="relative">
-                <div className="h-36 w-full overflow-hidden">
-                  <img
-                    src={profile.cover}
-                    alt="غلاف الملف الشخصي"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0D12]/80 via-transparent to-transparent" />
-                </div>
-
-                <div className="px-4 -mt-12 flex items-end justify-between relative z-10">
-                  <div className="p-[3px] rounded-full bg-gradient-to-tr from-[#FF0055] via-[#FF5E00] to-[#00E5FF]">
-                    <img
-                      src={profile.avatar}
-                      alt={profile.name}
-                      className="w-24 h-24 rounded-full object-cover border-4 border-[#0B0D12]"
-                    />
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setEditForm({
-                        name: profile.name,
-                        bio: profile.bio,
-                        avatar: profile.avatar,
-                        cover: profile.cover,
-                      });
-                      setIsEditingProfile(true);
-                    }}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition active:scale-95 ${
-                      darkMode
-                        ? 'bg-white/10 border-white/15 hover:bg-white/15'
-                        : 'bg-white border-slate-200 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>تعديل الملف الشخصي</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Bio & Stats */}
-              <div className="px-4 mt-3 space-y-2">
-                <div>
-                  <h2 className="text-lg font-extrabold flex items-center gap-1.5">
-                    <span>{profile.name}</span>
-                    <ShieldCheck className="w-4 h-4 text-[#00E5FF]" />
-                  </h2>
-                  <p className="text-xs text-slate-400">{profile.handle}</p>
-                </div>
-
-                <p className="text-xs leading-relaxed">{profile.bio}</p>
-
-                <div
-                  className={`mt-3 p-3 rounded-2xl grid grid-cols-3 text-center border ${
-                    darkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200/70'
-                  }`}
-                >
-                  <div>
-                    <p className="text-sm font-black">{posts.length}</p>
-                    <p className="text-[11px] text-slate-400">المنشورات</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-black">{profile.followers.toLocaleString()}</p>
-                    <p className="text-[11px] text-slate-400">المتابِعون</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-black">{profile.following.toLocaleString()}</p>
-                    <p className="text-[11px] text-slate-400">المتابَعون</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Profile Sub-Tabs */}
-              <div className="mt-4 grid grid-cols-3 border-b border-slate-500/15 text-xs font-bold">
-                <button
-                  onClick={() => setProfileTab('all')}
-                  className={`py-2.5 flex items-center justify-center gap-1.5 border-b-2 transition ${
-                    profileTab === 'all'
-                      ? 'border-[#FF0055] text-[#FF0055]'
-                      : 'border-transparent text-slate-400'
-                  }`}
-                >
-                  <Grid className="w-4 h-4" />
-                  <span>الكل</span>
-                </button>
-                <button
-                  onClick={() => setProfileTab('videos')}
-                  className={`py-2.5 flex items-center justify-center gap-1.5 border-b-2 transition ${
-                    profileTab === 'videos'
-                      ? 'border-[#00E5FF] text-[#00E5FF]'
-                      : 'border-transparent text-slate-400'
-                  }`}
-                >
-                  <Film className="w-4 h-4" />
-                  <span>الفيديوهات</span>
-                </button>
-                <button
-                  onClick={() => setProfileTab('saved')}
-                  className={`py-2.5 flex items-center justify-center gap-1.5 border-b-2 transition ${
-                    profileTab === 'saved'
-                      ? 'border-[#FF5E00] text-[#FF5E00]'
-                      : 'border-transparent text-slate-400'
-                  }`}
-                >
-                  <Bookmark className="w-4 h-4" />
-                  <span>المحفوظات</span>
-                </button>
-              </div>
-
-              {/* Profile Grid */}
-              <div className="p-2 grid grid-cols-3 gap-1.5">
-                {userProfilePosts.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => {
-                      setActiveTab('home');
-                      if (item.type === 'video') setVideoFeedMode(true);
-                    }}
-                    className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group"
-                  >
-                    <img
-                      src={item.mediaUrl}
-                      alt={item.caption}
-                      className="w-full h-full object-cover group-hover:scale-105 transition"
-                    />
-                    {item.type === 'video' && (
-                      <span className="absolute top-1.5 left-1.5 p-1 rounded-full bg-black/60 text-white">
-                        <Play className="w-3 h-3 fill-white" />
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </main>
-
-        {/* ============================================================
-            2. BOTTOM NAVIGATION BAR (5 Required Sections)
-           ============================================================ */}
-        {!(activeTab === 'home' && videoFeedMode) && (
-          <nav
-            aria-label="شريط التنقل السفلي"
-            className={`fixed bottom-0 inset-x-0 max-w-md mx-auto z-30 h-16 px-2 flex items-center justify-around backdrop-blur-xl border-t transition-colors ${
-              darkMode
-                ? 'bg-[#0B0D12]/90 border-white/10'
-                : 'bg-white/90 border-slate-200/90'
-            }`}
-          >
-            {/* الرئيسية */}
-            <button
-              onClick={() => {
-                setActiveTab('home');
-                setVideoFeedMode(false);
-              }}
-              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition ${
-                activeTab === 'home'
-                  ? 'text-[#FF0055] font-extrabold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Home className="w-5 h-5" />
-              <span className="text-[10px]">الرئيسية</span>
-            </button>
-
-            {/* الاستكشاف */}
-            <button
-              onClick={() => setActiveTab('explore')}
-              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition ${
-                activeTab === 'explore'
-                  ? 'text-[#00E5FF] font-extrabold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Search className="w-5 h-5" />
-              <span className="text-[10px]">الاستكشاف</span>
-            </button>
-
-            {/* إنشاء منشور */}
-            <button
-              onClick={() => setActiveTab('create')}
-              className="flex flex-col items-center justify-center -mt-3 transition active:scale-95"
-              aria-label="إنشاء منشور"
-            >
-              <div className="w-11 h-8 rounded-xl bg-gradient-to-r from-[#FF0055] via-[#FF5E00] to-[#00C8FF] flex items-center justify-center text-white shadow-lg shadow-[#FF0055]/30">
-                <PlusSquare className="w-5 h-5" />
-              </div>
-              <span
-                className={`text-[10px] mt-1 ${
-                  activeTab === 'create' ? 'font-extrabold text-[#FF5E00]' : 'text-slate-400'
-                }`}
-              >
-                إنشاء منشور
-              </span>
-            </button>
-
-            {/* الدردشات */}
-            <button
-              onClick={() => {
-                setActiveTab('chats');
-                setActiveChatId(null);
-              }}
-              className={`relative flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition ${
-                activeTab === 'chats'
-                  ? 'text-[#FF5E00] font-extrabold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <MessageCircle className="w-5 h-5" />
-              <span className="text-[10px]">الدردشات</span>
-              {chats.some((c) => c.unread > 0) && (
-                <span className="w-2 h-2 rounded-full bg-[#FF0055] absolute top-1 right-3" />
-              )}
-            </button>
-
-            {/* الملف الشخصي */}
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition ${
-                activeTab === 'profile'
-                  ? 'text-[#00E5FF] font-extrabold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <User className="w-5 h-5" />
-              <span className="text-[10px]">الملف الشخصي</span>
-            </button>
-          </nav>
-        )}
-
-        {/* --- Comments Bottom Sheet Modal --- */}
-        {activeCommentPost && (
-          <div className="fixed inset-0 z-50 max-w-md mx-auto bg-black/60 backdrop-blur-xs flex items-end">
-            <div
-              className={`w-full max-h-[70vh] rounded-t-3xl p-4 flex flex-col justify-between border-t ${
-                darkMode
-                  ? 'bg-[#121620] border-white/10 text-white'
-                  : 'bg-white border-slate-200 text-slate-900'
-              }`}
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-500/15">
-                <span className="text-sm font-extrabold">
-                  التعليقات ({activeCommentPost.comments.length})
-                </span>
-                <button
-                  onClick={() => setActiveCommentPostId(null)}
-                  className="p-1 rounded-full hover:bg-white/10"
-                  aria-label="إغلاق التعليقات"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto py-3 space-y-3">
-                {activeCommentPost.comments.length === 0 ? (
-                  <p className="text-xs text-center text-slate-400 py-6">
-                    لا توجد تعليقات بعد. كن أول من يعلق!
-                  </p>
-                ) : (
-                  activeCommentPost.comments.map((c) => (
-                    <div key={c.id} className="space-y-0.5">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold">{c.user}</span>
-                        <span className="text-[10px] text-slate-400">{c.time}</span>
-                      </div>
-                      <p className="text-xs text-slate-300/90">{c.text}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <form onSubmit={handleAddComment} className="pt-2 flex items-center gap-2">
-                <input
-                  type="text"
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  placeholder="أضف تعليقاً..."
-                  className={`flex-1 px-3.5 py-2 rounded-full text-xs outline-none border ${
-                    darkMode
-                      ? 'bg-white/5 border-white/10 text-white'
-                      : 'bg-slate-100 border-slate-200 text-slate-900'
-                  }`}
-                />
-                <button
-                  type="submit"
-                  className="px-3.5 py-2 rounded-full bg-gradient-to-r from-[#FF0055] to-[#FF5E00] text-white text-xs font-bold"
-                >
-                  نشر
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* --- Edit Profile Modal --- */}
-        {isEditingProfile && (
-          <div className="fixed inset-0 z-50 max-w-md mx-auto bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
-            <form
-              onSubmit={handleSaveProfile}
-              className={`w-full rounded-3xl p-5 space-y-3.5 border ${
-                darkMode
-                  ? 'bg-[#121620] border-white/10 text-white'
-                  : 'bg-white border-slate-200 text-slate-900'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-extrabold">تعديل الملف الشخصي</h3>
-                <button
-                  type="button"
-                  onClick={() => setIsEditingProfile(false)}
-                  className="p-1 rounded-full hover:bg-white/10"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold">الاسم</label>
-                <input
-                  type="text"
-                  value={editForm.name}
-                  onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
-                  className={`w-full px-3 py-2 rounded-xl text-xs border outline-none ${
-                    darkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'
-                  }`}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold">النبذة التعريفية</label>
-                <textarea
-                  rows={2}
-                  value={editForm.bio}
-                  onChange={(e) => setEditForm((f) => ({ ...f, bio: e.target.value }))}
-                  className={`w-full px-3 py-2 rounded-xl text-xs border outline-none ${
-                    darkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200'
-                  }`}
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditingProfile(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-500/15"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-[#FF0055] to-[#FF5E00] text-white"
-                >
-                  حفظ التغييرات
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+  <button type="button" class="gray" style="padding:7px 10px;font-size:11px" id="chatVoiceCallBtn" title="اتصال صوتي">📞</button>
+  <button type="button" class="gray" style="padding:7px 10px;font-size:11px" id="chatVideoCallBtn" title="اتصال فيديو">📹</button>
+  <button type="button" class="gray" style="padding:7px 10px;font-size:11px" id="chatBlockUserBtn" title="حظر">🚫</button>
+ </div>
+
+ <div id="chatReplyBanner" class="reply-banner hidden" style="margin:8px 0 0">
+  <span id="chatReplyBannerText">جارٍ الرد على...</span>
+  <button type="button" class="gray" onclick="clearChatReply()">إلغاء</button>
+ </div>
+
+ <div class="chatbox protected-media" id="chatMessages"></div>
+
+ <div class="chat-attach-row">
+  <button type="button" class="gray" id="pickChatMediaBtn">🖼️ صورة / فيديو</button>
+  <button type="button" class="gray" id="pickChatDocBtn">📎 ملف / مستند</button>
+  <button type="button" class="gray" id="voiceRecordBtn">🎤 رسالة صوتية</button>
+ </div>
+ <input id="chatFile" type="file" accept="image/*,video/*" class="hidden">
+ <input id="chatDocFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.csv" class="hidden">
+ <div id="chatAttachPreview" class="small" style="color:var(--blue)"></div>
+
+ <textarea id="chatText" placeholder="اكتب رسالتك..."></textarea>
+ <button id="sendMessageBtn" class="full">إرسال الرسالة</button>
+ <button id="closeChatBtn" class="full gray">رجوع إلى قائمة الدردشات</button>
+ <p id="chatStatus" class="small"></p>
+</div>
+</section>
+
+<!-- ==================== 2. الاتصالات المستقلة ==================== -->
+<section id="calls" class="section">
+<div class="card">
+ <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+  <h2 style="margin:0" data-i18n="calls_title">📞 الاتصالات</h2>
+  <button type="button" class="green" style="padding:7px 12px;font-size:12px" id="newCallContactBtn">＋ اتصال جديد</button>
+ </div>
+ <div class="search-box">
+  <span class="search-icon">🔍</span>
+  <input id="callSearchInput" placeholder="ابحث في سجل المكالمات بالاسم أو المعرّف...">
+ </div>
+ <div class="calls-filter-row">
+  <button type="button" class="call-filter-btn active" data-call-filter="all">الكل</button>
+  <button type="button" class="call-filter-btn" data-call-filter="missed">الفائتة</button>
+  <button type="button" class="call-filter-btn" data-call-filter="incoming">الواردة</button>
+  <button type="button" class="call-filter-btn" data-call-filter="outgoing">الصادرة</button>
+ </div>
+ <div id="callsLogList">جارٍ تحميل سجل المكالمات...</div>
+</div>
+</section>
+
+<section id="feed" class="section">
+<h3 data-i18n="posts_heading">المنشورات</h3>
+<div id="postsList">جارٍ تحميل المنشورات...</div>
+</section>
+
+<!-- ==================== 3. الأصدقاء وطلبات الصداقة ==================== -->
+<section id="people" class="section">
+<div class="card">
+ <h3 data-i18n="friends_heading">الأصدقاء والمتابعة</h3>
+ <div class="search-box">
+  <span class="search-icon">🔍</span>
+  <input id="searchUser" placeholder="ابحث باسم المستخدم أو الاسم الكامل...">
+ </div>
+ <button class="full" id="searchBtn">بحث</button>
+ <div id="peopleList"></div>
+</div>
+
+<div class="card">
+ <div style="display:flex;align-items:center;justify-content:space-between">
+  <h3 style="margin:0">📩 طلبات الصداقة الواردة</h3>
+  <button type="button" class="gray" style="padding:6px 10px;font-size:11px" onclick="loadFriendRequestsAndFriends()">تحديث</button>
+ </div>
+ <div id="friendRequestsList" class="small" style="margin-top:8px">جارٍ التحميل...</div>
+</div>
+
+<div class="card">
+ <h3 style="margin:0">👥 قائمة الأصدقاء</h3>
+ <div id="friendsDirectoryList" class="small" style="margin-top:8px">جارٍ التحميل...</div>
+</div>
+</section>
+
+<!-- ==================== 4. الإشعارات ==================== -->
+<section id="alerts" class="section">
+<div class="card">
+ <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+  <h3 style="margin:0" data-i18n="alerts_heading">🔔 الإشعارات</h3>
+  <div style="display:flex;gap:6px">
+   <button type="button" class="gray" style="padding:6px 10px;font-size:11px" id="markAllAlertsReadBtn">تحديد الكل كمقروء</button>
+   <button type="button" class="gray" style="padding:6px 10px;font-size:11px" id="refreshAlerts">تحديث</button>
+  </div>
+ </div>
+ <div class="tt-sub-box" style="margin-top:10px">
+  <strong class="small">التحكم بالإشعارات:</strong>
+  <label class="tt-switch-label" style="margin-top:6px"><span>إشعارات الرسائل الجديدة</span><input type="checkbox" id="notifMsgToggle" checked></label>
+  <label class="tt-switch-label" style="margin-top:6px"><span>إشعارات المكالمات</span><input type="checkbox" id="notifCallToggle" checked></label>
+  <label class="tt-switch-label" style="margin-top:6px"><span>إشعارات طلبات الصداقة</span><input type="checkbox" id="notifFriendToggle" checked></label>
+ </div>
+ <div id="alertsList">جارٍ تحميل الإشعارات...</div>
+</div>
+</section>
+
+<section id="admin" class="section">
+<div class="card">
+<h2>لوحة إدارة DERT</h2>
+
+<h3>سجل عمليات الدفع والشحن</h3>
+<button class="full green" id="refreshTopups">تحديث سجل الشحن</button>
+<div id="adminTopups"></div>
+<hr style="border-color:var(--line)">
+
+<h3>طلبات سحب الأرباح</h3>
+<button class="full" id="refreshWithdrawals">تحديث طلبات السحب</button>
+<div id="adminWithdrawals"></div>
+<hr style="border-color:var(--line)">
+
+<h3>طلبات التوثيق</h3>
+<button class="full gray" id="refreshAdmin">تحديث طلبات التوثيق</button>
+<div id="adminMessage" class="small"></div>
+<div id="adminRequests"></div>
+<hr style="border-color:var(--line)">
+
+<h3>البلاغات</h3>
+<button class="full gray" id="refreshReports">تحديث البلاغات</button>
+<div id="adminReports"></div>
+<hr style="border-color:var(--line)">
+
+<h3>رسائل الدعم</h3>
+<button class="full gray" id="refreshSupportAdmin">تحديث رسائل الدعم</button>
+<div id="adminSupport"></div>
+</div>
+</section>
+
+<!-- ==================== 5. الحساب الشخصي ==================== -->
+<section id="profile" class="section">
+<div class="tt-ig-profile-card">
+ <div class="tt-ig-top-bar">
+  <div class="tt-ig-handle" id="displayUsernameTop">@user</div>
+  <div class="tt-ig-top-btns">
+   <button type="button" class="tt-ig-icon-btn" title="مركز الخصوصية والأمان" onclick="openPrivacyCenter()">🛡️</button>
+   <button type="button" class="tt-ig-icon-btn" title="رمز QR" onclick="openStandaloneTool('qr')">⊞</button>
+   <button type="button" class="tt-ig-icon-btn" title="القائمة" onclick="openMenuScreen()">☰</button>
+  </div>
+ </div>
+
+ <div class="tt-ig-hero">
+  <label for="avatarFile" class="tt-ig-avatar-ring" title="تغيير الصورة الشخصية">
+   <div id="avatarDisplay" class="avatar">D</div>
+  </label>
+  <input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp">
+  <h2 id="displayName" class="tt-ig-name">مستخدم DERT</h2>
+  <div id="displayUsername" class="small" style="margin-top:2px">@user</div>
+  <div id="displayPresenceLine" class="small" style="margin-top:4px"><span class="online-dot"></span>متصل الآن</div>
+  <p id="displayBio" class="tt-ig-bio">مرحباً بك في DERT</p>
+ </div>
+
+ <div class="tt-ig-stats">
+  <div onclick="openFollowList('following')">
+   <strong id="followingCount">0</strong>
+   <span>أتابع</span>
+  </div>
+  <div onclick="openFollowList('followers')">
+   <strong id="followersCount">0</strong>
+   <span>المتابعون</span>
+  </div>
+  <div onclick="switchProfileMediaTab('posts')">
+   <strong id="postsCount">0</strong>
+   <span>المنشورات</span>
+  </div>
+ </div>
+
+ <div class="tt-ig-cta-row">
+  <button id="editProfileBtn" type="button" class="tt-ig-cta-btn">تعديل الملف الشخصي</button>
+  <button type="button" class="tt-ig-cta-btn" onclick="openSettingsScreen()">⚙️ الإعدادات</button>
+ </div>
+
+ <div id="profileSettings" class="profile-settings hidden" style="margin:10px 14px">
+  <h3>تعديل الملف الشخصي</h3>
+  <input id="fullName" placeholder="الاسم الكامل">
+  <input id="username" placeholder="اسم المستخدم" dir="ltr">
+  <textarea id="bio" placeholder="نبذة عنك"></textarea>
+  <button class="full" id="saveProfileBtn">حفظ التعديلات</button>
+  <button class="full gray" id="cancelProfileBtn">إلغاء</button>
+ </div>
+
+ <div class="tt-ig-tabs">
+  <button type="button" class="tt-ig-tab active" id="profTabPosts" onclick="switchProfileMediaTab('posts')">المنشورات</button>
+  <button type="button" class="tt-ig-tab" id="profTabVideos" onclick="switchProfileMediaTab('videos')">الفيديوهات</button>
+  <button type="button" class="tt-ig-tab" id="profTabSaved" onclick="switchProfileMediaTab('saved')">المحفوظات</button>
+ </div>
+ <div id="profileMediaGrid" class="tt-ig-grid"></div>
+ <p id="profileMessage" class="small" style="padding:8px 14px 0"></p>
+</div>
+</section>
+
+<div id="menuScreen" class="standalone-page hidden">
+ <div class="standalone-header">
+  <button type="button" class="tt-back-mini" onclick="closeMenuScreen()">←</button>
+  <h2>القائمة</h2>
+  <span style="width:30px"></span>
+ </div>
+
+ <div class="tt-menu-group-title">الأمان والخصوصية</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openPrivacyCenter()">
+   <span class="tt-menu-left"><span>🛡️</span><span>مركز الأمان والخصوصية</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="lockAppNow()">
+   <span class="tt-menu-left"><span>🔒</span><span>قفل التطبيق الآن</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">الأصول</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('balance')">
+   <span class="tt-menu-left"><span>💳</span><span>الرصيد والأرباح (60% / 40%)</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('topup')">
+   <span class="tt-menu-left"><span>🪙</span><span>شراء العملات (زين كاش / سوبر كي / زين / آسياسيل)</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">الأدوات الشخصية</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('activity')">
+   <span class="tt-menu-left"><span>🕒</span><span>مركز الأنشطة</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('offline')">
+   <span class="tt-menu-left"><span>📥</span><span>فيديوهات دون اتصال بالإنترنت</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('qr')">
+   <span class="tt-menu-left"><span>⊞</span><span>رمز QR لديك</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('minis')">
+   <span class="tt-menu-left"><span>⬡</span><span>DERT Minis</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">أدوات الإبداع والأعمال</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openLiveRoom()">
+   <span class="tt-menu-left"><span>🔴</span><span>غرفة البث المباشر LIVE</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('shop')">
+   <span class="tt-menu-left"><span>🏪</span><span>المجموعة التجارية</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('studio')">
+   <span class="tt-menu-left"><span>🎬</span><span>DERT Studio</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+  <button type="button" class="tt-menu-item" onclick="openStandaloneTool('promote')">
+   <span class="tt-menu-left"><span>🔥</span><span>الترويج</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+
+ <div class="tt-menu-group-title">الإعدادات والخصوصية</div>
+ <div class="tt-menu-card">
+  <button type="button" class="tt-menu-item" onclick="openSettingsScreen()">
+   <span class="tt-menu-left"><span>⚙️</span><span>الإعدادات والخصوصية</span></span>
+   <span class="tt-menu-arrow">‹</span>
+  </button>
+ </div>
+</div>
+
+<!-- ==================== 6. الإعدادات الكاملة ==================== -->
+<div id="settingsScreen" class="standalone-page hidden">
+ <div class="standalone-header">
+  <button type="button" class="tt-back-mini" onclick="closeSettingsScreen()">←</button>
+  <h2>الإعدادات</h2>
+  <span style="width:30px"></span>
+ </div>
+
+ <div class="tt-sub-box">
+  <h3>🎨 المظهر واللغة</h3>
+  <div class="tt-opt-row" style="margin-top:8px">
+   <span>المظهر (ليلي / نهاري)</span>
+   <select id="themeSelect">
+    <option value="dark">الوضع الليلي</option>
+    <option value="light">الوضع النهاري</option>
+   </select>
+  </div>
+  <div class="tt-opt-row" style="margin-top:8px">
+   <span>لغة التطبيق والاتجاه</span>
+   <select id="langSelect">
+    <option value="ar">العربية (RTL)</option>
+    <option value="en">English (LTR)</option>
+   </select>
+  </div>
+ </div>
+
+ <div class="tt-sub-box">
+  <h3>🔔 إعدادات الإشعارات</h3>
+  <label class="tt-switch-label" style="margin-top:8px"><span>إشعارات الرسائل الجديدة</span><input type="checkbox" id="setNotifMsg" checked></label>
+  <label class="tt-switch-label" style="margin-top:8px"><span>إشعارات المكالمات</span><input type="checkbox" id="setNotifCall" checked></label>
+  <label class="tt-switch-label" style="margin-top:8px"><span>إشعارات طلبات الصداقة</span><input type="checkbox" id="setNotifFriend" checked></label>
+ </div>
+
+ <div class="tt-sub-box">
+  <h3>🛡️ الأمان والخصوصية</h3>
+  <p class="small">البصمة / Face ID، التحقق بخطوتين، التشفير، الحظر، الأجهزة، الصلاحيات، واستعادة الحساب.</p>
+  <button type="button" class="full" onclick="openPrivacyCenter()">🛡️ فتح مركز الأمان والخصوصية</button>
+ </div>
+
+ <div class="tt-sub-box">
+  <h3>✓ توثيق الحساب</h3>
+  <button class="full gray" id="requestVerificationBtn">طلب توثيق الحساب</button>
+  <p id="verificationMessage" class="small" style="margin-top:8px"></p>
+ </div>
+
+ <div class="tt-sub-box">
+  <h3>🎧 مراسلة الدعم</h3>
+  <textarea id="supportText" placeholder="اكتب رسالتك إلى الدعم..."></textarea>
+  <button class="full" id="sendSupportBtn">إرسال إلى الدعم</button>
+  <p id="supportStatus" class="small" style="margin-top:6px"></p>
+  <hr style="border-color:var(--line)">
+  <h4>محادثتك مع الدعم</h4>
+  <button class="full gray" id="loadMySupport">عرض رسائل الدعم</button>
+  <div id="mySupportMessages"></div>
+ </div>
+
+ <div class="tt-sub-box" style="border-color:#fe2c5566">
+  <h3>⚠️ إدارة الحساب</h3>
+  <button class="full gray" id="logoutBtn">تسجيل الخروج</button>
+  <button class="full red" id="deleteAccountBtn" style="margin-top:8px">🗑️ حذف الحساب نهائياً</button>
+  <p id="deleteAccountStatus" class="small" style="margin-top:6px"></p>
+ </div>
+</div>
+
+<div id="toolScreen" class="standalone-page hidden">
+ <div class="standalone-header">
+  <button type="button" class="tt-back-mini" onclick="closeToolScreen()">←</button>
+  <h2 id="toolScreenTitle">الأداة</h2>
+  <span style="width:30px"></span>
+ </div>
+ <div id="toolScreenBody"></div>
+</div>
+
+<nav id="mainNav">
+<button class="active" onclick="openTab('videos',this)">
+ <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-home"></use></svg></span>
+ <span data-i18n="nav_home">الرئيسية</span>
+</button>
+<button onclick="openTab('people',this)">
+ <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-user"></use></svg></span>
+ <span data-i18n="nav_friends">الأصدقاء</span>
+</button>
+<button type="button" onclick="openCreateModal()" title="إنشاء">
+ <span class="tt-plus-btn">+</span>
+</button>
+<button id="navChatsBtn" onclick="openTab('chats',this)">
+ <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-chat"></use></svg></span>
+ <span data-i18n="nav_chats">الدردشات</span>
+ <span id="navChatsUnread" class="nav-badge hidden">0</span>
+</button>
+<button id="navCallsBtn" onclick="openTab('calls',this)">
+ <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-call"></use></svg></span>
+ <span data-i18n="nav_calls">الاتصالات</span>
+ <span id="navCallsMissed" class="nav-badge hidden">0</span>
+</button>
+<button id="navAlertsBtn" onclick="openTab('alerts',this)">
+ <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-bell"></use></svg></span>
+ <span data-i18n="nav_alerts">الإشعارات</span>
+ <span id="navAlertsUnread" class="nav-badge hidden">0</span>
+</button>
+<button onclick="openTab('profile',this)">
+ <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-user"></use></svg></span>
+ <span data-i18n="nav_profile">حسابي</span>
+</button>
+<button id="adminNav" class="hidden" onclick="openTab('admin',this)">
+ <span class="violet-icon"><svg viewBox="0 0 24 24"><use href="#ico-admin"></use></svg></span>
+ <span>الإدارة</span>
+</button>
+</nav>
+</div>
+</div>
+
+<div id="followModal" class="overlay-modal hidden" onclick="if(event.target===this)closeFollowModal()">
+ <div class="modal-card">
+  <div class="modal-top">
+   <strong id="followModalTitle">المتابعون</strong>
+   <button type="button" onclick="closeFollowModal()">✕</button>
+  </div>
+  <div id="followModalList">جارٍ التحميل...</div>
+ </div>
+</div>
+
+<div id="userProfileModal" class="overlay-modal hidden" onclick="if(event.target===this)closeUserProfileModal()">
+ <div class="modal-card">
+  <div class="modal-top">
+   <strong id="userProfileModalTitle">الملف الشخصي</strong>
+   <button type="button" onclick="closeUserProfileModal()">✕</button>
+  </div>
+  <div id="userProfileModalBody">جارٍ التحميل...</div>
+ </div>
+</div>
+
+<div id="storyModal" class="overlay-modal hidden" onclick="if(event.target===this)closeStoryModal()">
+ <div class="modal-card">
+  <div class="modal-top">
+   <strong id="storyModalTitle">الحالات والقصص اليومية</strong>
+   <button type="button" onclick="closeStoryModal()">✕</button>
+  </div>
+  <div id="storyModalBody"></div>
+ </div>
+</div>
+
+<!-- نافذة المكالمة المستقلة -->
+<div id="callModal" class="overlay-modal hidden">
+ <div class="modal-card" style="text-align:center">
+  <div class="modal-top">
+   <strong id="callModalTitle">مكالمة</strong>
+   <button type="button" id="endCallBtn" class="red">إنهاء</button>
+  </div>
+  <div id="callStageBox" style="min-height:210px;background:#09090d;color:#fff;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;position:relative;overflow:hidden">
+   <div id="callPeerAvatar" class="avatar" style="width:68px;height:68px;font-size:26px;margin-bottom:10px;z-index:2">D</div>
+   <div id="callStatusText" style="font-size:15px;font-weight:700;z-index:2">جارٍ الاتصال...</div>
+   <div id="callTimerText" class="small" style="z-index:2;margin-top:6px;color:#c7cbd4">00:00</div>
+  </div>
+  <div id="incomingCallControls" class="user-row-actions hidden" style="justify-content:center;margin-top:12px">
+   <button type="button" class="green" id="acceptIncomingCallBtn">✓ رد على المكالمة</button>
+   <button type="button" class="red" id="declineIncomingCallBtn">✕ رفض</button>
+  </div>
+  <div id="activeCallControls" class="user-row-actions" style="justify-content:center;margin-top:12px">
+   <button type="button" class="gray" id="toggleMuteCallBtn">🎤 كتم الصوت</button>
+   <button type="button" class="gray hidden" id="toggleCamCallBtn">📷 إيقاف الكاميرا</button>
+  </div>
+ </div>
+</div>
+
+<div id="musicPickerModal" class="overlay-modal hidden" onclick="if(event.target===this)closeMusicPicker()">
+ <div class="modal-card">
+  <div class="modal-top">
+   <strong>♫ اختر أغنية</strong>
+   <button type="button" onclick="closeMusicPicker()">✕</button>
+  </div>
+  <div class="search-box">
+   <span class="search-icon">🔍</span>
+   <input id="musicSearchInput" placeholder="ابحث عن أغنية...">
+  </div>
+  <div id="musicListBox"></div>
+ </div>
+</div>
+
+<div id="dertCreateModal">
+ <div id="dertCreateBox">
+  <div class="tt-create-top">
+   <button id="dertCreateClose" type="button" title="إغلاق">✕</button>
+   <h3>نشر على DERT</h3>
+   <button id="dertTopPublishBtn" class="tt-create-top-pub" type="button">نشر</button>
+  </div>
+
+  <input id="dertImagesInput" class="tt-hidden-file" type="file" accept="image/*" multiple>
+  <input id="dertVideoInput" class="tt-hidden-file" type="file" accept="video/*">
+
+  <div class="tt-media-pick-grid">
+   <div class="tt-pick-card" onclick="el('dertImagesInput').click()">
+    <span class="tt-pick-icon">🖼️</span>
+    <span class="tt-pick-title">صور</span>
+    <span class="tt-pick-sub" id="imagesPickSub">صورة أو عدة صور</span>
+   </div>
+   <div class="tt-pick-card" onclick="el('dertVideoInput').click()">
+    <span class="tt-pick-icon">🎬</span>
+    <span class="tt-pick-title">فيديو</span>
+    <span class="tt-pick-sub" id="videoPickSub">مقطع فيديو قصير</span>
+   </div>
+  </div>
+
+  <div id="dertPreviewBox" class="preview-box hidden"></div>
+
+  <div class="tt-desc-wrap">
+   <textarea id="dertDescription" maxlength="400" placeholder="اكتب وصفاً جذاباً أو أضف هاشتاغات..." oninput="updateDescCounter()"></textarea>
+   <div class="small" id="dertDescCounter" style="text-align:start">0 / 400</div>
+   <div class="tt-hashtag-row">
+    <button type="button" class="tt-tag-chip" onclick="appendHashtag('#DERT')">#DERT</button>
+    <button type="button" class="tt-tag-chip" onclick="appendHashtag('#اكسبلور')">#اكسبلور</button>
+    <button type="button" class="tt-tag-chip" onclick="appendHashtag('#ترند')">#ترند</button>
+    <button type="button" class="tt-tag-chip" onclick="appendHashtag('#محتوى')">#محتوى</button>
+   </div>
+  </div>
+
+  <button id="openMusicPickerBtn" type="button" class="music-picker-btn">
+   <span>♫ إضافة صوت / أغنية</span>
+   <span>›</span>
+  </button>
+  <div id="selectedMusicBar" class="music-selected-bar hidden">
+   <span id="selectedMusicLabel">♫ أغنية مختارة</span>
+   <button type="button" class="red" style="padding:5px 10px;font-size:11px" onclick="clearSelectedMusic()">إزالة</button>
+  </div>
+
+  <div class="tt-extra-options">
+   <div class="tt-opt-row">
+    <span>من يمكنه المشاهدة</span>
+    <select id="dertPrivacySelect">
+     <option value="public">الجميع</option>
+     <option value="followers">المتابعون</option>
+     <option value="private">خاص بي</option>
+    </select>
+   </div>
+   <label class="tt-switch-label">
+    <span>السماح بالتعليقات</span>
+    <input type="checkbox" id="dertAllowComments" checked>
+   </label>
+   <label class="tt-switch-label">
+    <span>السماح بالمشاركة وحفظ الرابط</span>
+    <input type="checkbox" id="dertAllowShare" checked>
+   </label>
+  </div>
+
+  <button id="dertPublishButton" class="full tt-publish-main" type="button">نشر الآن</button>
+  <p id="dertCreateStatus"></p>
+ </div>
+</div>
+
+<div id="commentModal" class="comment-modal hidden" onclick="if(event.target===this)closePostComments()">
+ <div class="comment-sheet">
+  <div class="comment-sheet-head">
+   <strong id="commentModalTitle">التعليقات</strong>
+   <button type="button" onclick="closePostComments()">✕</button>
+  </div>
+  <div id="commentModalList" class="comment-sheet-list">جارٍ تحميل التعليقات...</div>
+  <div id="replyTargetBanner" class="reply-banner hidden">
+   <span id="replyTargetText">جارٍ الرد على...</span>
+   <button type="button" class="gray" onclick="clearReplyTarget()">إلغاء</button>
+  </div>
+  <div class="comment-sheet-form">
+   <input id="commentInput" plac

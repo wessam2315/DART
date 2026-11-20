@@ -1,2059 +1,1978 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#000000" />
-  <title>DERT</title>
-  <style>
-    :root {
-      --bg-dark: #000000;
-      --bg-light: #ffffff;
-      --surface: #f2f2f5;
-      --surface-2: #e7e8ed;
-      --text-dark: #161823;
-      --text-muted: #737685;
-      --border: #e8e8ec;
-      --tt-red: #fe2c55;
-      --tt-cyan: #25f4ee;
-      --tt-yellow: #face15;
-      --green: #0f9d58;
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    input, textarea, select {
-      user-select: text;
-      font-family: inherit;
-    }
-
-    html, body {
-      height: 100%;
-      background: #08080a;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Kufi Arabic", "Cairo", sans-serif;
-      overflow: hidden;
-    }
-
-    body {
-      display: flex;
-      justify-content: center;
-    }
-
-    .app-shell {
-      width: 100%;
-      max-width: 440px;
-      height: 100dvh;
-      background: #000;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* منطقة المحتوى الرئيسية */
-    .main-viewport {
-      flex: 1;
-      height: 100%;
-      overflow-y: auto;
-      scroll-snap-type: y mandatory;
-      scrollbar-width: none;
-      padding-bottom: calc(56px + var(--safe-bottom));
-    }
-
-    .main-viewport::-webkit-scrollbar {
-      display: none;
-    }
-
-    .main-viewport.light-mode {
-      background: var(--bg-light);
-      color: var(--text-dark);
-      scroll-snap-type: none;
-    }
-
-    /* فيديوهات الرئيسية (TikTok Feed) */
-    .tt-slide {
-      position: relative;
-      width: 100%;
-      height: calc(100dvh - 56px - var(--safe-bottom));
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-      background: #050507;
-      color: #fff;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-    }
-
-    .tt-video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      background: #050507;
-    }
-
-    .tt-scrim {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to bottom,
-        rgba(0, 0, 0, 0.5) 0%,
-        rgba(0, 0, 0, 0) 26%,
-        rgba(0, 0, 0, 0) 60%,
-        rgba(0, 0, 0, 0.86) 100%
-      );
-      pointer-events: none;
-    }
-
-    .pause-mark {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.8);
-      width: 66px;
-      height: 66px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.48);
-      color: #fff;
-      font-size: 22px;
-      font-weight: 800;
-      display: grid;
-      place-items: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.14s ease, transform 0.14s ease;
-      z-index: 8;
-    }
-
-    .tt-slide.paused .pause-mark {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-
-    .seek-track {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 2.5px;
-      background: rgba(255, 255, 255, 0.22);
-      z-index: 12;
-    }
-
-    .seek-fill {
-      height: 100%;
-      width: 0%;
-      background: #ffffff;
-    }
-
-    .heart-pop {
-      position: absolute;
-      font-size: 82px;
-      color: var(--tt-red);
-      pointer-events: none;
-      z-index: 25;
-      transform: translate(-50%, -50%) scale(0);
-      animation: heartBurst 0.72s cubic-bezier(0.17, 0.89, 0.32, 1.28) forwards;
-      text-shadow: 0 6px 20px rgba(254, 44, 85, 0.6);
-    }
-
-    @keyframes heartBurst {
-      0% { transform: translate(-50%, -50%) scale(0.2) rotate(-14deg); opacity: 0; }
-      25% { transform: translate(-50%, -50%) scale(1.2) rotate(8deg); opacity: 1; }
-      55% { transform: translate(-50%, -50%) scale(1) rotate(-4deg); opacity: 1; }
-      100% { transform: translate(-50%, -78%) scale(1.25) rotate(0deg); opacity: 0; }
-    }
-
-    /* الشريط العلوي للرئيسية */
-    .tt-top {
-      position: fixed;
-      top: calc(10px + var(--safe-top));
-      width: 100%;
-      max-width: 440px;
-      z-index: 20;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-      color: #fff;
-      pointer-events: none;
-    }
-
-    .tt-top > * {
-      pointer-events: auto;
-    }
-
-    .live-btn {
-      background: none;
-      border: 1.5px solid rgba(255, 255, 255, 0.88);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 5px;
-      letter-spacing: 0.5px;
-      cursor: pointer;
-    }
-
-    .top-tabs {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-    }
-
-    .top-tab {
-      background: none;
-      border: none;
-      color: rgba(255, 255, 255, 0.65);
-      font-size: 16.5px;
-      font-weight: 700;
-      cursor: pointer;
-      position: relative;
-      padding: 4px 2px;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-    }
-
-    .top-tab.active {
-      color: #ffffff;
-    }
-
-    .top-tab.active::after {
-      content: "";
-      position: absolute;
-      bottom: -4px;
-      left: 20%;
-      right: 20%;
-      height: 3px;
-      border-radius: 99px;
-      background: #ffffff;
-    }
-
-    .plain-top-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 13.5px;
-      font-weight: 700;
-      padding: 5px 8px;
-      cursor: pointer;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-    }
-
-    /* التفاعل الجانبي والمعلومات */
-    .tt-overlay {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      padding: 0 12px 14px 10px;
-      gap: 10px;
-      pointer-events: none;
-    }
-
-    .tt-caption-col,
-    .tt-action-rail {
-      pointer-events: auto;
-    }
-
-    .tt-caption-col {
-      flex: 1;
-      min-width: 0;
-      padding-left: 8px;
-    }
-
-    .tt-handle-line {
-      font-size: 15.5px;
-      font-weight: 800;
-      margin-bottom: 6px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-    }
-
-    .tt-desc-line {
-      font-size: 13.5px;
-      line-height: 1.45;
-      color: rgba(255, 255, 255, 0.96);
-      margin-bottom: 8px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-    }
-
-    .tt-sound-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12.5px;
-      font-weight: 600;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-    }
-
-    .tt-action-rail {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 11px;
-      flex-shrink: 0;
-    }
-
-    .avatar-ring-box {
-      position: relative;
-      width: 48px;
-      height: 48px;
-      margin-bottom: 6px;
-    }
-
-    .avatar-ring-box img {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1.5px solid #fff;
-      display: block;
-    }
-
-    .follow-plus-btn {
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 21px;
-      height: 21px;
-      border-radius: 50%;
-      background: var(--tt-red);
-      color: #fff;
-      border: none;
-      font-size: 14px;
-      font-weight: 900;
-      cursor: pointer;
-      display: grid;
-      place-items: center;
-    }
-
-    .follow-plus-btn.followed {
-      background: #fff;
-      color: var(--tt-red);
-      font-size: 11px;
-    }
-
-    .rail-act-btn {
-      background: rgba(18, 18, 22, 0.68);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      color: #fff;
-      border-radius: 12px;
-      padding: 6px 8px;
-      min-width: 58px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      cursor: pointer;
-      backdrop-filter: blur(6px);
-      transition: transform 0.14s ease;
-    }
-
-    .rail-act-btn:active {
-      transform: scale(0.92);
-    }
-
-    .rail-act-btn.liked {
-      border-color: var(--tt-red);
-      background: rgba(254, 44, 85, 0.28);
-      color: #ff6b86;
-    }
-
-    .rail-act-btn.saved {
-      border-color: var(--tt-yellow);
-      background: rgba(250, 206, 21, 0.24);
-      color: var(--tt-yellow);
-    }
-
-    .rail-act-label {
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .rail-act-val {
-      font-size: 12px;
-      font-weight: 800;
-      direction: ltr;
-    }
-
-    .vinyl-spin {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #222 25%, #090909 26%, #2a2a2a 65%, #000 66%);
-      border: 6px solid #1c1d24;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      margin-top: 2px;
-      animation: spinWheel 6s linear infinite;
-    }
-
-    .tt-slide.paused .vinyl-spin {
-      animation-play-state: paused;
-    }
-
-    .vinyl-spin img {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    @keyframes spinWheel {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* الصفحات الداخلية */
-    .page-header {
-      position: sticky;
-      top: 0;
-      z-index: 15;
-      min-height: 52px;
-      padding: calc(var(--safe-top) + 4px) 14px 4px;
-      background: #fff;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .page-heading {
-      font-size: 16.5px;
-      font-weight: 800;
-    }
-
-    .sub-pill-bar {
-      display: flex;
-      gap: 8px;
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-      background: #fff;
-    }
-
-    .sub-pill-bar::-webkit-scrollbar { display: none; }
-
-    .sub-pill {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-dark);
-      border-radius: 999px;
-      padding: 6px 13px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .sub-pill.active {
-      background: var(--text-dark);
-      color: #fff;
-      border-color: var(--text-dark);
-    }
-
-    .list-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      gap: 10px;
-    }
-
-    .row-user {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-      flex: 1;
-    }
-
-    .av-50 {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-
-    .online-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      background: var(--green);
-      border: 2px solid #fff;
-      display: inline-block;
-      margin-right: 4px;
-    }
-
-    .btn-red {
-      background: var(--tt-red);
-      color: #fff;
-      border: none;
-      border-radius: 7px;
-      padding: 8px 14px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .btn-gray {
-      background: var(--surface);
-      color: var(--text-dark);
-      border: none;
-      border-radius: 7px;
-      padding: 8px 14px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .btn-green {
-      background: var(--green);
-      color: #fff;
-      border: none;
-      border-radius: 7px;
-      padding: 8px 14px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .unread-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--tt-red);
-      display: inline-block;
-    }
-
-    /* شاشة الدردشة المباشرة الكاملة */
-    .chat-room {
-      display: flex;
-      flex-direction: column;
-      height: calc(100dvh - 56px - var(--safe-bottom));
-      background: #f7f8fa;
-    }
-
-    .chat-room-header {
-      background: #fff;
-      padding: calc(var(--safe-top) + 8px) 12px 8px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .msg-bubble-wrap {
-      display: flex;
-      flex-direction: column;
-      max-width: 80%;
-    }
-
-    .msg-bubble-wrap.me {
-      align-self: flex-start;
-      align-items: flex-start;
-    }
-
-    .msg-bubble-wrap.them {
-      align-self: flex-end;
-      align-items: flex-end;
-    }
-
-    .msg-bubble {
-      padding: 10px 13px;
-      border-radius: 14px;
-      font-size: 13.5px;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .msg-bubble-wrap.me .msg-bubble {
-      background: var(--tt-red);
-      color: #fff;
-      border-bottom-right-radius: 4px;
-    }
-
-    .msg-bubble-wrap.them .msg-bubble {
-      background: #fff;
-      color: var(--text-dark);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-    }
-
-    .msg-media-img {
-      width: 190px;
-      height: 135px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-top: 4px;
-      display: block;
-    }
-
-    .msg-shared-post {
-      background: rgba(0, 0, 0, 0.06);
-      border-radius: 10px;
-      padding: 8px;
-      margin-top: 4px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    .msg-meta {
-      font-size: 10.5px;
-      color: var(--text-muted);
-      margin-top: 3px;
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .chat-toolbar {
-      background: #fff;
-      border-top: 1px solid var(--border);
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
-    .chat-media-bar {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-    }
-
-    .chat-media-bar::-webkit-scrollbar { display: none; }
-
-    .chat-tool-chip {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-dark);
-      border-radius: 8px;
-      padding: 5px 10px;
-      font-size: 11.5px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .chat-input-row {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    /* الاستكشاف والملف الشخصي */
-    .search-box-wrap {
-      padding: 10px 14px;
-      background: #fff;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-      padding-top: 2px;
-    }
-
-    .grid-item {
-      aspect-ratio: 3 / 4;
-      position: relative;
-      background: #14151a;
-      cursor: pointer;
-      overflow: hidden;
-    }
-
-    .grid-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .grid-play-txt {
-      position: absolute;
-      bottom: 5px;
-      right: 6px;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
-      direction: ltr;
-    }
-
-    .profile-head {
-      padding: calc(10px + var(--safe-top)) 16px 14px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .profile-top-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .profile-avatar-xl {
-      width: 88px;
-      height: 88px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1px solid var(--border);
-      margin-bottom: 8px;
-    }
-
-    .stats-strip {
-      display: flex;
-      justify-content: center;
-      gap: 28px;
-      margin: 14px 0;
-    }
-
-    .st-num {
-      font-size: 16.5px;
-      font-weight: 800;
-      direction: ltr;
-    }
-
-    .st-lbl {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .profile-bio {
-      margin-top: 12px;
-      font-size: 13px;
-      line-height: 1.5;
-      white-space: pre-line;
-    }
-
-    .p-tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .p-tab {
-      background: none;
-      border: none;
-      padding: 11px 0;
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--text-muted);
-      cursor: pointer;
-      position: relative;
-    }
-
-    .p-tab.active {
-      color: var(--text-dark);
-      font-weight: 800;
-    }
-
-    .p-tab.active::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 22%;
-      right: 22%;
-      height: 2.5px;
-      background: var(--text-dark);
-    }
-
-    /* الشريط السفلي (5 أقسام تشمل الدردشة والرسائل وكل الأقسام) */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      max-width: 440px;
-      height: calc(56px + var(--safe-bottom));
-      padding-bottom: var(--safe-bottom);
-      background: #000000;
-      color: #ffffff;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      align-items: center;
-      z-index: 25;
-    }
-
-    .bottom-nav.light-nav {
-      background: #ffffff;
-      color: var(--text-dark);
-      border-top-color: var(--border);
-    }
-
-    .nav-item {
-      background: none;
-      border: none;
-      color: inherit;
-      opacity: 0.62;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      font-size: 10.5px;
-      font-weight: 700;
-      cursor: pointer;
-      position: relative;
-      height: 100%;
-    }
-
-    .nav-item.active {
-      opacity: 1;
-      font-weight: 800;
-    }
-
-    .plus-box {
-      width: 42px;
-      height: 27px;
-      border-radius: 8px;
-      background: #ffffff;
-      color: #000000;
-      display: grid;
-      place-items: center;
-      font-size: 19px;
-      font-weight: 900;
-      box-shadow: -3px 0 0 var(--tt-cyan), 3px 0 0 var(--tt-red);
-    }
-
-    .bottom-nav.light-nav .plus-box {
-      background: #161823;
-      color: #ffffff;
-    }
-
-    .inbox-num {
-      position: absolute;
-      top: 3px;
-      left: 16%;
-      background: var(--tt-red);
-      color: #fff;
-      font-size: 10px;
-      font-weight: 800;
-      padding: 1px 5px;
-      border-radius: 999px;
-    }
-
-    /* القائمة الجانبية والنوافذ */
-    .drawer-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      display: none;
-      justify-content: flex-start;
-      z-index: 50;
-    }
-
-    .drawer-backdrop.open {
-      display: flex;
-    }
-
-    .drawer-box {
-      width: 84%;
-      max-width: 340px;
-      background: #fff;
-      color: var(--text-dark);
-      height: 100%;
-      padding-top: calc(14px + var(--safe-top));
-      padding-bottom: calc(16px + var(--safe-bottom));
-      overflow-y: auto;
-    }
-
-    .drawer-sec-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      padding: 12px 18px 5px;
-    }
-
-    .drawer-item-btn {
-      width: 100%;
-      border: none;
-      background: #fff;
-      color: var(--text-dark);
-      padding: 12px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 13.5px;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: right;
-    }
-
-    .drawer-item-btn:hover {
-      background: var(--surface);
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      justify-content: center;
-      align-items: flex-end;
-      z-index: 60;
-    }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
-    .modal-sheet {
-      width: 100%;
-      max-width: 440px;
-      max-height: 84dvh;
-      background: #fff;
-      color: var(--text-dark);
-      border-radius: 16px 16px 0 0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .modal-header {
-      padding: 13px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-weight: 800;
-      font-size: 14.5px;
-    }
-
-    .modal-body {
-      padding: 14px 16px;
-      overflow-y: auto;
-    }
-
-    .cmt-row {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .cmt-av {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-
-    .share-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      padding: 6px 0;
-    }
-
-    .share-choice {
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-dark);
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .field-inp {
-      width: 100%;
-      border: 1px solid #d8dae2;
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 14px;
-      margin-top: 6px;
-    }
-
-    .primary-submit {
-      width: 100%;
-      background: var(--tt-red);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 11px;
-      font-size: 14px;
-      font-weight: 700;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    .gw-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .gw-opt {
-      border: 1px solid #d8dae2;
-      background: #fff;
-      border-radius: 9px;
-      padding: 9px;
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .gw-opt.active {
-      border-color: var(--tt-red);
-      background: #fff0f3;
-      color: var(--tt-red);
-    }
-
-    .toast {
-      position: fixed;
-      bottom: calc(68px + var(--safe-bottom));
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(22, 24, 35, 0.92);
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 999px;
-      font-size: 12.5px;
-      font-weight: 700;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-      z-index: 80;
-    }
-
-    .toast.show {
-      opacity: 1;
-    }
-  </style>
+<meta name="google-site-verification" content="VoZ2mrh8ouou83SzxXvIWkET2pq4lfmWEYaLivj0_IM">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DERT ?</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#070d1b;--panel:#101a30;--blue:#1685ff;--muted:#9baaca;--line:#263653}
+body{margin:0;background:var(--bg);color:#f5f7ff;font-family:Arial,sans-serif}
+.hidden{display:none!important}
+button{border:0;border-radius:12px;padding:12px 15px;background:var(--blue);color:white;font-size:14px;cursor:pointer}
+button:disabled{opacity:.5}
+input,textarea{width:100%;padding:13px;margin:6px 0;border:1px solid var(--line);border-radius:12px;background:#0b1428;color:white;font-size:16px;outline:none}
+textarea{min-height:75px;resize:vertical}
+.full{width:100%}.gray{background:#273653}.red{background:#bd3150}.green{background:#168b61}
+.small{font-size:12px;color:var(--muted)}
+.card,.post{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0}
+header{background:#0b1428;border-bottom:1px solid var(--line);padding:15px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.header-brand{font-size:24px;font-weight:900;letter-spacing:2px;color:#fff;text-shadow:0 0 15px #287bff}
+.header-sub{font-size:12px;color:#9eb6e9}
+.container{max-width:720px;margin:auto;padding:12px;padding-bottom:110px}
+.section{display:none}.section.active{display:block}
+.avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;background:linear-gradient(140deg,#167eff,#793eff);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.post img,.media{width:100%;max-height:420px;object-fit:contain;border-radius:12px;margin-top:10px}
+.post video{width:100%;max-height:440px;object-fit:contain;border-radius:12px;margin-top:10px;background:#000}
+.post audio{width:100%;margin-top:10px}
+.post-text{white-space:pre-wrap;line-height:1.7}
+.post-date{font-size:12px;color:var(--muted);margin-top:10px}
+.media-preview{display:flex;gap:8px;overflow-x:auto;padding:8px 2px;scroll-snap-type:x mandatory}
+.media-preview-item{position:relative;flex:0 0 82%;max-width:420px;scroll-snap-align:center}
+.media-preview-item img,.media-preview-item video{width:100%;height:260px;object-fit:contain;background:#050914;border-radius:12px}
+.media-preview-count{text-align:center;color:var(--muted);font-size:12px;margin:4px}
+.post-gallery{position:relative;touch-action:pan-y}
+.post-gallery img{width:100%;max-height:420px;object-fit:contain;border-radius:12px;background:#050914}
+.gallery-dots{display:flex;justify-content:center;gap:6px;margin-top:8px}
+.gallery-dots span{width:7px;height:7px;border-radius:50%;background:#53627d}
+.gallery-dots span.active{background:#1685ff}
+.post-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.post-actions button{flex:1;min-width:85px;padding:9px 7px;font-size:12px}
+.comment-box{border-top:1px solid var(--line);margin-top:14px;padding-top:10px}
+.comment{background:#0b1428;padding:10px;border-radius:12px;margin:8px 0}
+.comment-head{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.comment-actions{display:flex;gap:6px;margin-top:7px}
+.comment-actions button{padding:6px 10px;font-size:11px}
+.post-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.post-bottom button{background:transparent;padding:8px 12px;color:#dce8ff}
+.post-bottom .comment-open{background:#172b49;border:1px solid #29466e;flex:1;text-align:center}
+.post-menu-wrap{position:relative}
+.post-menu{position:absolute;left:0;top:43px;z-index:8;background:#172642;border:1px solid #365078;border-radius:13px;padding:7px;width:175px;box-shadow:0 10px 30px #0009}
+.post-menu button{display:block;width:100%;text-align:right;background:transparent;padding:11px;color:white;border-radius:8px}
+.post-menu button:active{background:#29466e}
+.comment-modal{position:fixed;inset:0;z-index:1000;background:#0009;display:flex;align-items:flex-end;justify-content:center}
+.comment-sheet{width:100%;max-width:720px;height:min(78dvh,720px);background:#101a30;border:1px solid #344968;border-bottom:0;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:sheetUp .2s ease-out}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.comment-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:15px;border-bottom:1px solid var(--line);flex-shrink:0}
+.comment-sheet-head strong{font-size:17px}
+.comment-sheet-head button{background:#263653;padding:8px 12px}
+.comment-sheet-list{flex:1;overflow-y:auto;padding:12px}
+.comment-sheet-form{padding:10px 12px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;background:#0b1428;flex-shrink:0}
+.comment-sheet-form input{margin:0;min-width:0;flex:1}
+.comment-sheet-form button{white-space:nowrap;padding:12px}
+.item{padding:12px;border-bottom:1px solid var(--line);overflow:hidden}
+.chat-row{display:flex;align-items:center;gap:11px}
+.chat-row-info{flex:1;min-width:0}
+.chatbox{height:390px;overflow:auto;background:#091326;padding:12px;border-radius:14px;display:flex;flex-direction:column}
+.bubble{padding:10px 13px;border-radius:15px;margin:7px 0;max-width:85%;background:#1b2a46;white-space:pre-wrap;align-self:flex-start}
+.bubble.mine{background:#174b83;align-self:flex-end}
+.message-meta{font-size:11px;color:#aab9d5;margin-top:7px;text-align:left}
+.chat-entry{display:flex;align-items:center;gap:12px;padding:13px 5px;border-bottom:1px solid #263653;cursor:pointer}
+.chat-entry-info{flex:1;min-width:0}
+.chat-last{font-size:13px;color:#9baaca;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:5px}
+.chat-time{font-size:11px;color:#9baaca}
+#avatarFile{display:none}
+
+/* ???? ?????? */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:10;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:8px 3px calc(8px + env(safe-area-inset-bottom));background:#0b1428ed;border-top:1px solid #263958;backdrop-filter:blur(15px);max-width:720px;margin:auto}
+nav button{margin:0;padding:7px 1px;background:transparent;color:#91a2c2;border-radius:12px;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+nav button.active{background:#132c50;color:#48a6ff}
+.nav-icon{font-size:19px}
+
+/* ????? ?????????? ???????? */
+#videos{margin:-12px -12px 0}
+.videos-feed{
+height:calc(100dvh - 118px);
+min-height:420px;
+overflow-y:auto;
+scroll-snap-type:y mandatory;
+overscroll-behavior-y:contain;
+scrollbar-width:none;
+background:#000;
+}
+.videos-feed::-webkit-scrollbar{display:none}
+.video-card{
+height:100%;
+min-height:420px;
+width:100%;
+position:relative;
+overflow:hidden;
+scroll-snap-align:start;
+scroll-snap-stop:always;
+background:#000;
+}
+.video-card video{
+width:100%;
+height:100%;
+object-fit:contain;
+background:#000;
+display:block;
+}
+.video-overlay{
+position:absolute;
+inset:0;
+pointer-events:none;
+display:flex;
+flex-direction:column;
+justify-content:flex-end;
+padding:18px 15px 20px;
+background:linear-gradient(transparent 45%,#0002 60%,#000c 100%);
+}
+.video-details{
+max-width:85%;
+padding-bottom:8px;
+text-shadow:0 1px 5px #000;
+}
+.video-author{font-weight:bold;font-size:16px;margin-bottom:9px}
+.video-description{font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.video-date{font-size:11px;color:#ddd;margin-top:9px}
+.video-side-actions{
+position:absolute;
+left:12px;
+bottom:90px;
+display:flex;
+flex-direction:column;
+gap:15px;
+align-items:center;
+pointer-events:auto;
+}
+.video-side-actions button{
+width:47px;height:47px;padding:0;
+border-radius:50%;
+background:#101a30bd;
+border:1px solid #ffffff55;
+font-size:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+.video-side-actions .video-follow{
+width:auto;height:auto;
+min-width:75px;
+padding:9px 12px;
+border-radius:20px;
+font-size:12px;
+}
+.video-sound{
+position:absolute;
+top:15px;
+left:15px;
+width:43px;height:43px;
+border-radius:50%;
+background:#101a30b8;
+border:1px solid #ffffff55;
+font-size:20px;
+padding:0;
+}
+.video-hint{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+color:#fff;
+background:#0008;
+padding:12px 18px;
+border-radius:20px;
+font-size:14px;
+pointer-events:none;
+}
+.videos-empty{
+min-height:300px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+text-align:center;
+color:#c6d5ef;
+padding:25px;
+background:#101a30;
+}
+.videos-empty strong{font-size:22px;margin-bottom:12px}
+.videos-empty p{font-size:14px;line-height:1.8;color:#9baaca}
+.video-loading{text-align:center;padding:30px;color:#9baaca}
+
+/* ???? ?????? */
+.auth-screen{min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 50% 35%,#182a64 0%,#11152f 42%,#050a16 100%);color:white;display:flex;align-items:center;justify-content:center;padding:22px}
+.auth-inner{width:100%;max-width:390px;text-align:center}
+.brand-mark{width:180px;height:180px;margin:0 auto 15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:100px;border:2px solid #428dff;box-shadow:0 0 35px #286bff99;background:radial-gradient(circle at 35% 30%,#244d9d,#101c49 60%,#080f25)}
+.brand-name{font-size:53px;font-weight:900;letter-spacing:7px;text-shadow:0 0 25px #668aff}
+.auth-tag{color:#9db9ef;font-size:13px;letter-spacing:3px;margin:8px 0 35px}
+.auth-actions{display:grid;gap:14px;margin-top:25px}
+.auth-actions button{padding:17px;border-radius:30px;font-size:18px;font-weight:bold}
+.auth-primary{background:linear-gradient(100deg,#126fff,#694bff)}
+.auth-purple{background:linear-gradient(100deg,#672cff,#a02bfa)}
+.auth-outline{background:transparent;border:1px solid #678dff;color:white}
+.auth-panel{background:#0d1830e8;border:1px solid #354b78;border-radius:20px;padding:17px;text-align:right;margin-top:20px}
+.auth-switch{display:flex;gap:6px;margin-bottom:12px}
+.auth-switch button{flex:1;background:#202e4c;color:#bdc8e8;font-size:13px}
+.auth-switch button.active{background:#536bff;color:white}
+.auth-message{font-size:13px;color:#cbd5ff;min-height:20px}
+.profile-cover{height:95px;background:linear-gradient(120deg,#102d61,#17204b 55%,#3b1d72)}
+.profile-heading{text-align:center;padding:0 15px 18px;margin-top:-55px;position:relative}
+.profile-photo-wrap{position:relative;width:112px;height:112px;margin:0 auto 12px;display:block}
+.profile-photo-wrap .avatar{width:112px;height:112px;border:4px solid #101a30;outline:2px solid #258aff;font-size:42px}
+.verified-badge{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;min-width:19px;margin-inline-start:5px;border-radius:50%;background:#1685ff;color:#fff;font-size:13px;font-weight:bold}
+.profile-stats{display:flex;justify-content:center;text-align:center;padding:15px 5px;border-block:1px solid var(--line);margin-bottom:15px}
+.profile-stats>div{flex:1;border-left:1px solid #263653}
+.profile-stats .stat-button{background:transparent;border:0;color:inherit;cursor:pointer;padding:5px;width:100%;font:inherit}
+.profile-stats .stat-button:active{opacity:.7}
+.follow-list-modal{position:fixed;inset:0;z-index:1200;background:#000b;display:none;align-items:center;justify-content:center;padding:18px}
+.follow-list-panel{background:#101d33;border:1px solid #314563;border-radius:18px;width:min(100%,460px);max-height:80vh;overflow:auto;padding:16px;color:#fff}
+.follow-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:-16px;background:#101d33;padding:4px 0 12px;z-index:1}
+.follow-list-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #263653}
+.follow-list-row .avatar{flex-shrink:0}
+.follow-list-row .follow-person-info{flex:1;min-width:0}
+.follow-list-row .follow-person-info strong{display:block;overflow-wrap:anywhere}
+.follow-list-row{cursor:pointer}.follow-list-row:active{background:#1b2d49}
+.public-profile-modal{position:fixed;inset:0;z-index:1300;background:#000c;display:none;align-items:center;justify-content:center;padding:16px}
+.public-profile-panel{width:min(100%,460px);max-height:86vh;overflow:auto;background:#101d33;border:1px solid #314563;border-radius:18px;padding:18px;color:#fff}
+.public-profile-top{text-align:center;padding:18px 8px}
+.public-profile-top .avatar{width:90px;height:90px;font-size:34px;margin-bottom:10px}
+.public-profile-actions{display:flex;gap:8px;margin-top:14px}.public-profile-actions button{flex:1}
+.profile-stats>div:last-child{border:0}
+.profile-stats strong{display:block;font-size:21px;color:#71b6ff}
+.profile-stats span{font-size:12px;color:#aebbd3}
+.profile-settings{margin:12px 0;padding:14px;background:#0b1428;border:1px solid #263653;border-radius:16px}
+.request-card{background:#0b1428;border:1px solid #31517e;border-radius:14px;padding:13px;margin:12px 0}
+.status-pending{color:#ffc65c}.status-approved{color:#45d48b}.status-rejected{color:#ff7189}
+.admin-actions{display:flex;gap:8px;margin-top:12px}
+.admin-actions button{flex:1}
+.support-message{padding:11px;border-radius:12px;background:#1b2a46;margin:8px 0;white-space:pre-wrap}
+.support-message.mine{background:#174b83}
+@media(max-width:380px){
+nav button{font-size:8px}
+.nav-icon{font-size:16px}
+.brand-mark{width:150px;height:150px;font-size:82px}
+.brand-name{font-size:44px}
+.video-details{max-width:82%}
+}
+</style>
 </head>
 <body>
-  <div class="app-shell">
-    <div class="main-viewport" id="viewport"></div>
 
-    <!-- الشريط السفلي الرئيسي -->
-    <nav class="bottom-nav" id="bottomNav">
-      <button class="nav-item active" data-page="home" type="button">
-        <span>الرئيسية</span>
-      </button>
-      <button class="nav-item" data-page="friends" type="button">
-        <span>الأصدقاء</span>
-      </button>
-      <button class="nav-item" id="openUploadBtn" type="button">
-        <span class="plus-box">+</span>
-      </button>
-      <button class="nav-item" data-page="messages" type="button">
-        <span class="inbox-num" id="unreadBadge">3</span>
-        <span>الرسائل</span>
-      </button>
-      <button class="nav-item" data-page="profile" type="button">
-        <span>الملف الشخصي</span>
-      </button>
-    </nav>
-  </div>
+<section id="auth" class="auth-screen">
+<div class="auth-inner">
+<div id="welcomeScreen">
+<div class="brand-mark">?</div>
+<div class="brand-name">DERT</div>
+<div class="auth-tag">WORLD SOCIAL NETWORK</div>
+<div class="auth-actions">
+<button class="auth-primary" id="openSignup">????? ????</button>
+<button class="auth-purple" id="openLogin">????? ??????</button>
+</div>
+</div>
+<div id="authForm" class="hidden">
+<div class="brand-name" style="font-size:36px">DERT ?</div>
+<p class="small">?????? ?? ?? ???? DERT</p>
+<div class="auth-panel">
+<button id="backWelcome" class="gray full">? ????</button>
+<div class="auth-switch">
+<button id="emailMode" class="active">?????? ??????????</button>
+<button id="phoneMode">??? ??????</button>
+</div>
+<div id="emailArea">
+<input id="email" type="email" placeholder="?????? ??????????" autocomplete="email">
+<input id="password" type="password" placeholder="???? ??????" autocomplete="new-password">
+<button class="full auth-primary" id="loginBtn">????? ??????</button>
+<button class="full auth-outline" id="signupBtn">????? ???? ????</button>
+<button class="full gray hidden" id="resendEmailBtn" style="margin-top:8px">????? ????? ????? ????? ??????</button>
+</div>
+<div id="phoneArea" class="hidden">
+<input id="phone" type="tel" placeholder="+9647XXXXXXXXX" dir="ltr">
+<button class="full auth-primary" id="sendOtpBtn">????? ??? ??????</button>
+<div id="otpArea" class="hidden">
+<input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="??? ?????? SMS" dir="ltr">
+<button class="full auth-primary" id="verifyOtpBtn">????? ????? ???????</button>
+</div>
+</div>
+<p id="message" class="auth-message"></p>
+</div>
+</div>
+</div>
+</section>
 
-  <!-- قائمة التنقل السريع والإعدادات الكاملة (صندوق الوارد، المكالمات، الاستكشاف، الإشعارات، الإعدادات، الرصيد) -->
-  <div class="drawer-backdrop" id="drawerBackdrop">
-    <aside class="drawer-box">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:0 18px 8px;">
-        <strong>DERT — الأقسام والإعدادات</strong>
-        <button class="btn-gray" style="padding:5px 10px;" id="closeDrawerBtn" type="button">إغلاق</button>
-      </div>
+<div id="home" class="hidden">
+<header><span class="header-brand">DERT</span><button type="button" onclick="openTab('feed')" style="padding:8px 13px">＋ نشر فيديو</button></header>
+<div class="container">
 
-      <div class="drawer-sec-title">الأقسام الأساسية</div>
-      <button class="drawer-item-btn" onclick="goPage('home');closeDrawer();" type="button"><span>الرئيسية (فيديوهات)</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="goPage('friends');closeDrawer();" type="button"><span>الأصدقاء</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="goPage('messages');closeDrawer();" type="button"><span>الرسائل (دردشة خاصة)</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="goPage('inbox');closeDrawer();" type="button"><span>صندوق الوارد</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="goPage('calls');closeDrawer();" type="button"><span>المكالمات (صوتية ومرئية)</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="goPage('explore');closeDrawer();" type="button"><span>الاستكشاف (بحث)</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="goPage('notifications');closeDrawer();" type="button"><span>الإشعارات</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="goPage('profile');closeDrawer();" type="button"><span>الملف الشخصي</span><span>‹</span></button>
+<!-- ??? ?????????? ?????? -->
+<section id="videos" class="section active">
+<div id="videosList" class="videos-feed">
+<div class="video-loading">???? ????? ??????????...</div>
+</div>
+</section>
 
-      <div class="drawer-sec-title">الأصول والاختصارات</div>
-      <button class="drawer-item-btn" onclick="closeDrawer();openBalanceSheet();" type="button">
-        <span>الرصيد</span>
-        <span id="lblCoins">500 عملة ‹</span>
-      </button>
-      <button class="drawer-item-btn" onclick="saveOfflineVideo()" type="button"><span>فيديوهات دون اتصال بالإنترنت</span><span id="lblOffline">3 ‹</span></button>
-      <button class="drawer-item-btn" onclick="toast('رمز QR الخاص بك: @w20xw')" type="button"><span>رمز QR لديك</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="toast('DERT Minis')" type="button"><span>DERT Minis</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="toast('المجموعة التجارية')" type="button"><span>المجموعة التجارية</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="toast('DERT Studio')" type="button"><span>DERT Studio</span><span>‹</span></button>
-      <button class="drawer-item-btn" onclick="addPromo()" type="button"><span>الترويج</span><span id="lblPromo">1 نشط ‹</span></button>
+<section id="chats" class="section">
+<div class="card">
+<h2>الرسائل الخاصة</h2>
+<p class="small">محادثاتك مع أصدقائك في DERT</p>
+<input id="chatSearch" placeholder="? ????? ?? ?????????">
+<div id="chatList">???? ????? ?????????...</div>
+<button class="full" id="newChatBtn">+ ?????? ?????</button>
+</div>
+<div class="card hidden" id="chatPanel">
+<div class="chat-row">
+<div id="chatAvatar" class="avatar">D</div>
+<div><strong id="chatTitle">????????</strong><div class="small" id="chatUsername"></div></div>
+</div>
+<div class="chatbox" id="chatMessages"></div>
+<textarea id="chatText" placeholder="???? ??????..."></textarea>
+<input id="chatFile" type="file" accept="image/*,video/*">
+<button id="sendMessageBtn" class="full">????? ???????</button>
+<button id="closeChatBtn" class="full gray">????? ????????</button>
+<p id="chatStatus" class="small"></p>
+</div>
+</section>
 
-      <div class="drawer-sec-title">الأمان والخصوصية</div>
-      <button class="drawer-item-btn" onclick="closeDrawer();goPage('settings');" type="button">
-        <span>الإعدادات (الأمان والخصوصية)</span>
-        <span id="lblPrivacy">عام ‹</span>
-      </button>
-    </aside>
-  </div>
+<section id="feed" class="section">
+<div class="card">
+<h2>＋ نشر فيديو جديد</h2>
+<p class="small">شارك مقطعك مع مجتمع DERT. الفيديوهات العمودية تظهر في صفحة الفيديوهات.</p>
+<textarea id="postContent" placeholder="اكتب وصف الفيديو..." maxlength="2200"></textarea>
+<label class="small" for="postImage">اختر فيديو من جهازك</label>
+<input id="postImage" type="file" accept="video/*">
+<div id="postPreview" class="media-preview"></div>
+<p id="postPreviewCount" class="media-preview-count"></p>
+<button class="full" id="publishBtn">نشر الفيديو</button>
+<p id="postMessage" class="small"></p>
+</div>
+</section>
 
-  <!-- نافذة منبثقة للتعليقات / المشاركة / الرصيد / النشر -->
-  <div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <span id="modalTitle"></span>
-        <button class="btn-gray" style="padding:4px 10px;" id="closeModalBtn" type="button">إغلاق</button>
-      </div>
-      <div class="modal-body" id="modalBody"></div>
-    </div>
-  </div>
+<section id="people" class="section">
+<div class="card">
+<h3>? ????? ?? ??????????</h3>
+<input id="searchUser" placeholder="???? ??? ????????">
+<button class="full" id="searchBtn">???</button>
+<div id="peopleList"></div>
+</div>
+</section>
 
-  <div class="toast" id="toast"></div>
+<section id="alerts" class="section">
+<div class="card">
+<h3>? ?????????</h3>
+<button class="full gray" id="refreshAlerts">????? ?????????</button>
+<div id="alertsList">???? ????? ?????????.</div>
+</div>
+</section>
 
-  <script>
-    const STORAGE_KEY = "dert_tiktok_chat_platform_v4";
 
-    const defaultState = {
-      page: "home",
-      feedFilter: "foryou",
-      profileFilter: "videos",
-      activeChatId: "u1",
-      user: {
-        name: "وسام | wessam",
-        handle: "@w20xw",
-        bio: "الرمادي\nأصنع لنفسك تاريخ و أجعل غيرك يتعلمة 🦅.\nDERT Creator",
-        avatar: "https://picsum.photos/200/200?random=11",
-        following: 85,
-        followers: 14900,
-        likes: 82900,
-        coins: 500,
-        grossCoins: 1000,
-        gateway: "زين كاش",
-        offlineCount: 3,
-        promoCount: 1,
-        privateAcc: false,
-        twoFactor: true,
-        onlineStatusVisible: true
-      },
-      videos: [
-        {
-          id: "v1",
-          author: "وسام | wessam",
-          handle: "@w20xw",
-          avatar: "https://picsum.photos/200/200?random=11",
-          videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
-          poster: "https://picsum.photos/480/850?random=51",
-          caption: "محتوى جديد على DERT #تيك_توك #DERT",
-          sound: "الصوت الأصلي - w20xw",
-          plays: "12.4K",
-          likes: 14200,
-          saves: 1280,
-          shares: 645,
-          liked: false,
-          saved: false,
-          following: true,
-          comments: [
-            { id: "c1", user: "علي رشيد", avatar: "https://picsum.photos/100/100?random=12", text: "رهيب جداً", time: "منذ 2 س", likes: 48, liked: false },
-            { id: "c2", user: "عبدالله آل فهد", avatar: "https://picsum.photos/100/100?random=13", text: "استمر يا بطل", time: "منذ 45 د", likes: 19, liked: true }
-          ]
-        },
-        {
-          id: "v2",
-          author: "علي رشيد",
-          handle: "@ali_rasheed",
-          avatar: "https://picsum.photos/200/200?random=12",
-          videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4",
-          poster: "https://picsum.photos/480/850?random=52",
-          caption: "لقطات سريعة ومقاطع يومية #محتوى",
-          sound: "موسيقى ترند - DERT",
-          plays: "4226",
-          likes: 3256,
-          saves: 412,
-          shares: 189,
-          liked: false,
-          saved: true,
-          following: false,
-          comments: [
-            { id: "c3", user: "وسام | wessam", avatar: "https://picsum.photos/100/100?random=11", text: "تصوير ومونتاج روعة", time: "منذ 1 س", likes: 12, liked: false }
-          ]
-        },
-        {
-          id: "v3",
-          author: "عبدالله آل فهد",
-          handle: "@abdullah_f",
-          avatar: "https://picsum.photos/200/200?random=13",
-          videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4",
-          poster: "https://picsum.photos/480/850?random=53",
-          caption: "بث مباشر وتفاعل مستمر على DERT",
-          sound: "بث مباشر - DERT Live",
-          plays: "19.8K",
-          likes: 28400,
-          saves: 3150,
-          shares: 1420,
-          liked: true,
-          saved: false,
-          following: true,
-          comments: [
-            { id: "c4", user: "متابع DERT", avatar: "https://picsum.photos/100/100?random=14", text: "متابعينك من البداية", time: "الآن", likes: 7, liked: false }
-          ]
-        }
-      ],
-      chats: [
-        {
-          id: "u1",
-          name: "علي رشيد",
-          handle: "@ali_rasheed",
-          avatar: "https://picsum.photos/100/100?random=12",
-          online: true,
-          lastSeen: "متصل الآن",
-          unread: 2,
-          messages: [
-            { id: "m1", from: "them", type: "text", text: "هلا وسام، شفت المقطع الجديد؟", time: "01:50 م", read: true },
-            { id: "m2", from: "them", type: "post", postId: "v1", text: "مقطع جديد على DERT", time: "01:51 م", read: true }
-          ]
-        },
-        {
-          id: "u2",
-          name: "عبدالله آل فهد",
-          handle: "@abdullah_f",
-          avatar: "https://picsum.photos/100/100?random=13",
-          online: false,
-          lastSeen: "آخر ظهور منذ 18 د",
-          unread: 1,
-          messages: [
-            { id: "m3", from: "them", type: "text", text: "جاهزين للبث المباشر اليوم؟", time: "12:15 م", read: true }
-          ]
-        }
-      ],
-      calls: [
-        { id: "cl1", name: "علي رشيد", avatar: "https://picsum.photos/100/100?random=12", kind: "مرئية", status: "واردة • 04:12", time: "اليوم" },
-        { id: "cl2", name: "عبدالله آل فهد", avatar: "https://picsum.photos/100/100?random=13", kind: "صوتية", status: "صادرة • 01:45", time: "أمس" }
-      ],
-      notifications: [
-        { id: "n1", text: "أعجب @ali_rasheed بمقطعك الجديد", time: "منذ 5 د", read: false },
-        { id: "n2", text: "علّق @abdullah_f: استمر يا بطل", time: "منذ 22 د", read: false },
-        { id: "n3", text: "بدأ @ali_rasheed بمتابعتك", time: "منذ 1 س", read: true }
-      ]
-    };
+<section id="profile" class="section">
+<div class="card">
+<div class="profile-cover"></div>
+<div class="profile-heading">
+<label for="avatarFile" class="profile-photo-wrap"><div id="avatarDisplay" class="avatar">D</div></label>
+<input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp">
+<h2 id="displayName">?????? DERT</h2>
+<div id="displayUsername" class="small">@user</div>
+<p id="displayBio" class="small">?????? ?? ?? DERT ?</p>
+<button id="editProfileBtn" class="gray">?? ????? ????? ??????</button>
+</div>
+<div class="profile-stats">
+<div><strong id="postsCount">0</strong><span>المنشورات</span></div>
+<div><button type="button" class="stat-button" id="openFollowers"><strong id="followersCount">0</strong><span>المتابعون</span></button></div>
+<div><button type="button" class="stat-button" id="openFollowing"><strong id="followingCount">0</strong><span>يتابعهم</span></button></div>
+</div>
+<div id="profileSettings" class="profile-settings hidden">
+<h3>????? ????? ??????</h3>
+<input id="fullName" placeholder="????? ??????">
+<input id="username" placeholder="??? ????????" dir="ltr">
+<textarea id="bio" placeholder="???? ???"></textarea>
+<button class="full" id="saveProfileBtn">??? ?????????</button>
+<button class="full gray" id="cancelProfileBtn">?????</button>
+</div>
+<div class="profile-settings">
+<h3>? ????? ??????</h3>
+<button class="full" id="requestVerificationBtn">? ??? ????? ??????</button>
+<p id="verificationMessage" class="small"></p>
+</div>
+<div class="profile-settings">
+<h3>? ?????? ?????</h3>
+<p class="small">???? ???????? ?? ?????? ??? ???? DERT.</p>
+<textarea id="supportText" placeholder="???? ?????? ??? ?????..."></textarea>
+<button class="full" id="sendSupportBtn">????? ??? ?????</button>
+<p id="supportStatus" class="small"></p>
+<h4>??????? ?? ?????</h4>
+<button class="full gray" id="loadMySupport">??? ????? ?????</button>
+<div id="mySupportMessages"></div>
+</div>
+<p id="profileMessage" class="small"></p>
+<button class="full gray" type="button" onclick="openTab('alerts')">عرض الإشعارات</button>
+<button class="full red" id="logoutBtn">? ????? ??????</button>
+</div>
+</section>
 
-    let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || JSON.parse(JSON.stringify(defaultState));
-    let tapTimer = null;
+<nav aria-label="التنقل الرئيسي">
+<button class="active" onclick="openTab('videos',this)"><span class="nav-icon">▶</span>الفيديوهات</button>
+<button onclick="openTab('people',this)"><span class="nav-icon">⌕</span>اكتشف</button>
+<button onclick="openTab('feed',this)"><span class="nav-icon">＋</span>نشر</button>
+<button onclick="openTab('chats',this)"><span class="nav-icon">✉</span>الرسائل</button>
+<button onclick="openTab('profile',this)"><span class="nav-icon">●</span>حسابي</button>
+</nav>
+</div>
+</div>
 
-    function save() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      syncBadges();
+<div id="followListModal" class="follow-list-modal" role="dialog" aria-modal="true" aria-labelledby="followListTitle">
+ <div class="follow-list-panel">
+  <div class="follow-list-head"><h3 id="followListTitle">قائمة المتابعين</h3><button type="button" class="gray" id="closeFollowList">إغلاق</button></div>
+  <div id="followListContent" class="small">جارٍ التحميل...</div>
+ </div>
+</div>
+<div id="publicProfileModal" class="public-profile-modal" role="dialog" aria-modal="true">
+ <div class="public-profile-panel">
+  <div style="display:flex;justify-content:flex-end"><button type="button" class="gray" id="closePublicProfile">إغلاق</button></div>
+  <div class="public-profile-top"><div id="publicProfileAvatar"></div><h2 id="publicProfileName">الملف الشخصي</h2><div id="publicProfileUsername" class="small"></div><p id="publicProfileBio" class="small"></p></div>
+  <div class="profile-stats"><div><strong id="publicPostsCount">0</strong><span>المنشورات</span></div><div><strong id="publicFollowersCount">0</strong><span>المتابعون</span></div><div><strong id="publicFollowingCount">0</strong><span>يتابعهم</span></div></div>
+  <div class="public-profile-actions"><button id="publicFollowBtn">متابعة</button><button id="publicMessageBtn" class="gray">مراسلة</button></div>
+  <p id="publicProfileStatus" class="small"></p>
+ </div>
+</div>
+<div id="commentModal" class="comment-modal hidden" onclick="if(event.target===this)closePostComments()">
+<div class="comment-sheet">
+ <div class="comment-sheet-head">
+  <strong id="commentModalTitle">? ?????????</strong>
+  <button onclick="closePostComments()">?</button>
+ </div>
+ <div id="commentModalList" class="comment-sheet-list">???? ????? ?????????...</div>
+ <div class="comment-sheet-form">
+  <input id="commentInput" placeholder="???? ??????..." maxlength="1000">
+  <button id="sendCommentBtn">?????</button>
+ </div>
+</div>
+</div>
+
+<script>
+const SUPABASE_URL="https://forwefmjghgcybiccdxz.supabase.co";
+const SUPABASE_KEY="sb_publishable_xsXMr3yr2yJXOgRn9ZjMtQ_sfoS0OIR";
+const DERT_SITE_URL="https://wessam2315.github.io/DART/";
+
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+auth:{
+ persistSession:true,
+ autoRefreshToken:true,
+ detectSessionInUrl:true,
+ flowType:"pkce"
+}
+});
+
+const ADMIN_ID="221ecf80-7f89-4172-b61a-304369cbe870";
+let currentUser=null,currentProfile=null,activeConversation=null,activeReceiver=null;
+let activeChannel=null,alertsChannel=null,pendingPhone=null,chatCache=[];
+let activeCommentPost=null;
+let videoObserver=null;
+let videoPostsCache=[];
+
+const el=id=>document.getElementById(id);
+function msg(id,text){el(id).textContent=text}
+function isAdmin(){return currentUser?.id===ADMIN_ID}
+
+function addVerifiedName(element,name,verified){
+element.replaceChildren();
+element.appendChild(document.createTextNode(name||"?????? DERT"));
+if(verified===true){
+ const b=document.createElement("span");b.className="verified-badge";b.textContent="?";element.appendChild(b);
+}
+}
+function makeAvatar(url,name){
+if(url){const i=document.createElement("img");i.className="avatar";i.src=url;i.alt="???? ??????";return i}
+const d=document.createElement("div");d.className="avatar";d.textContent=(name||"D").charAt(0).toUpperCase();return d;
+}
+function showAvatar(url,name){el("avatarDisplay").replaceChildren(makeAvatar(url,name))}
+
+/* ????? ?? ?????????? ??? ?????? ??? ?????????? */
+function stopVideoPlayback(){
+if(videoObserver){videoObserver.disconnect();videoObserver=null}
+document.querySelectorAll("#videosList video").forEach(v=>{
+ v.pause();
+});
+}
+function openTab(name,button){
+if(name==="admin"&&!isAdmin()){alert("??? ???? ??");return}
+
+if(name!=="videos")stopVideoPlayback();
+
+document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+el(name).classList.add("active");
+
+document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+if(button)button.classList.add("active");
+else{
+ const b=[...document.querySelectorAll("nav button")].find(x=>x.getAttribute("onclick")?.includes("'"+name+"'"));
+ if(b)b.classList.add("active");
+}
+
+if(name==="videos")loadVideos();
+if(name==="chats")loadChats();
+if(name==="alerts")loadAlerts();
+if(name==="profile"){loadStats();loadProfile().catch(e=>msg("profileMessage",e.message))}
+
+if(name==="admin"){loadAdminRequests();loadReports();loadAdminSupport()}
+}
+function showLogin(){
+closePostComments();
+stopVideoPlayback();
+el("auth").classList.remove("hidden");el("home").classList.add("hidden");
+el("authForm").classList.add("hidden");el("welcomeScreen").classList.remove("hidden");
+currentUser=null;currentProfile=null;activeConversation=null;activeReceiver=null;
+stopRealtime();stopAlertsRealtime();
+}
+async function uploadFile(file,folder){
+if(!file)return null;
+const ok=file.type.startsWith("image/")||file.type.startsWith("video/")||file.type.startsWith("audio/");
+if(!ok)throw new Error("??? ????? ??? ?????");
+if(file.size>50*1024*1024)throw new Error("??? ????? ???? ?? 50 ????????");
+const ext=(file.name.split(".").pop()||"file").toLowerCase().replace(/[^a-z0-9]/g,"");
+const path=currentUser.id+"/"+folder+"/"+crypto.randomUUID()+"."+ext;
+const {error}=await client.storage.from("posts").upload(path,file,{contentType:file.type});
+if(error)throw error;
+return client.storage.from("posts").getPublicUrl(path).data.publicUrl;
+}
+
+/* ????? ?????? ?????? ?????? */
+function showAuthForm(mode){
+el("welcomeScreen").classList.add("hidden");
+el("authForm").classList.remove("hidden");
+el("loginBtn").classList.toggle("hidden",mode==="signup");
+el("signupBtn").classList.toggle("hidden",mode!=="signup");
+el("resendEmailBtn").classList.add("hidden");
+msg("message","");
+}
+el("openSignup").onclick=()=>showAuthForm("signup");
+el("openLogin").onclick=()=>showAuthForm("login");
+el("backWelcome").onclick=()=>{
+el("authForm").classList.add("hidden");
+el("welcomeScreen").classList.remove("hidden");
+msg("message","");
+el("resendEmailBtn").classList.add("hidden");
+};
+
+el("emailMode").onclick=()=>{
+el("emailMode").classList.add("active");
+el("phoneMode").classList.remove("active");
+el("emailArea").classList.remove("hidden");
+el("phoneArea").classList.add("hidden");
+};
+el("phoneMode").onclick=()=>{
+el("phoneMode").classList.add("active");
+el("emailMode").classList.remove("active");
+el("emailArea").classList.add("hidden");
+el("phoneArea").classList.remove("hidden");
+};
+
+/* ????? ???? ??????? ?? ???? ????? DERT */
+el("signupBtn").onclick=async()=>{
+const email=el("email").value.trim().toLowerCase();
+const password=el("password").value;
+if(!email||!email.includes("@")||password.length<6){
+ msg("message","???? ?????? ?????????? ?????? ????? ???? ?? 6 ???? ??? ?????");
+ return;
+}
+
+const b=el("signupBtn");
+b.disabled=true;
+el("resendEmailBtn").classList.add("hidden");
+msg("message","???? ????? ?????? ?????? ????? ???????...");
+
+try{
+ const {data,error}=await client.auth.signUp({
+  email,
+  password,
+  options:{emailRedirectTo:DERT_SITE_URL}
+ });
+ if(error)throw error;
+
+ if(data.session&&data.user){
+  msg("message","?? ????? ?????? ?????.");
+  await showHome(data.user);
+ }else{
+  el("resendEmailBtn").classList.remove("hidden");
+  msg("message","?? ????? ??????. ???? ????? ?????????? ????? ???? ???????? ?????? ???? ??? DERT.");
+ }
+}catch(e){
+ el("resendEmailBtn").classList.remove("hidden");
+ msg("message","???? ????? ??????: "+(e.message||"??? ??? ??? ?????"));
+}finally{b.disabled=false}
+};
+
+/* ????? ????? ????? ????? ?????? */
+el("resendEmailBtn").onclick=async()=>{
+const email=el("email").value.trim().toLowerCase();
+if(!email||!email.includes("@")){
+ msg("message","???? ????? ?????????? ?????? ?????");return;
+}
+const b=el("resendEmailBtn");b.disabled=true;
+msg("message","???? ????? ????? ????? ???????...");
+try{
+ const {error}=await client.auth.resend({
+  type:"signup",email,options:{emailRedirectTo:DERT_SITE_URL}
+ });
+ if(error)throw error;
+ msg("message","?? ??? ????? ????? ????? ???????. ???? ????? ?????? ??????? ??? ??????? ???.");
+}catch(e){
+ msg("message","???? ????? ???????: "+(e.message||"??? ???"));
+}finally{b.disabled=false}
+};
+
+/* ????? ?????? ??????? */
+el("loginBtn").onclick=async()=>{
+const email=el("email").value.trim().toLowerCase();
+const password=el("password").value;
+if(!email||!password){msg("message","???? ?????? ????? ??????");return}
+const b=el("loginBtn");b.disabled=true;
+msg("message","???? ????? ??????...");
+try{
+ const {data,error}=await client.auth.signInWithPassword({email,password});
+ if(error)throw error;
+ await showHome(data.user);
+}catch(e){
+ msg("message","???? ????? ??????: "+(e.message||"??? ???"));
+}finally{b.disabled=false}
+};
+
+/* ????? ?????? ???? ?????? */
+el("sendOtpBtn").onclick=async()=>{
+const phone=el("phone").value.trim();
+if(!/^\+[1-9]\d{7,14}$/.test(phone)){
+ msg("message","???? ????? ??????? ??????? ??? +9647XXXXXXXXX");return;
+}
+pendingPhone=phone;msg("message","???? ????? ?????...");
+try{
+ const {error}=await client.auth.signInWithOtp({phone});
+ if(error)throw error;
+ el("otpArea").classList.remove("hidden");
+ msg("message","?? ??? ?????. ???? ?????.");
+}catch(e){msg("message","???? ????? ?????: "+e.message)}
+};
+el("verifyOtpBtn").onclick=async()=>{
+const token=el("otp").value.trim();
+if(!pendingPhone||!token){msg("message","???? ??? ??????");return}
+try{
+ const {data,error}=await client.auth.verifyOtp({phone:pendingPhone,token,type:"sms"});
+ if(error)throw error;
+ if(data.user)await showHome(data.user);
+}catch(e){msg("message","???? ????? ?????: "+e.message)}
+};
+el("logoutBtn").onclick=async()=>{
+const {error}=await client.auth.signOut();
+if(error){msg("profileMessage",error.message);return}
+showLogin();
+};
+
+/* ????? ?????? */
+async function loadProfile(){
+if(!currentUser)return;
+const {data,error}=await client.from("profiles").select("*").eq("id",currentUser.id).maybeSingle();
+if(error)throw error;
+if(!data)throw new Error("?? ??? ?????? ??? ????? ??????");
+currentProfile=data;
+el("fullName").value=data.full_name||"";
+el("username").value=data.username||"";
+el("bio").value=data.bio||"";
+addVerifiedName(el("displayName"),data.full_name||"?????? DERT",data.is_verified===true);
+el("displayUsername").textContent="@"+(data.username||"user");
+el("displayBio").textContent=data.bio||"?????? ?? ?? DERT ?";
+showAvatar(data.avatar_url,data.full_name||data.username);
+
+await loadMyVerificationStatus();
+}
+async function loadMyVerificationStatus(){
+const btn=el("requestVerificationBtn");
+if(currentProfile?.is_verified===true){
+ btn.disabled=true;btn.textContent="? ????? ?????";
+ msg("verificationMessage","????? ????? ??????.");return;
+}
+const {data,error}=await client.from("verification_requests").select("status").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(1);
+if(error){msg("verificationMessage","???? ??? ?????: "+error.message);return}
+const latest=data?.[0];
+if(latest?.status==="pending"){
+ btn.disabled=true;btn.textContent="? ???? ??? ????????";
+ msg("verificationMessage","???? ??? ????????.");
+}else{
+ btn.disabled=false;
+ btn.textContent=latest?.status==="rejected"?"? ????? ??? ???????":"? ??? ????? ??????";
+ msg("verificationMessage",latest?.status==="rejected"?"?? ??? ????? ??????? ????? ????? ???????.":"");
+}
+}
+el("requestVerificationBtn").onclick=async()=>{
+const b=el("requestVerificationBtn");b.disabled=true;
+msg("verificationMessage","???? ????? ?????...");
+try{
+ const {error}=await client.from("verification_requests").insert({user_id:currentUser.id,status:"pending"});
+ if(error)throw error;
+ b.textContent="? ???? ??? ????????";
+ msg("verificationMessage","?? ????? ????? ?????.");
+}catch(e){
+ msg("verificationMessage","???? ????? ?????: "+e.message);b.disabled=false;
+}
+};
+el("editProfileBtn").onclick=()=>{
+el("profileSettings").classList.remove("hidden");
+el("editProfileBtn").classList.add("hidden");
+};
+el("cancelProfileBtn").onclick=()=>{
+el("profileSettings").classList.add("hidden");
+el("editProfileBtn").classList.remove("hidden");
+};
+el("saveProfileBtn").onclick=async()=>{
+const username=el("username").value.trim().toLowerCase();
+if(!/^[a-z0-9_]{3,25}$/.test(username)){
+ msg("profileMessage","??? ???????? ?? 3 ??? 25 ????? ????????? ?? ????? ?? _");return;
+}
+const b=el("saveProfileBtn");b.disabled=true;
+try{
+ let avatar=currentProfile?.avatar_url||null;
+ const f=el("avatarFile").files[0];
+ if(f)avatar=await uploadFile(f,"profile");
+ const {data,error}=await client.from("profiles").update({
+  full_name:el("fullName").value.trim(),username,bio:el("bio").value.trim(),avatar_url:avatar
+ }).eq("id",currentUser.id).select().single();
+ if(error)throw error;
+ currentProfile=data;
+ addVerifiedName(el("displayName"),data.full_name,data.is_verified===true);
+ el("displayUsername").textContent="@"+data.username;
+ el("displayBio").textContent=data.bio||"?????? ?? ?? DERT";
+ showAvatar(data.avatar_url,data.full_name);
+ el("profileSettings").classList.add("hidden");
+ el("editProfileBtn").classList.remove("hidden");
+ msg("profileMessage","?? ??? ????? ?????? ??");
+}catch(e){msg("profileMessage","???? ?????: "+e.message)}
+finally{b.disabled=false}
+};
+el("avatarFile").onchange=()=>{
+const f=el("avatarFile").files[0];if(!f)return;
+showAvatar(URL.createObjectURL(f),"D");
+el("profileSettings").classList.remove("hidden");
+el("editProfileBtn").classList.add("hidden");
+};
+
+/* نشر منشور مع عدة صور أو فيديو واحد */
+function selectedMedia(input){return Array.from(input.files||[])}
+function validateMedia(files){
+ if(!files.length)return;
+ const videos=files.filter(f=>f.type.startsWith("video/"));
+ const images=files.filter(f=>f.type.startsWith("image/"));
+ if(videos.length && (videos.length!==1 || files.length!==1)) throw new Error("اختر فيديو واحد فقط، ولا تجمعه مع الصور");
+ if(!videos.length && images.length!==files.length) throw new Error("اختر صوراً أو فيديو واحداً فقط");
+ if(files.some(f=>f.size>50*1024*1024)) throw new Error("حجم الملف الواحد يجب ألا يتجاوز 50 ميغابايت");
+}
+function showMediaPreview(input,container,count){
+ const files=selectedMedia(input);container.replaceChildren();
+ try{validateMedia(files)}catch(e){count.textContent=e.message;return}
+ files.forEach((file,i)=>{
+  const wrap=document.createElement("div");wrap.className="media-preview-item";
+  const url=URL.createObjectURL(file);const el=document.createElement(file.type.startsWith("video/")?"video":"img");
+  el.src=url;if(el.tagName==="VIDEO"){el.controls=true;el.playsInline=true}else{el.alt="معاينة الصورة "+(i+1)}
+  wrap.appendChild(el);container.appendChild(wrap);
+ });
+ count.textContent=files.length?`معاينة ${files.length} ${files.length===1?"ملف":"ملفات"} — اسحب للتنقل`:"";
+}
+el("postImage").addEventListener("change",()=>showMediaPreview(el("postImage"),el("postPreview"),el("postPreviewCount")));
+el("publishBtn").onclick=async()=>{
+ const content=el("postContent").value.trim();const files=selectedMedia(el("postImage"));
+ try{validateMedia(files);if(files.length!==1||!files[0].type.startsWith("video/"))throw new Error("اختر فيديو واحداً للنشر")}catch(e){msg("postMessage",e.message);return}
+ if(!files.length){msg("postMessage","اختر فيديو قبل النشر");return}
+ const b=el("publishBtn");b.disabled=true;
+ try{
+  let image_url=null,media_type=null;
+  if(files.length){const urls=[];for(const file of files)urls.push(await uploadFile(file,"posts"));
+   media_type=files[0].type.startsWith("video/")?"video":"image";
+   image_url=media_type==="video"?urls[0]:JSON.stringify(urls);
+  }
+  const {error}=await client.from("posts").insert({user_id:currentUser.id,content:content||null,image_url,media_type});
+  if(error)throw error;
+  el("postContent").value="";el("postImage").value="";el("postPreview").replaceChildren();el("postPreviewCount").textContent="";
+  msg("postMessage","تم نشر الفيديو بنجاح");await loadStats();if(media_type==="video"){openTab("videos");await loadVideos();}
+ }catch(e){msg("postMessage","تعذر النشر: "+e.message)}finally{b.disabled=false}
+};
+
+/* ??? ?????????? ???????? */
+async function loadVideos(){
+if(!currentUser)return;
+const list=el("videosList");
+stopVideoPlayback();
+list.replaceChildren();
+const loading=document.createElement("div");
+loading.className="video-loading";loading.textContent="???? ????? ??????????...";
+list.appendChild(loading);
+
+try{
+ const {data,error}=await client.from("posts")
+  .select("*")
+  .eq("media_type","video")
+  .not("image_url","is",null)
+  .order("created_at",{ascending:false})
+  .limit(100);
+
+ if(error)throw error;
+
+ list.replaceChildren();
+ videoPostsCache=data||[];
+
+ if(!videoPostsCache.length){
+  const empty=document.createElement("div");
+  empty.className="videos-empty";
+  const title=document.createElement("strong");
+  title.textContent="? ?? ???? ???????? ??????";
+  const description=document.createElement("p");
+  description.textContent="?? ??? ?? ????? ????? ??? DERT. ????? ??? ????????? ????? ????? ?? ????? ?? ???? ???.";
+  const go=document.createElement("button");
+  go.textContent="+ ??? ?????";
+  go.onclick=()=>openTab("feed");
+  empty.append(title,description,go);
+  list.appendChild(empty);
+  return;
+ }
+
+ const userIds=[...new Set(videoPostsCache.map(p=>p.user_id))];
+ const {data:profiles,error:profileError}=await client.from("profiles")
+  .select("id,username,full_name,avatar_url,is_verified")
+  .in("id",userIds);
+
+ if(profileError)throw profileError;
+
+ const names={};
+ (profiles||[]).forEach(p=>names[p.id]=p);
+
+ const {data:myFollows,error:followError}=await client.from("follows")
+  .select("following_id")
+  .eq("follower_id",currentUser.id);
+
+ if(followError)throw followError;
+
+ const followed=new Set((myFollows||[]).map(x=>x.following_id));
+
+ videoPostsCache.forEach(post=>{
+  const profile=names[post.user_id]||{};
+  const card=document.createElement("article");
+  card.className="video-card";
+  card.dataset.postId=post.id;
+
+  const video=document.createElement("video");
+  video.src=post.image_url;
+  video.autoplay=true;
+  video.muted=true;
+  video.loop=true;
+  video.playsInline=true;
+  video.preload="metadata";
+  video.setAttribute("playsinline","");
+  video.setAttribute("webkit-playsinline","");
+  video.addEventListener("click",()=>{
+   if(video.paused)video.play().catch(()=>{});
+   else video.pause();
+  });
+
+  const overlay=document.createElement("div");
+  overlay.className="video-overlay";
+
+  const details=document.createElement("div");
+  details.className="video-details";
+
+  const author=document.createElement("div");
+  author.className="video-author";
+  const authorName=(profile.full_name||profile.username||"?????? DERT")+"  @"+(profile.username||"user");
+  addVerifiedName(author,authorName,profile.is_verified===true);
+
+  const description=document.createElement("div");
+  description.className="video-description";
+  description.textContent=post.content||"";
+
+  const date=document.createElement("div");
+  date.className="video-date";
+  date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");
+
+  details.append(author);
+  if(post.content)details.appendChild(description);
+  details.appendChild(date);
+  overlay.appendChild(details);
+
+  const sound=document.createElement("button");
+  sound.className="video-sound";
+  sound.textContent="?";
+  sound.title="????? ?? ??? ?????";
+  sound.onclick=()=>{
+   video.muted=!video.muted;
+   sound.textContent=video.muted?"?":"?";
+   if(!video.paused)video.play().catch(()=>{});
+  };
+
+  const actions=document.createElement("div");
+  actions.className="video-side-actions";
+
+  const like=document.createElement("button");
+  like.textContent="♡";
+  like.title="إعجاب بالفيديو";
+  like.setAttribute("aria-label","إعجاب بالفيديو");
+  like.onclick=()=>toggleVideoLike(post,like);
+  const comment=document.createElement("button");
+  comment.textContent="💬";
+  comment.title="التعليقات";
+  comment.onclick=()=>openPostComments(post);
+
+  const share=document.createElement("button");
+  share.textContent="??";
+  share.title="?????? ???????";
+  share.onclick=()=>sharePost(post.id);
+
+  const follow=document.createElement("button");
+  follow.className="video-follow";
+  follow.textContent=followed.has(post.user_id)?"????? ????????":"+ ??????";
+  follow.dataset.following=followed.has(post.user_id)?"yes":"";
+  if(post.user_id===currentUser.id){
+   follow.classList.add("hidden");
+  }else{
+   follow.onclick=()=>followUser(post.user_id,follow);
+  }
+
+  actions.append(like,comment,share,follow);
+  refreshVideoLikeState(post,like).catch(()=>{});
+  card.append(video,overlay,sound,actions);
+  list.appendChild(card);
+ });
+
+ setupVideoObserver();
+
+}catch(e){
+ list.replaceChildren();
+ const error=document.createElement("div");
+ error.className="videos-empty";
+ const title=document.createElement("strong");
+ title.textContent="???? ????? ??????????";
+ const detail=document.createElement("p");
+ detail.textContent=e.message||"??? ??? ??? ?????";
+ const retry=document.createElement("button");
+ retry.textContent="????? ????????";
+ retry.onclick=loadVideos;
+ error.append(title,detail,retry);
+ list.appendChild(error);
+}
+}
+
+/* تفاعلات الإعجاب بالفيديو — تعتمد جدول post_likes وسياسات RLS المرفقة */
+async function refreshVideoLikeState(post,button){
+ const [{count,error:countError},{data:mine,error:mineError}]=await Promise.all([
+  client.from("post_likes").select("id",{count:"exact",head:true}).eq("post_id",post.id),
+  client.from("post_likes").select("id").eq("post_id",post.id).eq("user_id",currentUser.id).maybeSingle()
+ ]);
+ if(countError)throw countError;if(mineError)throw mineError;
+ button.textContent=(mine?"♥ ":"♡ ")+(count||0);
+ button.dataset.liked=mine?"yes":"";
+ button.style.color=mine?"#ff5478":"white";
+}
+async function toggleVideoLike(post,button){
+ button.disabled=true;
+ try{
+  if(button.dataset.liked==="yes"){
+   const {error}=await client.from("post_likes").delete().eq("post_id",post.id).eq("user_id",currentUser.id);
+   if(error)throw error;
+  }else{
+   const {error}=await client.from("post_likes").insert({post_id:post.id,user_id:currentUser.id});
+   if(error)throw error;
+  }
+  await refreshVideoLikeState(post,button);
+ }catch(e){alert("تعذر تسجيل الإعجاب: "+e.message)}
+ finally{button.disabled=false}
+}
+
+/* ????? ??????? ?????? ?????? ?????? */
+function setupVideoObserver(){
+if(videoObserver)videoObserver.disconnect();
+
+const videos=[...document.querySelectorAll("#videosList video")];
+if(!videos.length)return;
+
+videoObserver=new IntersectionObserver(entries=>{
+ entries.forEach(entry=>{
+  const video=entry.target;
+  if(entry.isIntersecting&&entry.intersectionRatio>=0.65){
+   videos.forEach(other=>{
+    if(other!==video)other.pause();
+   });
+   video.play().catch(()=>{});
+  }else{
+   video.pause();
+  }
+ });
+},{root:el("videosList"),threshold:[0,0.35,0.65,0.9]});
+
+videos.forEach(video=>videoObserver.observe(video));
+}
+
+function getPostImages(value){
+ if(!value)return [];
+ try{const parsed=JSON.parse(value);if(Array.isArray(parsed))return parsed.filter(x=>typeof x==="string");}catch(e){}
+ return [value];
+}
+function makeSwipeGallery(urls){
+ const box=document.createElement("div");box.className="post-gallery";
+ const img=document.createElement("img");img.src=urls[0];img.alt="صورة المنشور";img.loading="lazy";box.appendChild(img);
+ if(urls.length>1){let index=0;const dots=document.createElement("div");dots.className="gallery-dots";const markers=urls.map((_,i)=>{const d=document.createElement("span");if(!i)d.className="active";dots.appendChild(d);return d});
+ const show=(n)=>{index=(n+urls.length)%urls.length;img.src=urls[index];markers.forEach((d,i)=>d.classList.toggle("active",i===index))};
+ let x=0;box.addEventListener("touchstart",e=>{x=e.touches[0].clientX},{passive:true});box.addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-x;if(Math.abs(dx)>35)show(index+(dx<0?1:-1))},{passive:true});
+ box.addEventListener("pointerdown",e=>{x=e.clientX});box.addEventListener("pointerup",e=>{const dx=e.clientX-x;if(Math.abs(dx)>45)show(index+(dx<0?1:-1))});box.appendChild(dots);
+ }
+ return box;
+}
+/* عرض المنشورات */
+async function loadPosts(){
+const list=el("postsList");list.textContent="???? ????? ?????????...";
+const {data,error}=await client.from("posts").select("*").order("created_at",{ascending:false});
+if(error){list.textContent="???? ????? ?????????: "+error.message;return}
+list.replaceChildren();
+if(!data?.length){list.textContent="?? ???? ??????? ??? ????";return}
+
+const ids=[...new Set(data.map(p=>p.user_id))];
+const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
+const names={};(profiles||[]).forEach(p=>names[p.id]=p);
+
+for(const post of data){
+ const card=document.createElement("article");card.className="post";card.id="post-"+post.id;
+ const author=document.createElement("strong"),p=names[post.user_id];
+ addVerifiedName(author,p?(p.full_name||"??????")+" @"+(p.username||""):"?????? DERT",p?.is_verified===true);
+ if(p){author.style.cursor="pointer";author.onclick=()=>showPublicProfile(p.id)}
+ card.appendChild(author);
+
+ if(post.content){
+  const t=document.createElement("p");t.className="post-text";
+  t.textContent=post.content;card.appendChild(t);
+ }
+ if(post.image_url){
+  if(post.media_type==="video"){
+   const v=document.createElement("video");v.src=post.image_url;v.controls=true;v.playsInline=true;card.appendChild(v);
+  }else{const urls=getPostImages(post.image_url);if(urls.length)card.appendChild(makeSwipeGallery(urls));}
+ }
+
+ const date=document.createElement("div");date.className="post-date";
+ date.textContent=new Date(post.created_at).toLocaleString("ar-IQ");card.appendChild(date);
+
+ const bottom=document.createElement("div");bottom.className="post-bottom";
+ const commentBtn=document.createElement("button");commentBtn.className="comment-open";commentBtn.textContent="? ?????????";
+ const count=document.createElement("span");count.className="small";count.textContent="...";
+ commentBtn.appendChild(count);commentBtn.onclick=()=>openPostComments(post);bottom.appendChild(commentBtn);
+
+ const menuWrap=document.createElement("div");menuWrap.className="post-menu-wrap";
+ const menuBtn=document.createElement("button");menuBtn.textContent="?";menuBtn.title="?????? ???????";
+ const menu=document.createElement("div");menu.className="post-menu hidden";
+
+ function addMenuItem(label,handler,cls=""){
+  const b=document.createElement("button");b.textContent=label;if(cls)b.className=cls;
+  b.onclick=()=>{menu.classList.add("hidden");handler()};menu.appendChild(b);
+ }
+
+ if(post.user_id===currentUser.id){
+  addMenuItem("?? ????? ???????",()=>editPost(post));
+  addMenuItem("?? ??? ???????",()=>deletePost(post.id,menuBtn),"red");
+ }
+ addMenuItem("? ?????? ???????",()=>sharePost(post.id));
+ addMenuItem("? ??? ???? ???????",()=>copyPostLink(post.id));
+ addMenuItem("? ????? ?? ???????",()=>reportContent("post",post.id));
+
+ menuBtn.onclick=(e)=>{
+  e.stopPropagation();
+  document.querySelectorAll(".post-menu").forEach(m=>{if(m!==menu)m.classList.add("hidden")});
+  menu.classList.toggle("hidden");
+ };
+ menu.onclick=e=>e.stopPropagation();
+ menuWrap.append(menuBtn,menu);bottom.appendChild(menuWrap);
+ card.appendChild(bottom);list.appendChild(card);
+ updatePostCommentCount(post.id,count);
+}
+}
+document.addEventListener("click",()=>document.querySelectorAll(".post-menu").forEach(m=>m.classList.add("hidden")));
+
+async function updatePostCommentCount(postId,element){
+const {count,error}=await client.from("post_comments").select("id",{count:"exact",head:true}).eq("post_id",postId);
+if(error){element.textContent="";return}
+element.textContent=" ("+(count||0)+")";
+}
+async function openPostComments(post){
+if(!currentUser)return;
+activeCommentPost=post;
+el("commentModal").classList.remove("hidden");
+el("commentModalTitle").textContent="? ?????????";
+el("commentModalList").textContent="???? ????? ?????????...";
+el("commentInput").value="";
+document.body.style.overflow="hidden";
+await loadComments(post,el("commentModalList"));
+}
+function closePostComments(){
+el("commentModal").classList.add("hidden");
+document.body.style.overflow="";
+activeCommentPost=null;
+}
+el("sendCommentBtn").onclick=async()=>{
+if(!activeCommentPost||!currentUser)return;
+const input=el("commentInput"),text=input.value.trim();
+if(!text){alert("???? ?????? ?????");return}
+const b=el("sendCommentBtn");b.disabled=true;
+try{
+ const {error}=await client.from("post_comments").insert({
+  post_id:activeCommentPost.id,user_id:currentUser.id,content:text
+ });
+ if(error)throw error;
+ input.value="";
+ await loadComments(activeCommentPost,el("commentModalList"));
+ const countElement=document.querySelector("#post-"+activeCommentPost.id+" .comment-open span");
+ if(countElement)await updatePostCommentCount(activeCommentPost.id,countElement);
+ el("commentModalList").scrollTop=el("commentModalList").scrollHeight;
+}catch(e){alert("???? ????? ???????: "+e.message)}
+finally{b.disabled=false}
+};
+el("commentInput").addEventListener("keydown",e=>{
+if(e.key==="Enter"){e.preventDefault();el("sendCommentBtn").click()}
+});
+
+async function loadComments(post,container){
+const {data,error}=await client.from("post_comments").select("*").eq("post_id",post.id).order("created_at",{ascending:true});
+container.replaceChildren();
+if(error){container.textContent="???? ????? ?????????: "+error.message;return}
+if(!data?.length){container.textContent="?? ???? ??????? ???. ?? ??? ?? ????? ??";return}
+
+const ids=[...new Set(data.map(c=>c.user_id))];
+const {data:profiles}=await client.from("profiles").select("id,username,full_name,is_verified").in("id",ids);
+const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+
+data.forEach(c=>{
+ const row=document.createElement("div");row.className="comment";
+ const head=document.createElement("div");head.className="comment-head";
+ const name=document.createElement("strong");const profile=map[c.user_id];
+ addVerifiedName(name,profile?.full_name||profile?.username||"??????",profile?.is_verified===true);
+ const date=document.createElement("span");date.className="small";
+ date.textContent=new Date(c.created_at).toLocaleString("ar-IQ");
+ head.append(name,date);row.appendChild(head);
+ const text=document.createElement("p");text.textContent=c.content;row.appendChild(text);
+ const tools=document.createElement("div");tools.className="comment-actions";
+ const report=document.createElement("button");report.className="gray";report.textContent="? ?????";
+ report.onclick=()=>reportContent("comment",c.id);tools.appendChild(report);
+
+ if(c.user_id===currentUser.id||post.user_id===currentUser.id){
+  const del=document.createElement("button");del.className="red";del.textContent="??? ???????";
+  del.onclick=async()=>{
+   if(!confirm("?? ???? ??? ??? ????????"))return;
+   del.disabled=true;
+   const {error}=await client.from("post_comments").delete().eq("id",c.id);
+   if(error){alert("???? ?????: "+error.message);del.disabled=false;return}
+   await loadComments(post,container);
+   const countElement=document.querySelector("#post-"+post.id+" .comment-open span");
+   if(countElement)await updatePostCommentCount(post.id,countElement);
+  };
+  tools.appendChild(del);
+ }
+ row.appendChild(tools);container.appendChild(row);
+});
+}
+
+async function sharePost(postId){
+const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(postId);
+try{
+ if(navigator.share){
+  await navigator.share({title:"????? ??? DERT ?",text:"???? ??? ??????? ??? DERT",url});
+ }else{await copyPostLink(postId)}
+}catch(e){
+ if(e.name!=="AbortError")alert("????? ????????. ????? ??? ?????? ????? ?? ???.");
+}
+}
+async function copyPostLink(postId){
+const url=location.href.split("#")[0]+"#post-"+encodeURIComponent(postId);
+try{
+ if(navigator.clipboard&&window.isSecureContext){
+  await navigator.clipboard.writeText(url);
+ }else{
+  const temp=document.createElement("textarea");temp.value=url;document.body.appendChild(temp);temp.select();
+  const ok=document.execCommand("copy");temp.remove();
+  if(!ok)throw new Error("copy failed");
+ }
+ alert("?? ??? ???? ???????");
+}catch(e){prompt("???? ???? ???????:",url)}
+}
+async function editPost(post){
+if(post.user_id!==currentUser.id){alert("?? ????? ????? ????? ??? ???");return}
+const content=prompt("???? ?? ???????:",post.content||"");
+if(content===null)return;
+try{
+ const {error}=await client.from("posts").update({
+  content:content.trim()||null
+ }).eq("id",post.id).eq("user_id",currentUser.id);
+ if(error)throw error;
+ alert("?? ????? ???????");await loadPosts();
+}catch(e){alert("???? ????? ???????: "+e.message)}
+}
+async function deletePost(id,button){
+if(!confirm("?? ??? ????? ?? ??? ???????? ?? ???? ???????."))return;
+button.disabled=true;
+try{
+ const {error}=await client.from("posts").delete().eq("id",id).eq("user_id",currentUser.id);
+ if(error)throw error;
+ await loadPosts();await loadStats();await loadVideos();
+}catch(e){alert("???? ??? ???????: "+e.message);button.disabled=false}
+}
+async function reportContent(type,id){
+const reason=prompt("?? ??? ????????\n?????: ????? ????? ??????? ??????? ????? ??? ?????");
+if(reason===null)return;
+if(!reason.trim()){alert("???? ??? ???????");return}
+const details=prompt("?????? ?????? (???????):")||null;
+try{
+ const {error}=await client.from("content_reports").insert({
+  reporter_id:currentUser.id,target_type:type,target_id:id,reason:reason.trim(),details
+ });
+ if(error)throw error;
+ alert("?? ????? ?????? ??? ????? DERT. ????? ?????????.");
+}catch(e){alert("???? ????? ??????: "+e.message)}
+}
+
+/* ?????????? */
+async function loadStats(){
+if(!currentUser)return;
+const {count:posts}=await client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",currentUser.id);
+const {count:followers}=await client.from("follows").select("*",{count:"exact",head:true}).eq("following_id",currentUser.id);
+const {count:following}=await client.from("follows").select("*",{count:"exact",head:true}).eq("follower_id",currentUser.id);
+el("postsCount").textContent=posts||0;
+el("followersCount").textContent=followers||0;
+el("followingCount").textContent=following||0;
+}
+
+/* ????? ????????? */
+el("searchBtn").onclick=async()=>{
+const q=el("searchUser").value.trim(),list=el("peopleList");
+list.textContent="???? ?????...";
+if(!q){list.textContent="???? ??? ???????? ?????";return}
+const {data,error}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified").or("username.ilike.%"+q+"%,full_name.ilike.%"+q+"%").limit(25);
+if(error){list.textContent=error.message;return}
+list.replaceChildren();
+const people=(data||[]).filter(p=>p.id!==currentUser.id);
+if(!people.length){list.textContent="?? ??? ?????? ??? ????????";return}
+
+for(const p of people){
+ const row=document.createElement("div");row.className="item";
+ const line=document.createElement("div");line.className="chat-row";
+ line.appendChild(makeAvatar(p.avatar_url,p.full_name||p.username));
+ const info=document.createElement("div"),title=document.createElement("strong");
+ addVerifiedName(title,(p.full_name||"??????")+" @"+p.username,p.is_verified===true);
+ title.style.cursor="pointer";title.onclick=()=>showPublicProfile(p.id);line.style.cursor="pointer";line.onclick=()=>showPublicProfile(p.id);
+ const bio=document.createElement("div");bio.className="small";bio.textContent=p.bio||"";
+ info.append(title,bio);line.appendChild(info);row.appendChild(line);
+
+ const follow=document.createElement("button");follow.textContent="??????";
+ follow.onclick=()=>followUser(p.id,follow);
+ const dm=document.createElement("button");dm.className="gray";dm.textContent="??????";
+ dm.onclick=()=>startChat(p.id,p.username);
+ const report=document.createElement("button");report.className="red";report.textContent="????? ?? ??????";
+ report.onclick=()=>reportContent("account",p.id);
+ row.append(follow,dm,report);list.appendChild(row);
+
+ const {data:existing}=await client.from("follows").select("follower_id")
+  .eq("follower_id",currentUser.id).eq("following_id",p.id).maybeSingle();
+ if(existing){follow.textContent="????? ????????";follow.dataset.following="yes"}
+}
+};
+async function followUser(id,button){
+if(!currentUser||id===currentUser.id)return;
+button.disabled=true;
+try{
+ if(button.dataset.following==="yes"){
+  const {error}=await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",id);
+  if(error)throw error;
+  button.textContent="??????";button.dataset.following="";
+ }else{
+  const {error}=await client.from("follows").insert({follower_id:currentUser.id,following_id:id});
+  if(error)throw error;
+  button.textContent="????? ????????";button.dataset.following="yes";
+ }
+ await loadStats();
+}catch(e){alert("????? ???????: "+e.message)}
+finally{button.disabled=false}
+}
+
+/* ????????? */
+async function startChat(otherId,username){
+try{
+ const {data:mine,error:e1}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
+ if(e1)throw e1;
+ const ids=(mine||[]).map(x=>x.conversation_id);
+ if(ids.length){
+  const {data:theirs,error:e2}=await client.from("conversation_members").select("conversation_id").eq("user_id",otherId).in("conversation_id",ids);if(e2)throw e2;
+  if(theirs?.length)for(const c of theirs){
+   const {data:members,error:e3}=await client.from("conversation_members").select("user_id").eq("conversation_id",c.conversation_id);if(e3)throw e3;
+   if(members?.length===2&&members.some(x=>x.user_id===currentUser.id)&&members.some(x=>x.user_id===otherId)){
+    openTab("chats");await openChat(c.conversation_id,otherId,username);return;
+   }
+  }
+ }
+ const {data:conversation,error}=await client.from("conversations").insert({last_message:""}).select("id").single();
+ if(error)throw error;
+ const {error:memberError}=await client.from("conversation_members").insert([
+  {conversation_id:conversation.id,user_id:currentUser.id},
+  {conversation_id:conversation.id,user_id:otherId}
+ ]);
+ if(memberError)throw memberError;
+ openTab("chats");await openChat(conversation.id,otherId,username);
+}catch(e){alert("???? ??? ????????: "+e.message)}
+}
+async function loadChats(){
+const list=el("chatList");list.textContent="???? ????? ?????????...";
+const {data:members,error}=await client.from("conversation_members").select("conversation_id").eq("user_id",currentUser.id);
+if(error){list.textContent=error.message;return}
+list.replaceChildren();
+if(!members?.length){list.textContent="?? ???? ??????? ???";return}
+const chats=[];
+for(const m of members){
+ const {data:others}=await client.from("conversation_members").select("user_id").eq("conversation_id",m.conversation_id).neq("user_id",currentUser.id);
+ const other=others?.[0];if(!other)continue;
+ const {data:profile}=await client.from("profiles").select("username,full_name,avatar_url,is_verified").eq("id",other.user_id).maybeSingle();
+ const {data:latest}=await client.from("messages").select("content,media_type,created_at").eq("conversation_id",m.conversation_id).order("created_at",{ascending:false}).limit(1);
+ chats.push({id:m.conversation_id,other:other.user_id,profile,latest:latest?.[0]});
+}
+chats.sort((a,b)=>new Date(b.latest?.created_at||0)-new Date(a.latest?.created_at||0));
+chatCache=chats;renderChatList(chats);
+}
+function renderChatList(chats){
+const list=el("chatList");list.replaceChildren();
+if(!chats.length){list.textContent="?? ???? ??????? ??????";return}
+chats.forEach(c=>{
+ const row=document.createElement("div");row.className="chat-entry";
+ row.appendChild(makeAvatar(c.profile?.avatar_url,c.profile?.full_name||c.profile?.username));
+ const info=document.createElement("div");info.className="chat-entry-info";
+ const name=document.createElement("strong");
+ addVerifiedName(name,c.profile?.full_name||c.profile?.username||"??????",c.profile?.is_verified===true);
+ const preview=document.createElement("div");preview.className="chat-last";
+ preview.textContent=c.latest?(c.latest.content||"? ?????"):"???? ????????";
+ info.append(name,preview);
+ const side=document.createElement("div");side.className="chat-time";
+ side.textContent=c.latest?.created_at?new Date(c.latest.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"}):"";
+ row.append(info,side);
+ row.onclick=()=>openChat(c.id,c.other,c.profile?.username||"??????");
+ list.appendChild(row);
+});
+}
+el("chatSearch").oninput=()=>{
+const q=el("chatSearch").value.trim().toLowerCase();
+renderChatList(chatCache.filter(c=>(c.profile?.full_name||"").toLowerCase().includes(q)||(c.profile?.username||"").toLowerCase().includes(q)));
+};
+el("newChatBtn").onclick=()=>{openTab("people");el("searchUser").focus()};
+
+async function openChat(conversationId,receiverId,username){
+stopRealtime();activeConversation=conversationId;activeReceiver=receiverId;
+el("chatPanel").classList.remove("hidden");
+const {data:profile}=await client.from("profiles").select("username,full_name,avatar_url,is_verified").eq("id",receiverId).maybeSingle();
+addVerifiedName(el("chatTitle"),profile?.full_name||profile?.username||username,profile?.is_verified===true);
+el("chatUsername").textContent="@"+(profile?.username||username||"");
+const old=el("chatAvatar"),newA=makeAvatar(profile?.avatar_url,profile?.full_name||profile?.username);
+newA.id="chatAvatar";old.replaceWith(newA);
+await loadMessages();await markMessagesRead();startRealtime();
+}
+el("closeChatBtn").onclick=()=>{
+stopRealtime();activeConversation=null;activeReceiver=null;
+el("chatPanel").classList.add("hidden");loadChats();
+};
+async function loadMessages(){
+if(!activeConversation)return;
+const box=el("chatMessages");
+const {data,error}=await client.from("messages").select("*").eq("conversation_id",activeConversation).order("created_at",{ascending:true});
+if(error){box.textContent=error.message;return}
+box.replaceChildren();
+if(!data?.length){box.textContent="???? ???????? ?????? ?????";return}
+data.forEach(m=>{
+ const b=document.createElement("div");b.className="bubble"+(m.sender_id===currentUser.id?" mine":"");
+ if(m.content){const t=document.createElement("div");t.textContent=m.content;b.appendChild(t)}
+ if(m.media_url){
+  if(m.media_type==="video"){
+   const v=document.createElement("video");v.src=m.media_url;v.controls=true;v.className="media";b.appendChild(v);
+  }else{
+   const img=document.createElement("img");img.src=m.media_url;img.className="media";b.appendChild(img);
+  }
+ }
+ const meta=document.createElement("div");meta.className="message-meta";
+ meta.textContent=new Date(m.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"});
+ if(m.sender_id===currentUser.id){
+  const s=document.createElement("span");s.textContent=m.is_read?" ?? ??? ???????":" ? ?? ???????";meta.appendChild(s);
+ }
+ b.appendChild(meta);box.appendChild(b);
+});
+box.scrollTop=box.scrollHeight;
+}
+async function markMessagesRead(){
+if(activeConversation&&currentUser){
+ await client.from("messages").update({is_read:true})
+  .eq("conversation_id",activeConversation).eq("receiver_id",currentUser.id).eq("is_read",false);
+}
+}
+el("sendMessageBtn").onclick=async()=>{
+if(!activeConversation||!activeReceiver)return;
+const content=el("chatText").value.trim(),file=el("chatFile").files[0];
+if(!content&&!file){msg("chatStatus","???? ????? ?? ???? ?????");return}
+const b=el("sendMessageBtn");b.disabled=true;
+try{
+ let media_url=null,media_type=null;
+ if(file){
+  if(!file.type.startsWith("image/")&&!file.type.startsWith("video/"))throw new Error("???? ???? ?? ?????");
+  media_url=await uploadFile(file,"messages");
+  media_type=file.type.startsWith("video/")?"video":"image";
+ }
+ const {error}=await client.from("messages").insert({
+  conversation_id:activeConversation,sender_id:currentUser.id,
+  receiver_id:activeReceiver,content:content||null,media_url,media_type,is_read:false
+ });
+ if(error)throw error;
+ await client.from("conversations").update({
+  last_message:content||"?????",updated_at:new Date().toISOString()
+ }).eq("id",activeConversation);
+ el("chatText").value="";el("chatFile").value="";
+ msg("chatStatus","?? ????? ???????");
+ await loadMessages();await loadChats();
+}catch(e){msg("chatStatus","???? ???????: "+e.message)}
+finally{b.disabled=false}
+};
+function startRealtime(){
+if(!activeConversation)return;
+const id=activeConversation;
+activeChannel=client.channel("dert-chat-"+id)
+ .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:"conversation_id=eq."+id},async()=>{
+  if(activeConversation!==id)return;
+  await loadMessages();await markMessagesRead();loadChats();
+ }).subscribe();
+}
+function stopRealtime(){
+if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}
+}
+
+/* ????????? */
+async function loadAlerts(){
+const list=el("alertsList");list.textContent="???? ????? ?????????...";
+try{
+ const {data,error}=await client.from("notifications").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(50);
+ if(error)throw error;
+ list.replaceChildren();
+ if(!data?.length){list.textContent="?? ???? ??????? ??????";return}
+ data.forEach(n=>{
+  const row=document.createElement("div");row.className="item";
+  row.textContent=n.content||"????? ????";list.appendChild(row);
+ });
+}catch(e){list.textContent="???? ????? ?????????: "+e.message}
+}
+el("refreshAlerts").onclick=loadAlerts;
+function startAlertsRealtime(){
+stopAlertsRealtime();if(!currentUser)return;
+alertsChannel=client.channel("dert-alerts-"+currentUser.id)
+ .on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:"user_id=eq."+currentUser.id},()=>{
+  if(el("alerts").classList.contains("active"))loadAlerts();
+ }).subscribe();
+}
+function stopAlertsRealtime(){
+if(alertsChannel){client.removeChannel(alertsChannel);alertsChannel=null}
+}
+
+/* ????? ??????? */
+async function loadAdminRequests(){
+if(!isAdmin())return;
+const box=el("adminRequests");box.textContent="???? ????? ???????...";
+try{
+ const {data,error}=await client.rpc("admin_verification_requests");
+ if(error)throw error;
+ box.replaceChildren();
+ const requests=Array.isArray(data)?data:[];
+ if(!requests.length){box.textContent="?? ???? ????? ????? ??????";return}
+ requests.forEach(r=>{
+  const card=document.createElement("div");card.className="request-card";
+  const p=r.profile||{};
+  const name=document.createElement("h3");name.textContent=p.full_name||p.username||"?????? DERT";card.appendChild(name);
+  const uid=document.createElement("p");uid.className="small";uid.textContent="???? ????????: "+r.user_id;card.appendChild(uid);
+  const status=document.createElement("p");
+  status.className=r.status==="approved"?"status-approved":r.status==="rejected"?"status-rejected":"status-pending";
+  status.textContent=r.status==="approved"?"? ??? ????????":r.status==="rejected"?"? ?????":"? ??? ????????";
+  card.appendChild(status);
+  if(r.status==="pending"){
+   const actions=document.createElement("div");actions.className="admin-actions";
+   const yes=document.createElement("button");yes.textContent="??????";yes.onclick=()=>reviewVerification(r.request_id,"approve");
+   const no=document.createElement("button");no.className="red";no.textContent="???";no.onclick=()=>reviewVerification(r.request_id,"reject");
+   actions.append(yes,no);card.appendChild(actions);
+  }
+  box.appendChild(card);
+ });
+}catch(e){box.textContent="???? ????? ????? ???????: "+e.message}
+}
+async function reviewVerification(id,action){
+if(!isAdmin())return;
+let reason=null;
+if(action==="reject"){reason=prompt("??? ????? (???????):");if(reason===null)return}
+try{
+ const result=action==="approve"
+  ?await client.rpc("admin_approve_verification",{p_request_id:id})
+  :await client.rpc("admin_reject_verification",{p_request_id:id,p_reason:reason});
+ if(result.error)throw result.error;
+ msg("adminMessage","?? ????? ?????? ?????");
+ await loadAdminRequests();
+}catch(e){alert("???? ????? ??????: "+e.message)}
+}
+el("refreshAdmin").onclick=loadAdminRequests;
+
+/* ???? ???????? */
+async function loadReports(){
+if(!isAdmin())return;
+const box=el("adminReports");box.textContent="???? ????? ????????...";
+const {data,error}=await client.from("content_reports").select("*").order("created_at",{ascending:false}).limit(100);
+if(error){box.textContent="???? ????? ????????: "+error.message;return}
+box.replaceChildren();
+if(!data?.length){box.textContent="?? ???? ?????? ??????";return}
+data.forEach(r=>{
+ const card=document.createElement("div");card.className="request-card";
+ const title=document.createElement("strong");
+ title.textContent="???? ?? "+({post:"?????",comment:"?????",account:"????"}[r.target_type]||r.target_type);
+ card.appendChild(title);
+ const reason=document.createElement("p");reason.textContent="?????: "+r.reason;card.appendChild(reason);
+ if(r.details){
+  const d=document.createElement("p");d.className="small";d.textContent="????????: "+r.details;card.appendChild(d);
+ }
+ const id=document.createElement("p");id.className="small";id.textContent="???? ???????: "+r.target_id;card.appendChild(id);
+ const status=document.createElement("p");status.className="small";status.textContent="??????: "+r.status;card.appendChild(status);
+ const btn=document.createElement("button");btn.className="gray";btn.textContent="?????? ?????? ??? ???????";
+ btn.onclick=async()=>{
+  btn.disabled=true;
+  const {error}=await client.from("content_reports").update({status:"reviewed"}).eq("id",r.id);
+  if(error){alert("???? ????? ??????: "+error.message);btn.disabled=false;return}
+  await loadReports();
+ };
+ if(r.status==="pending")card.appendChild(btn);
+ box.appendChild(card);
+});
+}
+el("refreshReports").onclick=loadReports;
+
+/* ?????? ????? ????? */
+el("sendSupportBtn").onclick=async()=>{
+const message=el("supportText").value.trim();
+if(!message){msg("supportStatus","???? ?????? ?????");return}
+const b=el("sendSupportBtn");b.disabled=true;
+try{
+ const {error}=await client.from("support_messages").insert({
+  user_id:currentUser.id,sender_id:currentUser.id,message,is_admin_reply:false
+ });
+ if(error)throw error;
+ el("supportText").value="";
+ msg("supportStatus","?? ????? ?????? ??? ????? ?????.");
+ await loadMySupport();
+}catch(e){msg("supportStatus","???? ????? ???????: "+e.message)}
+finally{b.disabled=false}
+};
+async function loadMySupport(){
+const box=el("mySupportMessages");box.textContent="???? ????? ??????...";
+const {data,error}=await client.from("support_messages").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:true});
+if(error){box.textContent="???? ????? ???????: "+error.message;return}
+box.replaceChildren();
+if(!data?.length){box.textContent="?? ???? ????? ???";return}
+data.forEach(m=>{
+ const d=document.createElement("div");
+ d.className="support-message"+(m.sender_id===currentUser.id?" mine":"");
+ d.textContent=(m.is_admin_reply?"?? ?? ?????:\n":"???:\n")+m.message;
+ box.appendChild(d);
+});
+}
+el("loadMySupport").onclick=loadMySupport;
+
+async function loadAdminSupport(){
+if(!isAdmin())return;
+const box=el("adminSupport");box.textContent="???? ????? ????? ?????...";
+const {data,error}=await client.from("support_messages").select("*").order("created_at",{ascending:true}).limit(200);
+if(error){box.textContent="???? ????? ????? ?????: "+error.message;return}
+box.replaceChildren();
+if(!data?.length){box.textContent="?? ???? ????? ???";return}
+const users=[...new Set(data.map(m=>m.user_id))];
+const {data:profiles}=await client.from("profiles").select("id,full_name,username").in("id",users);
+const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+data.forEach(m=>{
+ const card=document.createElement("div");card.className="request-card";
+ const p=map[m.user_id]||{};
+ const title=document.createElement("strong");
+ title.textContent=(p.full_name||p.username||"??????")+" | "+m.user_id;card.appendChild(title);
+ const body=document.createElement("p");
+ body.textContent=(m.is_admin_reply?"?? ???????: ":"????? ????????: ")+m.message;card.appendChild(body);
+ const date=document.createElement("div");date.className="small";
+ date.textContent=new Date(m.created_at).toLocaleString("ar-IQ");card.appendChild(date);
+
+ if(!m.is_admin_reply){
+  const reply=document.createElement("textarea");reply.placeholder="???? ?? ??????? ???? ????????...";
+  const btn=document.createElement("button");btn.className="full";btn.textContent="????? ????";
+  btn.onclick=async()=>{
+   const text=reply.value.trim();if(!text){alert("???? ???? ?????");return}
+   btn.disabled=true;
+   const {error}=await client.from("support_messages").insert({
+    user_id:m.user_id,sender_id:currentUser.id,message:text,is_admin_reply:true
+   });
+   if(error){alert("???? ????? ????: "+error.message);btn.disabled=false;return}
+   await loadAdminSupport();
+  };
+  card.append(reply,btn);
+ }
+ box.appendChild(card);
+});
+}
+el("refreshSupportAdmin").onclick=loadAdminSupport;
+
+/* فتح التطبيق بعد تسجيل الدخول */
+async function showHome(user){
+  currentUser = user;
+
+  el("auth").classList.add("hidden");
+  el("home").classList.remove("hidden");
+
+  openTab("videos");
+  startAlertsRealtime();
+
+  try {
+    await loadProfile();
+  } catch (e) {
+    console.error("Profile loading error:", e);
+    msg("profileMessage", "تعذر تحميل الملف الشخصي: " + (e.message || "خطأ غير معروف"));
+  }
+
+  try {
+    await loadStats();
+  } catch (e) {
+    console.error("Stats loading error:", e);
+  }
+
+  try {
+    await loadChats();
+  } catch (e) {
+    console.error("Chats loading error:", e);
+  }
+}
+
+/* فحص جلسة Supabase ومعالجة رابط تأكيد البريد */
+async function checkSession(){
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+
+    const authError =
+      params.get("error_description") ||
+      params.get("error") ||
+      hash.get("error_description") ||
+      hash.get("error");
+
+    if (authError) {
+      showAuthForm("login");
+      msg("message", "تعذر تأكيد البريد: " + authError.replace(/\+/g, " "));
+      return;
     }
 
-    function toast(msg) {
-      const el = document.getElementById("toast");
-      el.textContent = msg;
-      el.classList.add("show");
-      clearTimeout(toast._t);
-      toast._t = setTimeout(() => el.classList.remove("show"), 1800);
-    }
+    const code = params.get("code");
 
-    function esc(s) {
-      return String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-    }
+    if (code) {
+      const { data: sessionData, error: exchangeError } =
+        await client.auth.exchangeCodeForSession(code);
 
-    function fmtNum(num) {
-      const n = Number(num) || 0;
-      if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
-      if (n >= 10000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
-      return String(n);
-    }
+      if (exchangeError) throw exchangeError;
 
-    function goPage(p) {
-      state.page = p;
-      save();
-      render();
-    }
-
-    function syncBadges() {
-      document.getElementById("lblCoins").textContent = `${state.user.coins} عملة ‹`;
-      document.getElementById("lblOffline").textContent = `${state.user.offlineCount} ‹`;
-      document.getElementById("lblPromo").textContent = `${state.user.promoCount} نشط ‹`;
-      document.getElementById("lblPrivacy").textContent = `${state.user.privateAcc ? "خاص" : "عام"} ‹`;
-      const unreadChats = state.chats.reduce((acc, c) => acc + (c.unread || 0), 0);
-      const badge = document.getElementById("unreadBadge");
-      badge.textContent = unreadChats;
-      badge.style.display = unreadChats ? "inline-block" : "none";
-    }
-
-    function render() {
-      const vp = document.getElementById("viewport");
-      const nav = document.getElementById("bottomNav");
-
-      const navMap = { home: "home", friends: "friends", messages: "messages", inbox: "messages", profile: "profile" };
-      document.querySelectorAll(".nav-item[data-page]").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.page === navMap[state.page]);
-      });
-
-      const isHome = state.page === "home";
-      nav.classList.toggle("light-nav", !isHome);
-      vp.classList.toggle("light-mode", !isHome);
-
-      if (state.page === "home") {
-        const list = state.feedFilter === "following" ? state.videos.filter(v => v.following) : state.videos;
-        const items = list.length ? list : state.videos;
-
-        vp.innerHTML = `
-          <div class="tt-top">
-            <button class="live-btn" onclick="openLiveModal()" type="button">LIVE</button>
-            <div class="top-tabs">
-              <button class="top-tab ${state.feedFilter === "following" ? "active" : ""}" onclick="setFeedFilter('following')" type="button">أتابعه</button>
-              <button class="top-tab ${state.feedFilter === "foryou" ? "active" : ""}" onclick="setFeedFilter('foryou')" type="button">لك</button>
-            </div>
-            <button class="plain-top-btn" onclick="openDrawer()" type="button">القائمة</button>
-          </div>
-          ${items.map(v => `
-            <section class="tt-slide" data-vid="${v.id}" onclick="onSlideClick(event, '${v.id}')">
-              <video class="tt-video" src="${esc(v.videoUrl)}" poster="${esc(v.poster)}" loop muted playsinline preload="metadata"></video>
-              <div class="tt-scrim"></div>
-              <div class="pause-mark">||</div>
-              <div class="seek-track"><div class="seek-fill"></div></div>
-
-              <div class="tt-overlay" onclick="event.stopPropagation()">
-                <div class="tt-caption-col">
-                  <div class="tt-handle-line">${esc(v.handle)}</div>
-                  <div class="tt-desc-line">${esc(v.caption)}</div>
-                  <div class="tt-sound-row"><span>صوت:</span><span>${esc(v.sound)}</span></div>
-                </div>
-
-                <div class="tt-action-rail">
-                  <div class="avatar-ring-box">
-                    <img src="${esc(v.avatar)}" alt="" />
-                    <button class="follow-plus-btn ${v.following ? "followed" : ""}" onclick="toggleFollow('${v.id}')" type="button">
-                      ${v.following ? "✓" : "+"}
-                    </button>
-                  </div>
-
-                  <button class="rail-act-btn ${v.liked ? "liked" : ""}" onclick="toggleLike('${v.id}')" type="button">
-                    <span class="rail-act-label">${v.liked ? "أعجبني" : "إعجاب"}</span>
-                    <span class="rail-act-val">${fmtNum(v.likes)}</span>
-                  </button>
-
-                  <button class="rail-act-btn" onclick="openComments('${v.id}')" type="button">
-                    <span class="rail-act-label">تعليقات</span>
-                    <span class="rail-act-val">${fmtNum(v.comments.length)}</span>
-                  </button>
-
-                  <button class="rail-act-btn ${v.saved ? "saved" : ""}" onclick="toggleSave('${v.id}')" type="button">
-                    <span class="rail-act-label">${v.saved ? "محفوظ" : "حفظ"}</span>
-                    <span class="rail-act-val">${fmtNum(v.saves || 0)}</span>
-                  </button>
-
-                  <button class="rail-act-btn" onclick="openShareModal('${v.id}')" type="button">
-                    <span class="rail-act-label">مشاركة</span>
-                    <span class="rail-act-val">${fmtNum(v.shares || 0)}</span>
-                  </button>
-
-                  <div class="vinyl-spin"><img src="${esc(v.avatar)}" alt="" /></div>
-                </div>
-              </div>
-            </section>
-          `).join("")}
-        `;
-        attachVideoObservers();
-      } else if (state.page === "friends") {
-        vp.innerHTML = `
-          <div class="page-header">
-            <span class="page-heading">الأصدقاء</span>
-            <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
-          </div>
-          ${state.videos.map(v => `
-            <div class="list-row">
-              <div class="row-user">
-                <img class="av-50" src="${esc(v.avatar)}" alt="" />
-                <div>
-                  <div style="font-weight:700;font-size:14.5px;">${esc(v.author)}</div>
-                  <div style="font-size:12px;color:var(--text-muted);">${esc(v.handle)}</div>
-                </div>
-              </div>
-              <div style="display:flex;gap:6px;">
-                <button class="btn-gray" onclick="openChatWithAuthor('${v.id}')" type="button">رسالة</button>
-                <button class="${v.following ? "btn-gray" : "btn-red"}" onclick="toggleFollow('${v.id}')" type="button">
-                  ${v.following ? "متابَع" : "متابعة"}
-                </button>
-              </div>
-            </div>
-          `).join("")}
-        `;
-      } else if (state.page === "messages" || state.page === "inbox") {
-        renderMessagesOrInbox(vp);
-      } else if (state.page === "chat") {
-        renderChatRoom(vp);
-      } else if (state.page === "calls") {
-        vp.innerHTML = `
-          <div class="page-header">
-            <span class="page-heading">المكالمات (صوتية ومرئية)</span>
-            <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
-          </div>
-          ${state.chats.map(c => `
-            <div class="list-row">
-              <div class="row-user">
-                <img class="av-50" src="${esc(c.avatar)}" alt="" />
-                <div>
-                  <div style="font-weight:700;font-size:14.5px;">${esc(c.name)}</div>
-                  <div style="font-size:12px;color:var(--text-muted);">${c.online ? "متصل الآن" : esc(c.lastSeen)}</div>
-                </div>
-              </div>
-              <div style="display:flex;gap:6px;">
-                <button class="btn-gray" onclick="startCall('${esc(c.name)}','صوتية')" type="button">صوتية</button>
-                <button class="btn-red" onclick="startCall('${esc(c.name)}','مرئية')" type="button">مرئية</button>
-              </div>
-            </div>
-          `).join("")}
-          <div style="padding:10px 16px;font-size:12.5px;font-weight:700;color:var(--text-muted);background:var(--surface);">سجل المكالمات</div>
-          ${state.calls.map(cl => `
-            <div class="list-row">
-              <div>
-                <div style="font-weight:700;font-size:14px;">${esc(cl.name)} (${esc(cl.kind)})</div>
-                <div style="font-size:12px;color:var(--text-muted);">${esc(cl.status)}</div>
-              </div>
-              <span style="font-size:12px;color:var(--text-muted);">${esc(cl.time)}</span>
-            </div>
-          `).join("")}
-        `;
-      } else if (state.page === "explore") {
-        vp.innerHTML = `
-          <div class="page-header">
-            <span class="page-heading">الاستكشاف</span>
-            <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
-          </div>
-          <div class="search-box-wrap">
-            <input class="field-inp" style="margin-top:0;" id="exploreSearchInp" placeholder="ابحث عن الأشخاص أو الفيديوهات..." oninput="renderExploreList(this.value)" />
-          </div>
-          <div id="exploreResults"></div>
-        `;
-        renderExploreList("");
-      } else if (state.page === "notifications") {
-        vp.innerHTML = `
-          <div class="page-header">
-            <span class="page-heading">الإشعارات</span>
-            <button class="btn-gray" onclick="markAllNotifsRead()" type="button">تحديد كمقروء</button>
-          </div>
-          ${state.notifications.map(n => `
-            <div class="list-row" onclick="readNotif('${n.id}')" style="cursor:pointer;">
-              <div>
-                <div style="font-weight:700;font-size:13.5px;">${esc(n.text)}</div>
-                <div style="font-size:11.5px;color:var(--text-muted);margin-top:3px;">${esc(n.time)}</div>
-              </div>
-              ${!n.read ? `<span class="unread-dot"></span>` : `<span style="font-size:11px;color:var(--text-muted);">مقروء</span>`}
-            </div>
-          `).join("")}
-        `;
-      } else if (state.page === "profile") {
-        const list = state.profileFilter === "saved"
-          ? state.videos.filter(v => v.saved)
-          : state.profileFilter === "liked"
-            ? state.videos.filter(v => v.liked)
-            : state.videos;
-
-        vp.innerHTML = `
-          <div class="profile-head">
-            <div class="profile-top-actions">
-              <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
-              <strong>${esc(state.user.name)}</strong>
-              <button class="btn-gray" onclick="goPage('settings')" type="button">الإعدادات</button>
-            </div>
-            <img class="profile-avatar-xl" src="${esc(state.user.avatar)}" alt="" />
-            <div style="font-size:17px;font-weight:800;">${esc(state.user.name)}</div>
-            <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">${esc(state.user.handle)}</div>
-
-            <div class="stats-strip">
-              <div><div class="st-num">${fmtNum(state.user.following)}</div><div class="st-lbl">أتابعه</div></div>
-              <div><div class="st-num">${fmtNum(state.user.followers)}</div><div class="st-lbl">متابعون</div></div>
-              <div><div class="st-num">${fmtNum(state.user.likes)}</div><div class="st-lbl">تسجيلات الإعجاب</div></div>
-            </div>
-
-            <div style="display:flex;gap:8px;justify-content:center;">
-              <button class="btn-gray" onclick="openEditProfile()" type="button">تعديل الملف الشخصي</button>
-              <button class="btn-red" onclick="openBalanceSheet()" type="button">الرصيد (${state.user.coins})</button>
-            </div>
-
-            <div class="profile-bio">${esc(state.user.bio)}</div>
-          </div>
-
-          <div class="p-tabs">
-            <button class="p-tab ${state.profileFilter === "videos" ? "active" : ""}" onclick="setProfileFilter('videos')" type="button">الفيديوهات</button>
-            <button class="p-tab ${state.profileFilter === "saved" ? "active" : ""}" onclick="setProfileFilter('saved')" type="button">المحفوظات</button>
-            <button class="p-tab ${state.profileFilter === "liked" ? "active" : ""}" onclick="setProfileFilter('liked')" type="button">الإعجابات</button>
-          </div>
-
-          <div class="grid-3">
-            ${list.map(v => `
-              <div class="grid-item" onclick="openComments('${v.id}')">
-                <img src="${esc(v.poster)}" alt="" />
-                <span class="grid-play-txt">${esc(v.plays)}</span>
-              </div>
-            `).join("")}
-          </div>
-        `;
-      } else if (state.page === "settings") {
-        vp.innerHTML = `
-          <div class="page-header">
-            <span class="page-heading">الإعدادات — الأمان والخصوصية</span>
-            <button class="btn-gray" onclick="goPage('profile')" type="button">رجوع</button>
-          </div>
-          <div class="list-row">
-            <div><div style="font-weight:700;">حساب خاص</div><div style="font-size:12px;color:var(--text-muted);">تقييد الحساب على المتابعين فقط</div></div>
-            <button class="btn-gray" onclick="togglePrivate()" type="button">${state.user.privateAcc ? "مفعّل" : "إيقاف"}</button>
-          </div>
-          <div class="list-row">
-            <div><div style="font-weight:700;">المصادقة الثنائية (2FA)</div><div style="font-size:12px;color:var(--text-muted);">حماية إضافية لتسجيل الدخول والأمان</div></div>
-            <button class="btn-gray" onclick="toggleTwoFactor()" type="button">${state.user.twoFactor ? "مفعّل" : "إيقاف"}</button>
-          </div>
-          <div class="list-row">
-            <div><div style="font-weight:700;">حالة الاتصال وآخر ظهور</div><div style="font-size:12px;color:var(--text-muted);">إظهار حالة الاتصال في الدردشة</div></div>
-            <button class="btn-gray" onclick="toggleOnlineVis()" type="button">${state.user.onlineStatusVisible ? "ظاهر" : "مخفي"}</button>
-          </div>
-          <div class="list-row">
-            <div><div style="font-weight:700;">الرصيد وبوابات الدفع</div><div style="font-size:12px;color:var(--text-muted);">60% للمذيع • 40% للمنصة</div></div>
-            <button class="btn-red" onclick="openBalanceSheet()" type="button">${state.user.coins} عملة</button>
-          </div>
-        `;
+      if (sessionData?.user) {
+        await showHome(sessionData.user);
+        return;
       }
-
-      syncBadges();
     }
 
-    function renderMessagesOrInbox(vp) {
-      const isInbox = state.page === "inbox";
-      vp.innerHTML = `
-        <div class="page-header">
-          <span class="page-heading">${isInbox ? "صندوق الوارد" : "الرسائل"}</span>
-          <div style="display:flex;gap:6px;">
-            <button class="btn-gray" onclick="goPage('calls')" type="button">المكالمات</button>
-            <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
-          </div>
-        </div>
-        <div class="sub-pill-bar">
-          <button class="sub-pill ${!isInbox ? "active" : ""}" onclick="goPage('messages')" type="button">المحادثات الخاصة</button>
-          <button class="sub-pill ${isInbox ? "active" : ""}" onclick="goPage('inbox')" type="button">ترتيب صندوق الوارد</button>
-          <button class="sub-pill" onclick="goPage('notifications')" type="button">الإشعارات</button>
-        </div>
-        ${state.chats.map(c => {
-          const last = c.messages[c.messages.length - 1];
-          return `
-            <div class="list-row" style="cursor:pointer;" onclick="openChatRoom('${c.id}')">
-              <div class="row-user">
-                <img class="av-50" src="${esc(c.avatar)}" alt="" />
-                <div style="min-width:0;">
-                  <div style="font-weight:700;font-size:14.5px;">
-                    ${esc(c.name)} ${c.online && state.user.onlineStatusVisible ? `<span class="online-dot"></span>` : ""}
-                  </div>
-                  <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                    ${esc(last ? (last.type === "post" ? "شارك منشوراً: " + last.text : last.text) : "ابدأ المحادثة")}
-                  </div>
-                </div>
-              </div>
-              <div style="text-align:left;flex-shrink:0;">
-                <div style="font-size:11px;color:var(--text-muted);">${esc(last ? last.time : c.lastSeen)}</div>
-                ${c.unread ? `<span class="unread-dot"></span>` : ""}
-              </div>
-            </div>
-          `;
-        }).join("")}
-      `;
+    const { data, error } = await client.auth.getSession();
+    if (error) throw error;
+
+    if (data.session?.user) {
+      await showHome(data.session.user);
+    } else {
+      showLogin();
     }
+  } catch (e) {
+    console.error("DERT session error:", e);
+    showAuthForm("login");
+    msg("message", "تعذر فحص تسجيل الدخول: " + (e.message || "حدث خطأ"));
+  }
+}
 
-    function renderChatRoom(vp) {
-      const chat = state.chats.find(c => c.id === state.activeChatId) || state.chats[0];
-      if (!chat) return;
-      chat.unread = 0;
-      chat.messages.forEach(m => { if (m.from === "me") m.read = true; });
-      save();
+checkSession();
+</script>
+<style>
+/* ????? ????? ????? ?????? ?? ?????? ????????? */
+#feed > .card:first-child{
+display:none!important;
+}
 
-      vp.className = "main-viewport light-mode";
-      vp.innerHTML = `
-        <div class="chat-room">
-          <div class="chat-room-header">
-            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
-              <button class="btn-gray" style="padding:5px 10px;" onclick="goPage('messages')" type="button">رجوع</button>
-              <img src="${esc(chat.avatar)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;" alt="" />
-              <div style="min-width:0;">
-                <div style="font-weight:800;font-size:14px;">${esc(chat.name)}</div>
-                <div style="font-size:11px;color:${chat.online ? "var(--green)" : "var(--text-muted)"};">
-                  ${state.user.onlineStatusVisible ? (chat.online ? "متصل الآن" : esc(chat.lastSeen)) : "الحالة مخفية"}
-                </div>
-              </div>
-            </div>
-            <div style="display:flex;gap:6px;">
-              <button class="btn-gray" style="padding:6px 10px;" onclick="startCall('${esc(chat.name)}','صوتية')" type="button">صوتي</button>
-              <button class="btn-red" style="padding:6px 10px;" onclick="startCall('${esc(chat.name)}','مرئية')" type="button">مرئي</button>
-            </div>
-          </div>
+/* ?? ????? ?????? */
+#dertAddPost{
+position:fixed;
+z-index:999;
+right:20px;
+bottom:100px;
+width:60px;
+height:60px;
+border-radius:50%;
+font-size:36px;
+padding:0;
+background:linear-gradient(135deg,#1685ff,#783cff);
+box-shadow:0 5px 25px #1685ff88;
+display:none;
+align-items:center;
+justify-content:center;
+}
 
-          <div class="chat-messages" id="chatMessagesBox">
-            ${chat.messages.map(m => {
-              const sharedVid = m.type === "post" ? state.videos.find(v => v.id === m.postId) : null;
-              return `
-                <div class="msg-bubble-wrap ${m.from}">
-                  <div class="msg-bubble">
-                    ${m.type === "image" ? `<div>صورة مرسلة</div><img class="msg-media-img" src="${esc(m.media)}" alt="" />` : ""}
-                    ${m.type === "video" ? `<div>فيديو مرسل (${esc(m.text)})</div>` : ""}
-                    ${m.type === "voice" ? `<div>رسالة صوتية (${esc(m.duration || "0:08")})</div>` : ""}
-                    ${m.type === "post" ? `
-                      <div>منشور مشارك:</div>
-                      <div class="msg-shared-post" onclick="goPage('home')">
-                        <strong>${esc(sharedVid ? sharedVid.handle : "@dert")}</strong> — ${esc(m.text)}
-                      </div>
-                    ` : ""}
-                    ${m.type === "text" ? esc(m.text) : ""}
-                  </div>
-                  <div class="msg-meta">
-                    <span>${esc(m.time)}</span>
-                    ${m.from === "me" ? `<span>${m.read ? "تمت القراءة" : "تم الإرسال"}</span>` : ""}
-                  </div>
-                </div>
-              `;
-            }).join("")}
-          </div>
+/* ????? ????? */
+#dertCreateModal{
+position:fixed;
+inset:0;
+z-index:2000;
+background:#000c;
+display:none;
+align-items:center;
+justify-content:center;
+padding:15px;
+}
+#dertCreateBox{
+width:100%;
+max-width:500px;
+max-height:90dvh;
+overflow-y:auto;
+background:#101a30;
+border:1px solid #365078;
+border-radius:20px;
+padding:18px;
+}
+#dertCreateBox h3{
+margin-top:0;
+}
+#dertCreateBox label{
+display:block;
+color:#b8c9e8;
+font-size:13px;
+margin-top:13px;
+}
+#dertCreateBox input,
+#dertCreateBox textarea{
+width:100%;
+padding:13px;
+margin:7px 0;
+border:1px solid #263653;
+border-radius:12px;
+background:#0b1428;
+color:white;
+font-size:15px;
+}
+#dertCreateBox input[type=file]{
+font-size:13px;
+}
+#dertCreateClose{
+float:left;
+background:#273653;
+}
+#dertCreateStatus{
+color:#9db9ef;
+font-size:13px;
+}
+</style>
 
-          <div class="chat-toolbar">
-            <div class="chat-media-bar">
-              <button class="chat-tool-chip" onclick="sendMediaMessage('image')" type="button">إرسال صورة</button>
-              <button class="chat-tool-chip" onclick="sendMediaMessage('video')" type="button">إرسال فيديو</button>
-              <button class="chat-tool-chip" onclick="sendMediaMessage('voice')" type="button">رسالة صوتية</button>
-              <button class="chat-tool-chip" onclick="openSharePostToChatModal('${chat.id}')" type="button">إرسال منشور / فيديو</button>
-            </div>
-            <div class="chat-input-row">
-              <input class="field-inp" style="margin-top:0;" id="chatMsgInput" placeholder="اكتب رسالة..." />
-              <button class="btn-red" style="padding:10px 15px;" onclick="sendTextMessage('${chat.id}')" type="button">إرسال</button>
-            </div>
-          </div>
-        </div>
-      `;
+<button id="dertAddPost" type="button">+</button>
 
-      const box = document.getElementById("chatMessagesBox");
-      if (box) box.scrollTop = box.scrollHeight;
-    }
+<div id="dertCreateModal">
+<div id="dertCreateBox">
+ <button id="dertCreateClose" type="button">?</button>
+ <h3>? ????? ????? ????</h3>
 
-    function openChatRoom(id) {
-      state.activeChatId = id;
-      state.page = "chat";
-      save();
-      render();
-    }
+ <label>اختر عدة صور أو فيديو واحد</label>
+ <input id="dertMediaFile" type="file" accept="image/*,video/*" multiple>
+ <div id="dertMediaPreview" class="media-preview"></div>
+ <p id="dertMediaPreviewCount" class="media-preview-count"></p>
+ <label>الوصف</label>
+ <textarea id="dertDescription" placeholder="اكتب وصف المنشور..."></textarea>
 
-    function openChatWithAuthor(vidId) {
-      const v = state.videos.find(x => x.id === vidId);
-      if (!v) return;
-      let existing = state.chats.find(c => c.handle === v.handle);
-      if (!existing) {
-        existing = {
-          id: "u_" + Date.now(),
-          name: v.author,
-          handle: v.handle,
-          avatar: v.avatar,
-          online: true,
-          lastSeen: "متصل الآن",
-          unread: 0,
-          messages: []
-        };
-        state.chats.unshift(existing);
-      }
-      openChatRoom(existing.id);
-    }
+ <button id="dertPublishButton" class="full" type="button">
+  ? ??? ???????
+ </button>
 
-    function sendTextMessage(chatId) {
-      const inp = document.getElementById("chatMsgInput");
-      const txt = inp?.value.trim();
-      if (!txt) return;
-      const chat = state.chats.find(c => c.id === chatId);
-      if (!chat) return;
-      chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "text", text: txt, time: "الآن", read: true });
-      save();
-      renderChatRoom(document.getElementById("viewport"));
-    }
+ <p id="dertCreateStatus"></p>
+</div>
+</div>
 
-    function sendMediaMessage(kind) {
-      const chat = state.chats.find(c => c.id === state.activeChatId);
-      if (!chat) return;
-      const rnd = Math.floor(70 + Math.random() * 25);
-      if (kind === "image") {
-        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "image", media: `https://picsum.photos/400/300?random=${rnd}`, time: "الآن", read: true });
-      } else if (kind === "video") {
-        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "video", text: "مقطع فيديو 0:15", time: "الآن", read: true });
-      } else if (kind === "voice") {
-        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "voice", duration: "0:09", time: "الآن", read: true });
-      }
-      save();
-      renderChatRoom(document.getElementById("viewport"));
-      toast("تم الإرسال");
-    }
+<script>
+(function(){
 
-    function openSharePostToChatModal(chatId) {
-      openSheet("إرسال منشور أو فيديو للمحادثة", `
-        ${state.videos.map(v => `
-          <div class="list-row" style="cursor:pointer;" onclick="sendSharedPost('${chatId}','${v.id}')">
-            <div><strong>${esc(v.handle)}</strong> — ${esc(v.caption)}</div>
-            <button class="btn-red" type="button">إرسال</button>
-          </div>
-        `).join("")}
-      `);
-    }
+const addButton=document.getElementById("dertAddPost");
+const modal=document.getElementById("dertCreateModal");
+const closeButton=document.getElementById("dertCreateClose");
+const publishButton=document.getElementById("dertPublishButton");
+const status=document.getElementById("dertCreateStatus");
 
-    function sendSharedPost(chatId, vidId) {
-      const chat = state.chats.find(c => c.id === chatId);
-      const vid = state.videos.find(v => v.id === vidId);
-      if (!chat || !vid) return;
-      chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "post", postId: vid.id, text: vid.caption, time: "الآن", read: true });
-      save();
-      closeSheet();
-      renderChatRoom(document.getElementById("viewport"));
-      toast("تم إرسال المنشور في المحادثة");
-    }
+function updateAddButton(){
+ const videos=document.getElementById("videos");
+ addButton.style.display=
+  videos && videos.classList.contains("active")
+  ? "flex":"none";
+}
 
-    function startCall(name, kind) {
-      state.calls.unshift({ id: "cl_" + Date.now(), name, avatar: state.user.avatar, kind, status: "جارية الآن", time: "الآن" });
-      save();
-      openSheet(`مكالمة ${kind} — ${name}`, `
-        <div style="text-align:center;padding:14px 0;">
-          <div style="font-size:16px;font-weight:800;">جاري الاتصال (${kind}) مع ${esc(name)}</div>
-          <div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">مكالمات DERT الصوتية والمرئية مفعّلة</div>
-          <button class="primary-submit" onclick="closeSheet();toast('تم إنهاء المكالمة')" type="button">إنهاء المكالمة</button>
-        </div>
-      `);
-    }
+addButton.onclick=()=>{
+ if(!currentUser){
+  alert("??? ?????? ?????");
+  return;
+ }
+ modal.style.display="flex";
+};
 
-    function renderExploreList(q) {
-      const term = (q || "").trim().toLowerCase();
-      const matched = state.videos.filter(v => !term || v.author.toLowerCase().includes(term) || v.handle.toLowerCase().includes(term) || v.caption.toLowerCase().includes(term));
-      const box = document.getElementById("exploreResults");
-      if (!box) return;
-      box.innerHTML = `
-        <div style="padding:8px 16px;font-size:12px;font-weight:700;color:var(--text-muted);">الأشخاص</div>
-        ${matched.map(v => `
-          <div class="list-row">
-            <div class="row-user">
-              <img class="av-50" src="${esc(v.avatar)}" alt="" />
-              <div><div style="font-weight:700;">${esc(v.author)}</div><div style="font-size:12px;color:var(--text-muted);">${esc(v.handle)}</div></div>
-            </div>
-            <button class="btn-gray" onclick="openChatWithAuthor('${v.id}')" type="button">دردشة</button>
-          </div>
-        `).join("")}
-        <div style="padding:8px 16px;font-size:12px;font-weight:700;color:var(--text-muted);">الفيديوهات</div>
-        <div class="grid-3">
-          ${matched.map(v => `
-            <div class="grid-item" onclick="openComments('${v.id}')">
-              <img src="${esc(v.poster)}" alt="" />
-              <span class="grid-play-txt">${esc(v.plays)}</span>
-            </div>
-          `).join("")}
-        </div>
-      `;
-    }
+closeButton.onclick=()=>modal.style.display="none";
+document.getElementById("dertMediaFile").addEventListener("change",()=>showMediaPreview(document.getElementById("dertMediaFile"),document.getElementById("dertMediaPreview"),document.getElementById("dertMediaPreviewCount")));
 
-    function readNotif(id) {
-      const n = state.notifications.find(x => x.id === id);
-      if (n) { n.read = true; save(); render(); }
-    }
+modal.onclick=(e)=>{
+ if(e.target===modal)modal.style.display="none";
+};
 
-    function markAllNotifsRead() {
-      state.notifications.forEach(n => n.read = true);
-      save(); render(); toast("تم تحديد الكل كمقروء");
-    }
+const observer=new MutationObserver(updateAddButton);
+observer.observe(document.getElementById("videos"),{
+ attributes:true,
+ attributeFilter:["class"]
+});
 
-    function attachVideoObservers() {
-      const slides = document.querySelectorAll(".tt-slide");
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          const slide = entry.target;
-          const vid = slide.querySelector("video");
-          if (!vid) return;
-          if (entry.isIntersecting) {
-            slide.classList.remove("paused");
-            vid.play().catch(() => {});
-          } else {
-            vid.pause();
-            vid.currentTime = 0;
-          }
-        });
-      }, { threshold: 0.65 });
+/* ????? ????? ??? ???? ???????? */
+const videoObserver=new MutationObserver(()=>{
+ const empty=document.querySelector("#videosList .videos-empty");
+ if(!empty)return;
 
-      slides.forEach(slide => {
-        const vid = slide.querySelector("video");
-        const bar = slide.querySelector(".seek-fill");
-        if (vid && bar) {
-          vid.addEventListener("timeupdate", () => {
-            if (vid.duration) bar.style.width = ((vid.currentTime / vid.duration) * 100) + "%";
-          });
-        }
-        io.observe(slide);
-      });
-    }
+ const description=empty.querySelector("p");
+ if(description){
+  description.textContent="?? ??? ?? ????? ???? ?? ????? ??? DERT. ???? ?? + ?????.";
+ }
 
-    function onSlideClick(e, id) {
-      const slide = e.currentTarget;
-      if (tapTimer) {
-        clearTimeout(tapTimer);
-        tapTimer = null;
-        const rect = slide.getBoundingClientRect();
-        const pop = document.createElement("div");
-        pop.className = "heart-pop";
-        pop.textContent = "♥";
-        pop.style.left = (e.clientX - rect.left) + "px";
-        pop.style.top = (e.clientY - rect.top) + "px";
-        slide.appendChild(pop);
-        setTimeout(() => pop.remove(), 750);
-        const v = state.videos.find(x => x.id === id);
-        if (v && !v.liked) toggleLike(id);
-      } else {
-        tapTimer = setTimeout(() => {
-          tapTimer = null;
-          const vid = slide.querySelector("video");
-          if (!vid) return;
-          if (vid.paused) { vid.play().catch(() => {}); slide.classList.remove("paused"); }
-          else { vid.pause(); slide.classList.add("paused"); }
-        }, 230);
-      }
-    }
+ const oldButton=empty.querySelector("button");
+ if(oldButton){
+  oldButton.textContent="+ ????? ?????";
+  oldButton.onclick=()=>addButton.click();
+ }
+});
 
-    function setFeedFilter(f) { state.feedFilter = f; save(); render(); }
-    function setProfileFilter(f) { state.profileFilter = f; save(); render(); }
+videoObserver.observe(document.getElementById("videosList"),{
+ childList:true,
+ subtree:true
+});
 
-    function toggleLike(id) {
-      const v = state.videos.find(x => x.id === id);
-      if (!v) return;
-      v.liked = !v.liked;
-      v.likes += v.liked ? 1 : -1;
-      state.user.likes += v.liked ? 1 : -1;
-      save(); render();
-    }
+publishButton.onclick=async()=>{
+ if(!currentUser){
+  status.textContent="???? ????? ?????? ?????";
+  return;
+ }
 
-    function toggleSave(id) {
-      const v = state.videos.find(x => x.id === id);
-      if (!v) return;
-      v.saved = !v.saved;
-      v.saves = (v.saves || 0) + (v.saved ? 1 : -1);
-      save(); render();
-      toast(v.saved ? "تمت الإضافة إلى المحفوظات" : "تمت الإزالة من المحفوظات");
-    }
+ const files=Array.from(document.getElementById("dertMediaFile").files||[]);
+ const content=document.getElementById("dertDescription").value.trim();
+ try{validateMedia(files)}catch(e){status.textContent=e.message;return}
+ if(!files.length){status.textContent="اختر صوراً أو فيديو واحداً";return}
 
-    function toggleFollow(id) {
-      const v = state.videos.find(x => x.id === id);
-      if (!v) return;
-      v.following = !v.following;
-      state.user.following += v.following ? 1 : -1;
-      save(); render();
-      toast(v.following ? "تمت المتابعة" : "تم إلغاء المتابعة");
-    }
+ publishButton.disabled=true;
+ status.textContent="???? ??? ???????...";
 
-    function openDrawer() { document.getElementById("drawerBackdrop").classList.add("open"); }
-    function closeDrawer() { document.getElementById("drawerBackdrop").classList.remove("open"); }
+ try{
+  const urls=[];for(const file of files)urls.push(await uploadFile(file,"posts"));
+  const media_type=files[0].type.startsWith("video/")?"video":"image";
+  const image_url=media_type==="video"?urls[0]:JSON.stringify(urls);
+  const {error}=await client.from("posts").insert({user_id:currentUser.id,content:content||null,image_url,media_type});
 
-    function openSheet(title, html) {
-      document.getElementById("modalTitle").textContent = title;
-      document.getElementById("modalBody").innerHTML = html;
-      document.getElementById("modalBackdrop").classList.add("open");
-    }
+  if(error)throw error;
 
-    function closeSheet() { document.getElementById("modalBackdrop").classList.remove("open"); }
+  status.textContent="?? ????? ????? ??";
 
-    function openComments(id) {
-      const v = state.videos.find(x => x.id === id);
-      if (!v) return;
-      openSheet(`${fmtNum(v.comments.length)} تعليق`, `
-        <div>
-          ${v.comments.map(c => `
-            <div class="cmt-row">
-              <div style="display:flex;gap:10px;flex:1;min-width:0;">
-                <img class="cmt-av" src="${esc(c.avatar)}" alt="" />
-                <div>
-                  <div style="font-size:12px;font-weight:700;color:var(--text-muted);">${esc(c.user)}</div>
-                  <div style="font-size:13.5px;margin-top:2px;">${esc(c.text)}</div>
-                  <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">${esc(c.time)} • رد</div>
-                </div>
-              </div>
-              <button style="background:none;border:none;color:${c.liked ? "#fe2c55" : "#737685"};font-size:11.5px;font-weight:700;cursor:pointer;" onclick="likeComment('${id}','${c.id}')" type="button">
-                <div>${c.liked ? "إعجاب" : "أعجبني"}</div>
-                <div>${fmtNum(c.likes || 0)}</div>
-              </button>
-            </div>
-          `).join("") || `<div style="text-align:center;color:var(--text-muted);padding:18px 0;">كن أول من يعلّق</div>`}
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
-          <input class="field-inp" style="margin-top:0;" id="cmtInp" placeholder="إضافة تعليق..." />
-          <button class="primary-submit" style="margin-top:0;width:auto;padding:10px 16px;" onclick="submitCmt('${id}')" type="button">نشر</button>
-        </div>
-      `);
-    }
+  document.getElementById("dertMediaFile").value="";
+  document.getElementById("dertDescription").value="";
+  document.getElementById("dertMediaPreview").replaceChildren();
+  document.getElementById("dertMediaPreviewCount").textContent="";
 
-    function submitCmt(id) {
-      const val = document.getElementById("cmtInp").value.trim();
-      if (!val) return;
-      const v = state.videos.find(x => x.id === id);
-      v.comments.push({ id: "c_" + Date.now(), user: state.user.name, avatar: state.user.avatar, text: val, time: "الآن", likes: 0, liked: false });
-      save(); render(); openComments(id);
-    }
+  await loadVideos();
+  await loadPosts();
+  await loadStats();
 
-    function likeComment(vidId, cmtId) {
-      const v = state.videos.find(x => x.id === vidId);
-      const c = v?.comments.find(x => x.id === cmtId);
-      if (!c) return;
-      c.liked = !c.liked;
-      c.likes = (c.likes || 0) + (c.liked ? 1 : -1);
-      save(); openComments(vidId);
-    }
+  setTimeout(()=>{
+   modal.style.display="none";
+   status.textContent="";
+  },900);
 
-    function openShareModal(id) {
-      const v = state.videos.find(x => x.id === id);
-      if (!v) return;
-      openSheet(`مشاركة (${fmtNum(v.shares || 0)})`, `
-        <div class="share-grid">
-          <button class="share-choice" onclick="confirmShare('${id}','إعادة النشر')" type="button">إعادة النشر</button>
-          <button class="share-choice" onclick="confirmShare('${id}','نسخ الرابط')" type="button">نسخ الرابط</button>
-          <button class="share-choice" onclick="shareToChatDirect('${id}')" type="button">إرسال في الدردشة</button>
-          <button class="share-choice" onclick="confirmShare('${id}','مشاركة خارجية')" type="button">مشاركة خارجية</button>
-        </div>
-      `);
-    }
+ }catch(error){
+  status.textContent="???? ?????: "+error.message;
+ }finally{
+  publishButton.disabled=false;
+ }
+};
 
-    function shareToChatDirect(vidId) {
-      const vid = state.videos.find(x => x.id === vidId);
-      const chat = state.chats[0];
-      if (vid && chat) {
-        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "post", postId: vid.id, text: vid.caption, time: "الآن", read: true });
-        vid.shares = (vid.shares || 0) + 1;
-        save(); closeSheet(); openChatRoom(chat.id); toast("تم إرسال المقطع في الدردشة");
-      }
-    }
+// عرض الملف الشخصي لأي مستخدم من البحث أو قائمة المتابعين أو المنشورات
+let publicProfileUserId=null;
+const publicProfileModal=el("publicProfileModal");
+el("closePublicProfile").onclick=()=>publicProfileModal.style.display="none";
+publicProfileModal.addEventListener("click",e=>{if(e.target===publicProfileModal)publicProfileModal.style.display="none"});
+async function showPublicProfile(userId){
+ if(!currentUser||!userId)return;
+ if(userId===currentUser.id){publicProfileModal.style.display="none";openTab("profile");return}
+ publicProfileUserId=userId;publicProfileModal.style.display="flex";
+ el("publicProfileStatus").textContent="جارٍ تحميل الملف الشخصي...";
+ el("publicFollowBtn").disabled=true;el("publicMessageBtn").disabled=true;
+ try{
+  const {data:p,error}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified").eq("id",userId).maybeSingle();
+  if(error)throw error;if(!p)throw new Error("هذا الحساب غير متاح أو لا يمكن عرضه");
+  el("publicProfileAvatar").replaceChildren(makeAvatar(p.avatar_url,p.full_name||p.username));
+  addVerifiedName(el("publicProfileName"),p.full_name||p.username||"مستخدم",p.is_verified===true);
+  el("publicProfileUsername").textContent="@"+(p.username||"");el("publicProfileBio").textContent=p.bio||"لا توجد نبذة شخصية";
+  const [posts,followers,following,relation]=await Promise.all([
+   client.from("posts").select("id",{count:"exact",head:true}).eq("user_id",userId),
+   client.from("follows").select("follower_id",{count:"exact",head:true}).eq("following_id",userId),
+   client.from("follows").select("following_id",{count:"exact",head:true}).eq("follower_id",userId),
+   client.from("follows").select("follower_id").eq("follower_id",currentUser.id).eq("following_id",userId).maybeSingle()
+  ]);
+  if(posts.error)throw posts.error;if(followers.error)throw followers.error;if(following.error)throw following.error;if(relation.error)throw relation.error;
+  el("publicPostsCount").textContent=posts.count||0;el("publicFollowersCount").textContent=followers.count||0;el("publicFollowingCount").textContent=following.count||0;
+  const fb=el("publicFollowBtn");fb.dataset.following=relation.data?"yes":"";fb.textContent=relation.data?"إلغاء المتابعة":"متابعة";fb.disabled=false;
+  el("publicMessageBtn").disabled=false;el("publicProfileStatus").textContent="";
+ }catch(e){el("publicProfileStatus").textContent="تعذر فتح الملف: "+e.message}
+}
+el("publicFollowBtn").onclick=async()=>{
+ const b=el("publicFollowBtn");if(!publicProfileUserId)return;b.disabled=true;
+ try{await followUser(publicProfileUserId,b);el("publicFollowersCount").textContent=Number(el("publicFollowersCount").textContent)+(b.dataset.following==="yes"?1:-1)}
+ catch(e){el("publicProfileStatus").textContent=e.message}
+ finally{b.disabled=false}
+};
+el("publicMessageBtn").onclick=async()=>{
+ if(!publicProfileUserId)return;
+ el("publicMessageBtn").disabled=true;el("publicProfileStatus").textContent="جارٍ فتح المحادثة...";
+ try{const id=publicProfileUserId,username=el("publicProfileUsername").textContent.replace(/^@/,"");publicProfileModal.style.display="none";await startChat(id,username)}
+ catch(e){el("publicProfileStatus").textContent="تعذرت المراسلة: "+e.message}
+ finally{el("publicMessageBtn").disabled=false}
+};
 
-    function confirmShare(id, method) {
-      const v = state.videos.find(x => x.id === id);
-      if (!v) return;
-      v.shares = (v.shares || 0) + 1;
-      save(); render(); closeSheet();
-      toast(`تمت المشاركة عبر ${method}`);
-    }
+// فتح قوائم المتابعين والأشخاص الذين يتابعهم المستخدم
+const followListModal=document.getElementById("followListModal");
+const followListContent=document.getElementById("followListContent");
+const followListTitle=document.getElementById("followListTitle");
+async function showFollowList(kind){
+ if(!currentUser)return;
+ followListTitle.textContent=kind==="followers"?"المتابعون":"يتابعهم";
+ followListContent.textContent="جارٍ تحميل القائمة...";
+ followListModal.style.display="flex";
+ try{
+  const column=kind==="followers"?"follower_id":"following_id";
+  const filter=kind==="followers"?"following_id":"follower_id";
+  const {data:relations,error}=await client.from("follows").select(column).eq(filter,currentUser.id);
+  if(error)throw error;
+  const ids=[...new Set((relations||[]).map(x=>x[column]).filter(Boolean))];
+  if(!ids.length){followListContent.textContent=kind==="followers"?"لا يوجد متابعون حتى الآن":"لا تتابع أي حساب حتى الآن";return}
+  const {data:people,error:peopleError}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified").in("id",ids);
+  if(peopleError)throw peopleError;
+  const byId=new Map((people||[]).map(p=>[p.id,p]));
+  followListContent.replaceChildren();
+  ids.forEach(id=>{
+   const person=byId.get(id);if(!person)return;
+   const row=document.createElement("div");row.className="follow-list-row";row.onclick=()=>{followListModal.style.display="none";showPublicProfile(id)};
+   row.appendChild(makeAvatar(person.avatar_url,person.full_name||person.username||"مستخدم"));
+   const info=document.createElement("div");info.className="follow-person-info";
+   const name=document.createElement("strong");addVerifiedName(name,person.full_name||person.username||"مستخدم",person.is_verified===true);
+   const username=document.createElement("div");username.className="small";username.textContent="@"+(person.username||"");
+   info.append(name,username);row.appendChild(info);followListContent.appendChild(row);
+  });
+  if(!followListContent.childElementCount)followListContent.textContent="تعذر العثور على الحسابات";
+ }catch(error){followListContent.textContent="تعذر تحميل القائمة: "+error.message}
+}
+document.getElementById("openFollowers").onclick=()=>showFollowList("followers");
+document.getElementById("openFollowing").onclick=()=>showFollowList("following");
+document.getElementById("closeFollowList").onclick=()=>followListModal.style.display="none";
+followListModal.addEventListener("click",e=>{if(e.target===followListModal)followListModal.style.display="none"});
 
-    function openBalanceSheet() {
-      const gws = ["زين كاش", "سوبر كي", "زين العراق", "آسياسيل"];
-      const mShare = Math.round(state.user.grossCoins * 0.6);
-      const pShare = Math.round(state.user.grossCoins * 0.4);
-      openSheet("الرصيد", `
-        <div style="font-size:24px;font-weight:800;">${state.user.coins} عملة</div>
-        <div style="font-size:12.5px;color:var(--text-muted);margin-top:4px;">حصة المذيع (60%): ${mShare} • حصة المنصة (40%): ${pShare}</div>
-        <div class="gw-grid">
-          ${gws.map(g => `<button class="gw-opt ${state.user.gateway === g ? "active" : ""}" onclick="pickGateway('${g}')" type="button">${g}</button>`).join("")}
-        </div>
-        <button class="primary-submit" onclick="topupCoins()" type="button">+ شحن 200 عملة (${esc(state.user.gateway)})</button>
-      `);
-    }
+updateAddButton();
 
-    function pickGateway(g) { state.user.gateway = g; save(); openBalanceSheet(); }
-    function topupCoins() {
-      state.user.coins += 200;
-      state.user.grossCoins += 200;
-      save(); render(); openBalanceSheet(); toast("تم شحن 200 عملة");
-    }
-
-    function saveOfflineVideo() { state.user.offlineCount += 1; save(); toast("تم حفظ فيديو دون اتصال"); }
-    function addPromo() { state.user.promoCount += 1; save(); toast("تم تفعيل حملة ترويج"); }
-    function togglePrivate() { state.user.privateAcc = !state.user.privateAcc; save(); render(); toast("تم تحديث الخصوصية"); }
-    function toggleTwoFactor() { state.user.twoFactor = !state.user.twoFactor; save(); render(); toast("تم تحديث المصادقة الثنائية"); }
-    function toggleOnlineVis() { state.user.onlineStatusVisible = !state.user.onlineStatusVisible; save(); render(); toast("تم تحديث حالة الاتصال"); }
-
-    function openEditProfile() {
-      openSheet("تعديل الملف الشخصي", `
-        <input class="field-inp" id="pName" value="${esc(state.user.name)}" placeholder="الاسم" />
-        <input class="field-inp" id="pHandle" value="${esc(state.user.handle)}" placeholder="@username" />
-        <textarea class="field-inp" id="pBio" rows="3" placeholder="النبذة التعريفية">${esc(state.user.bio)}</textarea>
-        <button class="primary-submit" onclick="saveProfile()" type="button">حفظ</button>
-      `);
-    }
-
-    function saveProfile() {
-      state.user.name = document.getElementById("pName").value.trim() || state.user.name;
-      const h = document.getElementById("pHandle").value.trim();
-      if (h) state.user.handle = h.startsWith("@") ? h : "@" + h;
-      state.user.bio = document.getElementById("pBio").value;
-      save(); render(); closeSheet(); toast("تم الحفظ");
-    }
-
-    function openLiveModal() {
-      openSheet("البث المباشر (LIVE)", `
-        <div style="text-align:center;padding:10px 0;">
-          <div style="font-size:15px;font-weight:800;">بدء بث مباشر على DERT</div>
-          <div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">نسبة أرباح الهدايا: 60% للمذيع • 40% للمنصة</div>
-          <button class="primary-submit" onclick="closeSheet();toast('تم بدء البث المباشر')" type="button">ابدأ البث المباشر</button>
-        </div>
-      `);
-    }
-
-    function openUploadModal() {
-      openSheet("نشر مقطع جديد", `
-        <input class="field-inp" id="capInp" placeholder="اكتب وصف المقطع..." />
-        <input class="field-inp" id="urlInp" placeholder="رابط فيديو MP4 مباشر (اختياري)" />
-        <button class="primary-submit" onclick="createNewVideo()" type="button">نشر الآن</button>
-      `);
-    }
-
-    function createNewVideo() {
-      const cap = document.getElementById("capInp").value.trim() || "مقطع جديد على DERT";
-      const customUrl = document.getElementById("urlInp").value.trim();
-      const rnd = Math.floor(60 + Math.random() * 40);
-      state.videos.unshift({
-        id: "v_" + Date.now(),
-        author: state.user.name,
-        handle: state.user.handle,
-        avatar: state.user.avatar,
-        videoUrl: customUrl || "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
-        poster: `https://picsum.photos/480/850?random=${rnd}`,
-        caption: cap,
-        sound: "الصوت الأصلي - " + state.user.handle,
-        plays: "1",
-        likes: 0,
-        saves: 0,
-        shares: 0,
-        liked: false,
-        saved: false,
-        following: true,
-        comments: []
-      });
-      save(); closeSheet(); state.page = "home"; state.feedFilter = "foryou"; render(); toast("تم نشر المقطع");
-    }
-
-    document.querySelectorAll(".nav-item[data-page]").forEach(btn => {
-      btn.addEventListener("click", () => goPage(btn.dataset.page));
-    });
-
-    document.getElementById("openUploadBtn").addEventListener("click", openUploadModal);
-    document.getElementById("closeDrawerBtn").addEventListener("click", closeDrawer);
-    document.getElementById("drawerBackdrop").addEventListener("click", e => {
-      if (e.target.id === "drawerBackdrop") closeDrawer();
-    });
-    document.getElementById("closeModalBtn").addEventListener("click", closeSheet);
-    document.getElementById("modalBackdrop").addEventListener("click", e => {
-      if (e.target.id === "modalBackdrop") closeSheet();
-    });
-
-    render();
-  </script>
+})();
+</script>
 </body>
 </html>

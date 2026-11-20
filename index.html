@@ -9,13 +9,15 @@
     :root {
       --bg-dark: #000000;
       --bg-light: #ffffff;
-      --surface: #f2f2f4;
+      --surface: #f2f2f5;
+      --surface-2: #e7e8ed;
       --text-dark: #161823;
       --text-muted: #737685;
       --border: #e8e8ec;
       --tt-red: #fe2c55;
       --tt-cyan: #25f4ee;
       --tt-yellow: #face15;
+      --green: #0f9d58;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -56,31 +58,31 @@
       overflow: hidden;
     }
 
-    /* التمرير العمودي */
+    /* منطقة المحتوى الرئيسية */
     .main-viewport {
       flex: 1;
       height: 100%;
       overflow-y: auto;
       scroll-snap-type: y mandatory;
       scrollbar-width: none;
-      padding-bottom: calc(54px + var(--safe-bottom));
+      padding-bottom: calc(56px + var(--safe-bottom));
     }
 
     .main-viewport::-webkit-scrollbar {
       display: none;
     }
 
-    .main-viewport.light-view {
+    .main-viewport.light-mode {
       background: var(--bg-light);
       color: var(--text-dark);
       scroll-snap-type: none;
     }
 
-    /* بطاقة الفيديو الكاملة */
+    /* فيديوهات الرئيسية (TikTok Feed) */
     .tt-slide {
       position: relative;
       width: 100%;
-      height: calc(100dvh - 54px - var(--safe-bottom));
+      height: calc(100dvh - 56px - var(--safe-bottom));
       scroll-snap-align: start;
       scroll-snap-stop: always;
       background: #050507;
@@ -105,7 +107,7 @@
       inset: 0;
       background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.48) 0%,
+        rgba(0, 0, 0, 0.5) 0%,
         rgba(0, 0, 0, 0) 26%,
         rgba(0, 0, 0, 0) 60%,
         rgba(0, 0, 0, 0.86) 100%
@@ -123,7 +125,7 @@
       border-radius: 50%;
       background: rgba(0, 0, 0, 0.48);
       color: #fff;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 800;
       display: grid;
       place-items: center;
@@ -172,7 +174,7 @@
       100% { transform: translate(-50%, -78%) scale(1.25) rotate(0deg); opacity: 0; }
     }
 
-    /* الشريط العلوي */
+    /* الشريط العلوي للرئيسية */
     .tt-top {
       position: fixed;
       top: calc(10px + var(--safe-top));
@@ -240,14 +242,14 @@
       background: none;
       border: none;
       color: #fff;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       padding: 5px 8px;
       cursor: pointer;
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     }
 
-    /* المحتوى السفلي والشريط الجانبي (بدون أيقونات، نص نظيف) */
+    /* التفاعل الجانبي والمعلومات */
     .tt-overlay {
       position: relative;
       z-index: 10;
@@ -298,7 +300,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 11px;
       flex-shrink: 0;
     }
 
@@ -347,7 +349,7 @@
       border: 1px solid rgba(255, 255, 255, 0.22);
       color: #fff;
       border-radius: 12px;
-      padding: 7px 9px;
+      padding: 6px 8px;
       min-width: 58px;
       display: flex;
       flex-direction: column;
@@ -355,7 +357,7 @@
       gap: 2px;
       cursor: pointer;
       backdrop-filter: blur(6px);
-      transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+      transition: transform 0.14s ease;
     }
 
     .rail-act-btn:active {
@@ -380,7 +382,7 @@
     }
 
     .rail-act-val {
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 800;
       direction: ltr;
     }
@@ -414,18 +416,19 @@
       to { transform: rotate(360deg); }
     }
 
-    /* الصفحات البيضاء */
+    /* الصفحات الداخلية */
     .page-header {
       position: sticky;
       top: 0;
       z-index: 15;
-      height: 50px;
-      padding: var(--safe-top) 16px 0;
+      min-height: 52px;
+      padding: calc(var(--safe-top) + 4px) 14px 4px;
       background: #fff;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
     }
 
     .page-heading {
@@ -433,11 +436,40 @@
       font-weight: 800;
     }
 
+    .sub-pill-bar {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      background: #fff;
+    }
+
+    .sub-pill-bar::-webkit-scrollbar { display: none; }
+
+    .sub-pill {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 999px;
+      padding: 6px 13px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .sub-pill.active {
+      background: var(--text-dark);
+      color: #fff;
+      border-color: var(--text-dark);
+    }
+
     .list-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 13px 16px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border);
       gap: 10px;
     }
@@ -447,6 +479,7 @@
       align-items: center;
       gap: 12px;
       min-width: 0;
+      flex: 1;
     }
 
     .av-50 {
@@ -457,13 +490,23 @@
       flex-shrink: 0;
     }
 
+    .online-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 2px solid #fff;
+      display: inline-block;
+      margin-right: 4px;
+    }
+
     .btn-red {
       background: var(--tt-red);
       color: #fff;
       border: none;
       border-radius: 7px;
-      padding: 8px 15px;
-      font-size: 13px;
+      padding: 8px 14px;
+      font-size: 12.5px;
       font-weight: 700;
       cursor: pointer;
     }
@@ -473,77 +516,24 @@
       color: var(--text-dark);
       border: none;
       border-radius: 7px;
-      padding: 8px 15px;
-      font-size: 13px;
+      padding: 8px 14px;
+      font-size: 12.5px;
       font-weight: 700;
       cursor: pointer;
     }
 
-    .stories-strip {
-      display: flex;
-      gap: 14px;
-      padding: 12px 16px;
-      overflow-x: auto;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .stories-strip::-webkit-scrollbar { display: none; }
-
-    .story-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      min-width: 60px;
-      font-size: 11.5px;
+    .btn-green {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    .story-circle {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      border: 2px solid #00c48c;
-      padding: 2px;
-      position: relative;
-    }
-
-    .story-circle img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .story-add {
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      width: 19px;
-      height: 19px;
-      border-radius: 50%;
-      background: var(--tt-cyan);
-      color: #000;
-      font-size: 14px;
-      font-weight: 900;
-      display: grid;
-      place-items: center;
-      border: 2px solid #fff;
-    }
-
-    .badge-circle {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      color: #fff;
-      font-size: 12px;
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-
-    .red-dot {
+    .unread-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
@@ -551,7 +541,174 @@
       display: inline-block;
     }
 
-    /* الملف الشخصي */
+    /* شاشة الدردشة المباشرة الكاملة */
+    .chat-room {
+      display: flex;
+      flex-direction: column;
+      height: calc(100dvh - 56px - var(--safe-bottom));
+      background: #f7f8fa;
+    }
+
+    .chat-room-header {
+      background: #fff;
+      padding: calc(var(--safe-top) + 8px) 12px 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg-bubble-wrap {
+      display: flex;
+      flex-direction: column;
+      max-width: 80%;
+    }
+
+    .msg-bubble-wrap.me {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .msg-bubble-wrap.them {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .msg-bubble {
+      padding: 10px 13px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .msg-bubble-wrap.me .msg-bubble {
+      background: var(--tt-red);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-bubble-wrap.them .msg-bubble {
+      background: #fff;
+      color: var(--text-dark);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-media-img {
+      width: 190px;
+      height: 135px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .msg-shared-post {
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 10px;
+      padding: 8px;
+      margin-top: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .msg-meta {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .chat-toolbar {
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .chat-media-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+
+    .chat-media-bar::-webkit-scrollbar { display: none; }
+
+    .chat-tool-chip {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* الاستكشاف والملف الشخصي */
+    .search-box-wrap {
+      padding: 10px 14px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      padding-top: 2px;
+    }
+
+    .grid-item {
+      aspect-ratio: 3 / 4;
+      position: relative;
+      background: #14151a;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .grid-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .grid-play-txt {
+      position: absolute;
+      bottom: 5px;
+      right: 6px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+      direction: ltr;
+    }
+
     .profile-head {
       padding: calc(10px + var(--safe-top)) 16px 14px;
       text-align: center;
@@ -631,46 +788,13 @@
       background: var(--text-dark);
     }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-      padding-top: 2px;
-    }
-
-    .grid-item {
-      aspect-ratio: 3 / 4;
-      position: relative;
-      background: #14151a;
-      cursor: pointer;
-      overflow: hidden;
-    }
-
-    .grid-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .grid-play-txt {
-      position: absolute;
-      bottom: 5px;
-      right: 6px;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
-      direction: ltr;
-    }
-
-    /* الشريط السفلي */
+    /* الشريط السفلي (5 أقسام تشمل الدردشة والرسائل وكل الأقسام) */
     .bottom-nav {
       position: fixed;
       bottom: 0;
       width: 100%;
       max-width: 440px;
-      height: calc(54px + var(--safe-bottom));
+      height: calc(56px + var(--safe-bottom));
       padding-bottom: var(--safe-bottom);
       background: #000000;
       color: #ffffff;
@@ -697,7 +821,7 @@
       align-items: center;
       justify-content: center;
       gap: 2px;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       cursor: pointer;
       position: relative;
@@ -710,14 +834,14 @@
     }
 
     .plus-box {
-      width: 44px;
-      height: 28px;
+      width: 42px;
+      height: 27px;
       border-radius: 8px;
       background: #ffffff;
       color: #000000;
       display: grid;
       place-items: center;
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 900;
       box-shadow: -3px 0 0 var(--tt-cyan), 3px 0 0 var(--tt-red);
     }
@@ -729,8 +853,8 @@
 
     .inbox-num {
       position: absolute;
-      top: 4px;
-      left: 18%;
+      top: 3px;
+      left: 16%;
       background: var(--tt-red);
       color: #fff;
       font-size: 10px;
@@ -739,7 +863,7 @@
       border-radius: 999px;
     }
 
-    /* القائمة الجانبية والنوافذ السفلية */
+    /* القائمة الجانبية والنوافذ */
     .drawer-backdrop {
       position: fixed;
       inset: 0;
@@ -754,8 +878,8 @@
     }
 
     .drawer-box {
-      width: 82%;
-      max-width: 330px;
+      width: 84%;
+      max-width: 340px;
       background: #fff;
       color: var(--text-dark);
       height: 100%;
@@ -768,7 +892,7 @@
       font-size: 12px;
       font-weight: 600;
       color: var(--text-muted);
-      padding: 14px 18px 6px;
+      padding: 12px 18px 5px;
     }
 
     .drawer-item-btn {
@@ -776,11 +900,11 @@
       border: none;
       background: #fff;
       color: var(--text-dark);
-      padding: 13px 18px;
+      padding: 12px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 600;
       cursor: pointer;
       text-align: right;
@@ -807,7 +931,7 @@
     .modal-sheet {
       width: 100%;
       max-width: 440px;
-      max-height: 82dvh;
+      max-height: 84dvh;
       background: #fff;
       color: var(--text-dark);
       border-radius: 16px 16px 0 0;
@@ -872,7 +996,7 @@
       border-radius: 10px;
       padding: 10px 12px;
       font-size: 14px;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .primary-submit {
@@ -913,7 +1037,7 @@
 
     .toast {
       position: fixed;
-      bottom: calc(66px + var(--safe-bottom));
+      bottom: calc(68px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
       background: rgba(22, 24, 35, 0.92);
@@ -937,10 +1061,10 @@
   <div class="app-shell">
     <div class="main-viewport" id="viewport"></div>
 
-    <!-- الشريط السفلي بأسلوب تيك توك -->
+    <!-- الشريط السفلي الرئيسي -->
     <nav class="bottom-nav" id="bottomNav">
       <button class="nav-item active" data-page="home" type="button">
-        <span>الصفحة الرئيسية</span>
+        <span>الرئيسية</span>
       </button>
       <button class="nav-item" data-page="friends" type="button">
         <span>الأصدقاء</span>
@@ -948,9 +1072,9 @@
       <button class="nav-item" id="openUploadBtn" type="button">
         <span class="plus-box">+</span>
       </button>
-      <button class="nav-item" data-page="inbox" type="button">
-        <span class="inbox-num" id="inboxBadge">2</span>
-        <span>صندوق الوارد</span>
+      <button class="nav-item" data-page="messages" type="button">
+        <span class="inbox-num" id="unreadBadge">3</span>
+        <span>الرسائل</span>
       </button>
       <button class="nav-item" data-page="profile" type="button">
         <span>الملف الشخصي</span>
@@ -958,37 +1082,45 @@
     </nav>
   </div>
 
-  <!-- قائمة الإعدادات والاختصارات الجانبية -->
+  <!-- قائمة التنقل السريع والإعدادات الكاملة (صندوق الوارد، المكالمات، الاستكشاف، الإشعارات، الإعدادات، الرصيد) -->
   <div class="drawer-backdrop" id="drawerBackdrop">
     <aside class="drawer-box">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:0 18px 8px;">
-        <strong>الإعدادات والاختصارات</strong>
+        <strong>DERT — الأقسام والإعدادات</strong>
         <button class="btn-gray" style="padding:5px 10px;" id="closeDrawerBtn" type="button">إغلاق</button>
       </div>
 
-      <div class="drawer-sec-title">الأصول</div>
-      <button class="drawer-item-btn" onclick="openBalanceSheet()" type="button">
+      <div class="drawer-sec-title">الأقسام الأساسية</div>
+      <button class="drawer-item-btn" onclick="goPage('home');closeDrawer();" type="button"><span>الرئيسية (فيديوهات)</span><span>‹</span></button>
+      <button class="drawer-item-btn" onclick="goPage('friends');closeDrawer();" type="button"><span>الأصدقاء</span><span>‹</span></button>
+      <button class="drawer-item-btn" onclick="goPage('messages');closeDrawer();" type="button"><span>الرسائل (دردشة خاصة)</span><span>‹</span></button>
+      <button class="drawer-item-btn" onclick="goPage('inbox');closeDrawer();" type="button"><span>صندوق الوارد</span><span>‹</span></button>
+      <button class="drawer-item-btn" onclick="goPage('calls');closeDrawer();" type="button"><span>المكالمات (صوتية ومرئية)</span><span>‹</span></button>
+      <button class="drawer-item-btn" onclick="goPage('explore');closeDrawer();" type="button"><span>الاستكشاف (بحث)</span><span>‹</span></button>
+      <button class="drawer-item-btn" onclick="goPage('notifications');closeDrawer();" type="button"><span>الإشعارات</span><span>‹</span></button>
+      <button class="drawer-item-btn" onclick="goPage('profile');closeDrawer();" type="button"><span>الملف الشخصي</span><span>‹</span></button>
+
+      <div class="drawer-sec-title">الأصول والاختصارات</div>
+      <button class="drawer-item-btn" onclick="closeDrawer();openBalanceSheet();" type="button">
         <span>الرصيد</span>
         <span id="lblCoins">500 عملة ‹</span>
       </button>
-
-      <div class="drawer-sec-title">الأدوات الشخصية</div>
-      <button class="drawer-item-btn" onclick="toast('مركز الأنشطة')" type="button"><span>مركز الأنشطة</span><span>‹</span></button>
       <button class="drawer-item-btn" onclick="saveOfflineVideo()" type="button"><span>فيديوهات دون اتصال بالإنترنت</span><span id="lblOffline">3 ‹</span></button>
-      <button class="drawer-item-btn" onclick="toast('رمز QR لديك: @w20xw')" type="button"><span>رمز QR لديك</span><span>‹</span></button>
+      <button class="drawer-item-btn" onclick="toast('رمز QR الخاص بك: @w20xw')" type="button"><span>رمز QR لديك</span><span>‹</span></button>
       <button class="drawer-item-btn" onclick="toast('DERT Minis')" type="button"><span>DERT Minis</span><span>‹</span></button>
-
-      <div class="drawer-sec-title">أدوات الإبداع والأعمال</div>
       <button class="drawer-item-btn" onclick="toast('المجموعة التجارية')" type="button"><span>المجموعة التجارية</span><span>‹</span></button>
       <button class="drawer-item-btn" onclick="toast('DERT Studio')" type="button"><span>DERT Studio</span><span>‹</span></button>
       <button class="drawer-item-btn" onclick="addPromo()" type="button"><span>الترويج</span><span id="lblPromo">1 نشط ‹</span></button>
 
-      <div class="drawer-sec-title">الإعدادات والخصوصية</div>
-      <button class="drawer-item-btn" onclick="togglePrivacy()" type="button"><span>الإعدادات والخصوصية</span><span id="lblPrivacy">عام ‹</span></button>
+      <div class="drawer-sec-title">الأمان والخصوصية</div>
+      <button class="drawer-item-btn" onclick="closeDrawer();goPage('settings');" type="button">
+        <span>الإعدادات (الأمان والخصوصية)</span>
+        <span id="lblPrivacy">عام ‹</span>
+      </button>
     </aside>
   </div>
 
-  <!-- نافذة سفلية للتعليقات والمشاركة والرصيد والنشر -->
+  <!-- نافذة منبثقة للتعليقات / المشاركة / الرصيد / النشر -->
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal-sheet">
       <div class="modal-header">
@@ -1002,12 +1134,13 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const STORAGE_KEY = "dert_tiktok_functions_v3";
+    const STORAGE_KEY = "dert_tiktok_chat_platform_v4";
 
     const defaultState = {
       page: "home",
       feedFilter: "foryou",
       profileFilter: "videos",
+      activeChatId: "u1",
       user: {
         name: "وسام | wessam",
         handle: "@w20xw",
@@ -1021,7 +1154,9 @@
         gateway: "زين كاش",
         offlineCount: 3,
         promoCount: 1,
-        privateAcc: false
+        privateAcc: false,
+        twoFactor: true,
+        onlineStatusVisible: true
       },
       videos: [
         {
@@ -1086,10 +1221,41 @@
           ]
         }
       ],
-      inbox: [
-        { id: "i1", title: "النشاط والمتابعون الجدد", sub: "أعجب بالمقطع الخاص بك", time: "الآن", color: "#fe2c55", tag: "نشاط", dot: true },
-        { id: "i2", title: "علي رشيد", sub: "شارك فيديو • منذ 3 س", time: "3 س", color: "#161823", avatar: "https://picsum.photos/100/100?random=12", dot: true },
-        { id: "i3", title: "إشعارات النظام", sub: "تم تفعيل المحفظة وتقسيم الأرباح 60% / 40%", time: "1 ي", color: "#0095f6", tag: "نظام", dot: false }
+      chats: [
+        {
+          id: "u1",
+          name: "علي رشيد",
+          handle: "@ali_rasheed",
+          avatar: "https://picsum.photos/100/100?random=12",
+          online: true,
+          lastSeen: "متصل الآن",
+          unread: 2,
+          messages: [
+            { id: "m1", from: "them", type: "text", text: "هلا وسام، شفت المقطع الجديد؟", time: "01:50 م", read: true },
+            { id: "m2", from: "them", type: "post", postId: "v1", text: "مقطع جديد على DERT", time: "01:51 م", read: true }
+          ]
+        },
+        {
+          id: "u2",
+          name: "عبدالله آل فهد",
+          handle: "@abdullah_f",
+          avatar: "https://picsum.photos/100/100?random=13",
+          online: false,
+          lastSeen: "آخر ظهور منذ 18 د",
+          unread: 1,
+          messages: [
+            { id: "m3", from: "them", type: "text", text: "جاهزين للبث المباشر اليوم؟", time: "12:15 م", read: true }
+          ]
+        }
+      ],
+      calls: [
+        { id: "cl1", name: "علي رشيد", avatar: "https://picsum.photos/100/100?random=12", kind: "مرئية", status: "واردة • 04:12", time: "اليوم" },
+        { id: "cl2", name: "عبدالله آل فهد", avatar: "https://picsum.photos/100/100?random=13", kind: "صوتية", status: "صادرة • 01:45", time: "أمس" }
+      ],
+      notifications: [
+        { id: "n1", text: "أعجب @ali_rasheed بمقطعك الجديد", time: "منذ 5 د", read: false },
+        { id: "n2", text: "علّق @abdullah_f: استمر يا بطل", time: "منذ 22 د", read: false },
+        { id: "n3", text: "بدأ @ali_rasheed بمتابعتك", time: "منذ 1 س", read: true }
       ]
     };
 
@@ -1098,7 +1264,7 @@
 
     function save() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      updateBadges();
+      syncBadges();
     }
 
     function toast(msg) {
@@ -1120,30 +1286,37 @@
       return String(n);
     }
 
-    function updateBadges() {
+    function goPage(p) {
+      state.page = p;
+      save();
+      render();
+    }
+
+    function syncBadges() {
       document.getElementById("lblCoins").textContent = `${state.user.coins} عملة ‹`;
       document.getElementById("lblOffline").textContent = `${state.user.offlineCount} ‹`;
       document.getElementById("lblPromo").textContent = `${state.user.promoCount} نشط ‹`;
       document.getElementById("lblPrivacy").textContent = `${state.user.privateAcc ? "خاص" : "عام"} ‹`;
-      const unread = state.inbox.filter(x => x.dot).length;
-      const b = document.getElementById("inboxBadge");
-      b.textContent = unread;
-      b.style.display = unread ? "inline-block" : "none";
+      const unreadChats = state.chats.reduce((acc, c) => acc + (c.unread || 0), 0);
+      const badge = document.getElementById("unreadBadge");
+      badge.textContent = unreadChats;
+      badge.style.display = unreadChats ? "inline-block" : "none";
     }
 
     function render() {
       const vp = document.getElementById("viewport");
       const nav = document.getElementById("bottomNav");
 
+      const navMap = { home: "home", friends: "friends", messages: "messages", inbox: "messages", profile: "profile" };
       document.querySelectorAll(".nav-item[data-page]").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.page === state.page);
+        btn.classList.toggle("active", btn.dataset.page === navMap[state.page]);
       });
 
       const isHome = state.page === "home";
       nav.classList.toggle("light-nav", !isHome);
-      vp.classList.toggle("light-view", !isHome);
+      vp.classList.toggle("light-mode", !isHome);
 
-      if (isHome) {
+      if (state.page === "home") {
         const list = state.feedFilter === "following" ? state.videos.filter(v => v.following) : state.videos;
         const items = list.length ? list : state.videos;
 
@@ -1154,7 +1327,7 @@
               <button class="top-tab ${state.feedFilter === "following" ? "active" : ""}" onclick="setFeedFilter('following')" type="button">أتابعه</button>
               <button class="top-tab ${state.feedFilter === "foryou" ? "active" : ""}" onclick="setFeedFilter('foryou')" type="button">لك</button>
             </div>
-            <button class="plain-top-btn" onclick="openSearchModal()" type="button">بحث</button>
+            <button class="plain-top-btn" onclick="openDrawer()" type="button">القائمة</button>
           </div>
           ${items.map(v => `
             <section class="tt-slide" data-vid="${v.id}" onclick="onSlideClick(event, '${v.id}')">
@@ -1209,7 +1382,7 @@
         vp.innerHTML = `
           <div class="page-header">
             <span class="page-heading">الأصدقاء</span>
-            <button class="btn-gray" style="padding:5px 10px;" onclick="openSearchModal()" type="button">بحث</button>
+            <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
           </div>
           ${state.videos.map(v => `
             <div class="list-row">
@@ -1220,49 +1393,76 @@
                   <div style="font-size:12px;color:var(--text-muted);">${esc(v.handle)}</div>
                 </div>
               </div>
-              <button class="${v.following ? "btn-gray" : "btn-red"}" onclick="toggleFollow('${v.id}')" type="button">
-                ${v.following ? "متابَع" : "متابعة"}
-              </button>
+              <div style="display:flex;gap:6px;">
+                <button class="btn-gray" onclick="openChatWithAuthor('${v.id}')" type="button">رسالة</button>
+                <button class="${v.following ? "btn-gray" : "btn-red"}" onclick="toggleFollow('${v.id}')" type="button">
+                  ${v.following ? "متابَع" : "متابعة"}
+                </button>
+              </div>
             </div>
           `).join("")}
         `;
-      } else if (state.page === "inbox") {
+      } else if (state.page === "messages" || state.page === "inbox") {
+        renderMessagesOrInbox(vp);
+      } else if (state.page === "chat") {
+        renderChatRoom(vp);
+      } else if (state.page === "calls") {
         vp.innerHTML = `
           <div class="page-header">
-            <span class="page-heading">صندوق الوارد</span>
-            <button class="btn-gray" style="padding:5px 10px;" onclick="openDrawer()" type="button">القائمة</button>
+            <span class="page-heading">المكالمات (صوتية ومرئية)</span>
+            <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
           </div>
-          <div class="stories-strip">
-            <div class="story-col" onclick="openUploadModal()">
-              <div class="story-circle">
-                <img src="${esc(state.user.avatar)}" alt="" />
-                <span class="story-add">+</span>
-              </div>
-              <span>إنشاء</span>
-            </div>
-            ${state.videos.map(v => `
-              <div class="story-col" onclick="toast('حالة ${esc(v.author)}')">
-                <div class="story-circle"><img src="${esc(v.avatar)}" alt="" /></div>
-                <span>${esc(v.author.split(" ")[0])}</span>
-              </div>
-            `).join("")}
-          </div>
-          ${state.inbox.map(item => `
-            <div class="list-row" style="cursor:pointer;" onclick="openInboxItem('${item.id}')">
+          ${state.chats.map(c => `
+            <div class="list-row">
               <div class="row-user">
-                ${item.avatar
-                  ? `<img class="av-50" src="${esc(item.avatar)}" alt="" />`
-                  : `<div class="badge-circle" style="background:${item.color};">${esc(item.tag)}</div>`
-                }
+                <img class="av-50" src="${esc(c.avatar)}" alt="" />
                 <div>
-                  <div style="font-weight:700;font-size:14.5px;">${esc(item.title)}</div>
-                  <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">${esc(item.sub)}</div>
+                  <div style="font-weight:700;font-size:14.5px;">${esc(c.name)}</div>
+                  <div style="font-size:12px;color:var(--text-muted);">${c.online ? "متصل الآن" : esc(c.lastSeen)}</div>
                 </div>
               </div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-muted);">
-                <span>${esc(item.time)}</span>
-                ${item.dot ? `<span class="red-dot"></span>` : ""}
+              <div style="display:flex;gap:6px;">
+                <button class="btn-gray" onclick="startCall('${esc(c.name)}','صوتية')" type="button">صوتية</button>
+                <button class="btn-red" onclick="startCall('${esc(c.name)}','مرئية')" type="button">مرئية</button>
               </div>
+            </div>
+          `).join("")}
+          <div style="padding:10px 16px;font-size:12.5px;font-weight:700;color:var(--text-muted);background:var(--surface);">سجل المكالمات</div>
+          ${state.calls.map(cl => `
+            <div class="list-row">
+              <div>
+                <div style="font-weight:700;font-size:14px;">${esc(cl.name)} (${esc(cl.kind)})</div>
+                <div style="font-size:12px;color:var(--text-muted);">${esc(cl.status)}</div>
+              </div>
+              <span style="font-size:12px;color:var(--text-muted);">${esc(cl.time)}</span>
+            </div>
+          `).join("")}
+        `;
+      } else if (state.page === "explore") {
+        vp.innerHTML = `
+          <div class="page-header">
+            <span class="page-heading">الاستكشاف</span>
+            <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
+          </div>
+          <div class="search-box-wrap">
+            <input class="field-inp" style="margin-top:0;" id="exploreSearchInp" placeholder="ابحث عن الأشخاص أو الفيديوهات..." oninput="renderExploreList(this.value)" />
+          </div>
+          <div id="exploreResults"></div>
+        `;
+        renderExploreList("");
+      } else if (state.page === "notifications") {
+        vp.innerHTML = `
+          <div class="page-header">
+            <span class="page-heading">الإشعارات</span>
+            <button class="btn-gray" onclick="markAllNotifsRead()" type="button">تحديد كمقروء</button>
+          </div>
+          ${state.notifications.map(n => `
+            <div class="list-row" onclick="readNotif('${n.id}')" style="cursor:pointer;">
+              <div>
+                <div style="font-weight:700;font-size:13.5px;">${esc(n.text)}</div>
+                <div style="font-size:11.5px;color:var(--text-muted);margin-top:3px;">${esc(n.time)}</div>
+              </div>
+              ${!n.read ? `<span class="unread-dot"></span>` : `<span style="font-size:11px;color:var(--text-muted);">مقروء</span>`}
             </div>
           `).join("")}
         `;
@@ -1276,9 +1476,9 @@
         vp.innerHTML = `
           <div class="profile-head">
             <div class="profile-top-actions">
-              <button class="btn-gray" style="padding:5px 10px;" onclick="openDrawer()" type="button">القائمة</button>
+              <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
               <strong>${esc(state.user.name)}</strong>
-              <button class="btn-gray" style="padding:5px 10px;" onclick="openBalanceSheet()" type="button">الرصيد</button>
+              <button class="btn-gray" onclick="goPage('settings')" type="button">الإعدادات</button>
             </div>
             <img class="profile-avatar-xl" src="${esc(state.user.avatar)}" alt="" />
             <div style="font-size:17px;font-weight:800;">${esc(state.user.name)}</div>
@@ -1313,9 +1513,270 @@
             `).join("")}
           </div>
         `;
+      } else if (state.page === "settings") {
+        vp.innerHTML = `
+          <div class="page-header">
+            <span class="page-heading">الإعدادات — الأمان والخصوصية</span>
+            <button class="btn-gray" onclick="goPage('profile')" type="button">رجوع</button>
+          </div>
+          <div class="list-row">
+            <div><div style="font-weight:700;">حساب خاص</div><div style="font-size:12px;color:var(--text-muted);">تقييد الحساب على المتابعين فقط</div></div>
+            <button class="btn-gray" onclick="togglePrivate()" type="button">${state.user.privateAcc ? "مفعّل" : "إيقاف"}</button>
+          </div>
+          <div class="list-row">
+            <div><div style="font-weight:700;">المصادقة الثنائية (2FA)</div><div style="font-size:12px;color:var(--text-muted);">حماية إضافية لتسجيل الدخول والأمان</div></div>
+            <button class="btn-gray" onclick="toggleTwoFactor()" type="button">${state.user.twoFactor ? "مفعّل" : "إيقاف"}</button>
+          </div>
+          <div class="list-row">
+            <div><div style="font-weight:700;">حالة الاتصال وآخر ظهور</div><div style="font-size:12px;color:var(--text-muted);">إظهار حالة الاتصال في الدردشة</div></div>
+            <button class="btn-gray" onclick="toggleOnlineVis()" type="button">${state.user.onlineStatusVisible ? "ظاهر" : "مخفي"}</button>
+          </div>
+          <div class="list-row">
+            <div><div style="font-weight:700;">الرصيد وبوابات الدفع</div><div style="font-size:12px;color:var(--text-muted);">60% للمذيع • 40% للمنصة</div></div>
+            <button class="btn-red" onclick="openBalanceSheet()" type="button">${state.user.coins} عملة</button>
+          </div>
+        `;
       }
 
-      updateBadges();
+      syncBadges();
+    }
+
+    function renderMessagesOrInbox(vp) {
+      const isInbox = state.page === "inbox";
+      vp.innerHTML = `
+        <div class="page-header">
+          <span class="page-heading">${isInbox ? "صندوق الوارد" : "الرسائل"}</span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-gray" onclick="goPage('calls')" type="button">المكالمات</button>
+            <button class="btn-gray" onclick="openDrawer()" type="button">القائمة</button>
+          </div>
+        </div>
+        <div class="sub-pill-bar">
+          <button class="sub-pill ${!isInbox ? "active" : ""}" onclick="goPage('messages')" type="button">المحادثات الخاصة</button>
+          <button class="sub-pill ${isInbox ? "active" : ""}" onclick="goPage('inbox')" type="button">ترتيب صندوق الوارد</button>
+          <button class="sub-pill" onclick="goPage('notifications')" type="button">الإشعارات</button>
+        </div>
+        ${state.chats.map(c => {
+          const last = c.messages[c.messages.length - 1];
+          return `
+            <div class="list-row" style="cursor:pointer;" onclick="openChatRoom('${c.id}')">
+              <div class="row-user">
+                <img class="av-50" src="${esc(c.avatar)}" alt="" />
+                <div style="min-width:0;">
+                  <div style="font-weight:700;font-size:14.5px;">
+                    ${esc(c.name)} ${c.online && state.user.onlineStatusVisible ? `<span class="online-dot"></span>` : ""}
+                  </div>
+                  <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    ${esc(last ? (last.type === "post" ? "شارك منشوراً: " + last.text : last.text) : "ابدأ المحادثة")}
+                  </div>
+                </div>
+              </div>
+              <div style="text-align:left;flex-shrink:0;">
+                <div style="font-size:11px;color:var(--text-muted);">${esc(last ? last.time : c.lastSeen)}</div>
+                ${c.unread ? `<span class="unread-dot"></span>` : ""}
+              </div>
+            </div>
+          `;
+        }).join("")}
+      `;
+    }
+
+    function renderChatRoom(vp) {
+      const chat = state.chats.find(c => c.id === state.activeChatId) || state.chats[0];
+      if (!chat) return;
+      chat.unread = 0;
+      chat.messages.forEach(m => { if (m.from === "me") m.read = true; });
+      save();
+
+      vp.className = "main-viewport light-mode";
+      vp.innerHTML = `
+        <div class="chat-room">
+          <div class="chat-room-header">
+            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+              <button class="btn-gray" style="padding:5px 10px;" onclick="goPage('messages')" type="button">رجوع</button>
+              <img src="${esc(chat.avatar)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;" alt="" />
+              <div style="min-width:0;">
+                <div style="font-weight:800;font-size:14px;">${esc(chat.name)}</div>
+                <div style="font-size:11px;color:${chat.online ? "var(--green)" : "var(--text-muted)"};">
+                  ${state.user.onlineStatusVisible ? (chat.online ? "متصل الآن" : esc(chat.lastSeen)) : "الحالة مخفية"}
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-gray" style="padding:6px 10px;" onclick="startCall('${esc(chat.name)}','صوتية')" type="button">صوتي</button>
+              <button class="btn-red" style="padding:6px 10px;" onclick="startCall('${esc(chat.name)}','مرئية')" type="button">مرئي</button>
+            </div>
+          </div>
+
+          <div class="chat-messages" id="chatMessagesBox">
+            ${chat.messages.map(m => {
+              const sharedVid = m.type === "post" ? state.videos.find(v => v.id === m.postId) : null;
+              return `
+                <div class="msg-bubble-wrap ${m.from}">
+                  <div class="msg-bubble">
+                    ${m.type === "image" ? `<div>صورة مرسلة</div><img class="msg-media-img" src="${esc(m.media)}" alt="" />` : ""}
+                    ${m.type === "video" ? `<div>فيديو مرسل (${esc(m.text)})</div>` : ""}
+                    ${m.type === "voice" ? `<div>رسالة صوتية (${esc(m.duration || "0:08")})</div>` : ""}
+                    ${m.type === "post" ? `
+                      <div>منشور مشارك:</div>
+                      <div class="msg-shared-post" onclick="goPage('home')">
+                        <strong>${esc(sharedVid ? sharedVid.handle : "@dert")}</strong> — ${esc(m.text)}
+                      </div>
+                    ` : ""}
+                    ${m.type === "text" ? esc(m.text) : ""}
+                  </div>
+                  <div class="msg-meta">
+                    <span>${esc(m.time)}</span>
+                    ${m.from === "me" ? `<span>${m.read ? "تمت القراءة" : "تم الإرسال"}</span>` : ""}
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+
+          <div class="chat-toolbar">
+            <div class="chat-media-bar">
+              <button class="chat-tool-chip" onclick="sendMediaMessage('image')" type="button">إرسال صورة</button>
+              <button class="chat-tool-chip" onclick="sendMediaMessage('video')" type="button">إرسال فيديو</button>
+              <button class="chat-tool-chip" onclick="sendMediaMessage('voice')" type="button">رسالة صوتية</button>
+              <button class="chat-tool-chip" onclick="openSharePostToChatModal('${chat.id}')" type="button">إرسال منشور / فيديو</button>
+            </div>
+            <div class="chat-input-row">
+              <input class="field-inp" style="margin-top:0;" id="chatMsgInput" placeholder="اكتب رسالة..." />
+              <button class="btn-red" style="padding:10px 15px;" onclick="sendTextMessage('${chat.id}')" type="button">إرسال</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const box = document.getElementById("chatMessagesBox");
+      if (box) box.scrollTop = box.scrollHeight;
+    }
+
+    function openChatRoom(id) {
+      state.activeChatId = id;
+      state.page = "chat";
+      save();
+      render();
+    }
+
+    function openChatWithAuthor(vidId) {
+      const v = state.videos.find(x => x.id === vidId);
+      if (!v) return;
+      let existing = state.chats.find(c => c.handle === v.handle);
+      if (!existing) {
+        existing = {
+          id: "u_" + Date.now(),
+          name: v.author,
+          handle: v.handle,
+          avatar: v.avatar,
+          online: true,
+          lastSeen: "متصل الآن",
+          unread: 0,
+          messages: []
+        };
+        state.chats.unshift(existing);
+      }
+      openChatRoom(existing.id);
+    }
+
+    function sendTextMessage(chatId) {
+      const inp = document.getElementById("chatMsgInput");
+      const txt = inp?.value.trim();
+      if (!txt) return;
+      const chat = state.chats.find(c => c.id === chatId);
+      if (!chat) return;
+      chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "text", text: txt, time: "الآن", read: true });
+      save();
+      renderChatRoom(document.getElementById("viewport"));
+    }
+
+    function sendMediaMessage(kind) {
+      const chat = state.chats.find(c => c.id === state.activeChatId);
+      if (!chat) return;
+      const rnd = Math.floor(70 + Math.random() * 25);
+      if (kind === "image") {
+        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "image", media: `https://picsum.photos/400/300?random=${rnd}`, time: "الآن", read: true });
+      } else if (kind === "video") {
+        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "video", text: "مقطع فيديو 0:15", time: "الآن", read: true });
+      } else if (kind === "voice") {
+        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "voice", duration: "0:09", time: "الآن", read: true });
+      }
+      save();
+      renderChatRoom(document.getElementById("viewport"));
+      toast("تم الإرسال");
+    }
+
+    function openSharePostToChatModal(chatId) {
+      openSheet("إرسال منشور أو فيديو للمحادثة", `
+        ${state.videos.map(v => `
+          <div class="list-row" style="cursor:pointer;" onclick="sendSharedPost('${chatId}','${v.id}')">
+            <div><strong>${esc(v.handle)}</strong> — ${esc(v.caption)}</div>
+            <button class="btn-red" type="button">إرسال</button>
+          </div>
+        `).join("")}
+      `);
+    }
+
+    function sendSharedPost(chatId, vidId) {
+      const chat = state.chats.find(c => c.id === chatId);
+      const vid = state.videos.find(v => v.id === vidId);
+      if (!chat || !vid) return;
+      chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "post", postId: vid.id, text: vid.caption, time: "الآن", read: true });
+      save();
+      closeSheet();
+      renderChatRoom(document.getElementById("viewport"));
+      toast("تم إرسال المنشور في المحادثة");
+    }
+
+    function startCall(name, kind) {
+      state.calls.unshift({ id: "cl_" + Date.now(), name, avatar: state.user.avatar, kind, status: "جارية الآن", time: "الآن" });
+      save();
+      openSheet(`مكالمة ${kind} — ${name}`, `
+        <div style="text-align:center;padding:14px 0;">
+          <div style="font-size:16px;font-weight:800;">جاري الاتصال (${kind}) مع ${esc(name)}</div>
+          <div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">مكالمات DERT الصوتية والمرئية مفعّلة</div>
+          <button class="primary-submit" onclick="closeSheet();toast('تم إنهاء المكالمة')" type="button">إنهاء المكالمة</button>
+        </div>
+      `);
+    }
+
+    function renderExploreList(q) {
+      const term = (q || "").trim().toLowerCase();
+      const matched = state.videos.filter(v => !term || v.author.toLowerCase().includes(term) || v.handle.toLowerCase().includes(term) || v.caption.toLowerCase().includes(term));
+      const box = document.getElementById("exploreResults");
+      if (!box) return;
+      box.innerHTML = `
+        <div style="padding:8px 16px;font-size:12px;font-weight:700;color:var(--text-muted);">الأشخاص</div>
+        ${matched.map(v => `
+          <div class="list-row">
+            <div class="row-user">
+              <img class="av-50" src="${esc(v.avatar)}" alt="" />
+              <div><div style="font-weight:700;">${esc(v.author)}</div><div style="font-size:12px;color:var(--text-muted);">${esc(v.handle)}</div></div>
+            </div>
+            <button class="btn-gray" onclick="openChatWithAuthor('${v.id}')" type="button">دردشة</button>
+          </div>
+        `).join("")}
+        <div style="padding:8px 16px;font-size:12px;font-weight:700;color:var(--text-muted);">الفيديوهات</div>
+        <div class="grid-3">
+          ${matched.map(v => `
+            <div class="grid-item" onclick="openComments('${v.id}')">
+              <img src="${esc(v.poster)}" alt="" />
+              <span class="grid-play-txt">${esc(v.plays)}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function readNotif(id) {
+      const n = state.notifications.find(x => x.id === id);
+      if (n) { n.read = true; save(); render(); }
+    }
+
+    function markAllNotifsRead() {
+      state.notifications.forEach(n => n.read = true);
+      save(); render(); toast("تم تحديد الكل كمقروء");
     }
 
     function attachVideoObservers() {
@@ -1340,9 +1801,7 @@
         const bar = slide.querySelector(".seek-fill");
         if (vid && bar) {
           vid.addEventListener("timeupdate", () => {
-            if (vid.duration) {
-              bar.style.width = ((vid.currentTime / vid.duration) * 100) + "%";
-            }
+            if (vid.duration) bar.style.width = ((vid.currentTime / vid.duration) * 100) + "%";
           });
         }
         io.observe(slide);
@@ -1362,7 +1821,6 @@
         pop.style.top = (e.clientY - rect.top) + "px";
         slide.appendChild(pop);
         setTimeout(() => pop.remove(), 750);
-
         const v = state.videos.find(x => x.id === id);
         if (v && !v.liked) toggleLike(id);
       } else {
@@ -1370,13 +1828,8 @@
           tapTimer = null;
           const vid = slide.querySelector("video");
           if (!vid) return;
-          if (vid.paused) {
-            vid.play().catch(() => {});
-            slide.classList.remove("paused");
-          } else {
-            vid.pause();
-            slide.classList.add("paused");
-          }
+          if (vid.paused) { vid.play().catch(() => {}); slide.classList.remove("paused"); }
+          else { vid.pause(); slide.classList.add("paused"); }
         }, 230);
       }
     }
@@ -1455,15 +1908,7 @@
       const val = document.getElementById("cmtInp").value.trim();
       if (!val) return;
       const v = state.videos.find(x => x.id === id);
-      v.comments.push({
-        id: "c_" + Date.now(),
-        user: state.user.name,
-        avatar: state.user.avatar,
-        text: val,
-        time: "الآن",
-        likes: 0,
-        liked: false
-      });
+      v.comments.push({ id: "c_" + Date.now(), user: state.user.name, avatar: state.user.avatar, text: val, time: "الآن", likes: 0, liked: false });
       save(); render(); openComments(id);
     }
 
@@ -1483,10 +1928,20 @@
         <div class="share-grid">
           <button class="share-choice" onclick="confirmShare('${id}','إعادة النشر')" type="button">إعادة النشر</button>
           <button class="share-choice" onclick="confirmShare('${id}','نسخ الرابط')" type="button">نسخ الرابط</button>
-          <button class="share-choice" onclick="confirmShare('${id}','واتساب')" type="button">واتساب</button>
-          <button class="share-choice" onclick="confirmShare('${id}','إرسال لصديق')" type="button">إرسال لصديق</button>
+          <button class="share-choice" onclick="shareToChatDirect('${id}')" type="button">إرسال في الدردشة</button>
+          <button class="share-choice" onclick="confirmShare('${id}','مشاركة خارجية')" type="button">مشاركة خارجية</button>
         </div>
       `);
+    }
+
+    function shareToChatDirect(vidId) {
+      const vid = state.videos.find(x => x.id === vidId);
+      const chat = state.chats[0];
+      if (vid && chat) {
+        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "post", postId: vid.id, text: vid.caption, time: "الآن", read: true });
+        vid.shares = (vid.shares || 0) + 1;
+        save(); closeSheet(); openChatRoom(chat.id); toast("تم إرسال المقطع في الدردشة");
+      }
     }
 
     function confirmShare(id, method) {
@@ -1498,7 +1953,6 @@
     }
 
     function openBalanceSheet() {
-      closeDrawer();
       const gws = ["زين كاش", "سوبر كي", "زين العراق", "آسياسيل"];
       const mShare = Math.round(state.user.grossCoins * 0.6);
       const pShare = Math.round(state.user.grossCoins * 0.4);
@@ -1521,7 +1975,9 @@
 
     function saveOfflineVideo() { state.user.offlineCount += 1; save(); toast("تم حفظ فيديو دون اتصال"); }
     function addPromo() { state.user.promoCount += 1; save(); toast("تم تفعيل حملة ترويج"); }
-    function togglePrivacy() { state.user.privateAcc = !state.user.privateAcc; save(); toast("تم تحديث الخصوصية"); }
+    function togglePrivate() { state.user.privateAcc = !state.user.privateAcc; save(); render(); toast("تم تحديث الخصوصية"); }
+    function toggleTwoFactor() { state.user.twoFactor = !state.user.twoFactor; save(); render(); toast("تم تحديث المصادقة الثنائية"); }
+    function toggleOnlineVis() { state.user.onlineStatusVisible = !state.user.onlineStatusVisible; save(); render(); toast("تم تحديث حالة الاتصال"); }
 
     function openEditProfile() {
       openSheet("تعديل الملف الشخصي", `
@@ -1540,51 +1996,12 @@
       save(); render(); closeSheet(); toast("تم الحفظ");
     }
 
-    function openInboxItem(id) {
-      const item = state.inbox.find(x => x.id === id);
-      if (!item) return;
-      item.dot = false;
-      save(); render();
-      openSheet(item.title, `
-        <p style="font-size:14px;line-height:1.6;">${esc(item.sub)}</p>
-        <input class="field-inp" id="replyInp" placeholder="اكتب رسالة..." />
-        <button class="primary-submit" onclick="sendReply('${id}')" type="button">إرسال</button>
-      `);
-    }
-
-    function sendReply(id) {
-      const val = document.getElementById("replyInp").value.trim();
-      if (!val) return;
-      const item = state.inbox.find(x => x.id === id);
-      item.sub = val;
-      item.time = "الآن";
-      save(); render(); openInboxItem(id);
-    }
-
-    function openSearchModal() {
-      openSheet("بحث", `
-        <input class="field-inp" id="sInp" placeholder="ابحث عن حساب أو مقطع..." oninput="filterSearch(this.value)" />
-        <div id="sList" style="margin-top:10px;"></div>
-      `);
-      filterSearch("");
-    }
-
-    function filterSearch(q) {
-      const term = q.trim().toLowerCase();
-      const res = state.videos.filter(v => !term || v.author.toLowerCase().includes(term) || v.caption.toLowerCase().includes(term));
-      document.getElementById("sList").innerHTML = res.map(v => `
-        <div style="padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px;cursor:pointer;" onclick="closeSheet();openComments('${v.id}')">
-          <strong>${esc(v.author)}</strong> — ${esc(v.caption)}
-        </div>
-      `).join("");
-    }
-
     function openLiveModal() {
       openSheet("البث المباشر (LIVE)", `
         <div style="text-align:center;padding:10px 0;">
           <div style="font-size:15px;font-weight:800;">بدء بث مباشر على DERT</div>
           <div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">نسبة أرباح الهدايا: 60% للمذيع • 40% للمنصة</div>
-          <button class="primary-submit" onclick="closeSheet();toast('تم تفعيل وضع البث المباشر')" type="button">ابدأ البث المباشر</button>
+          <button class="primary-submit" onclick="closeSheet();toast('تم بدء البث المباشر')" type="button">ابدأ البث المباشر</button>
         </div>
       `);
     }
@@ -1623,11 +2040,7 @@
     }
 
     document.querySelectorAll(".nav-item[data-page]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        state.page = btn.dataset.page;
-        save();
-        render();
-      });
+      btn.addEventListener("click", () => goPage(btn.dataset.page));
     });
 
     document.getElementById("openUploadBtn").addEventListener("click", openUploadModal);

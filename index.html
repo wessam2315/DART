@@ -800,6 +800,35 @@ nav button.active{color:var(--text);background:transparent}
  </div>
 
  <div class="tt-sub-box">
+  <h3>🪙 شحن العملات</h3>
+  <p class="small">الرصيد الحالي: <strong id="settingsCoinsBalance">0</strong> عملة — زين كاش، سوبر كي، زين العراق، آسياسيل</p>
+  <label for="settingsCoinPkgSelect">اختر الباقة:</label>
+  <select id="settingsCoinPkgSelect">
+   <option value="10|1">10 عملات — 1.00$ (100 سنت)</option>
+   <option value="20|2">20 عملة — 2.00$ (200 سنت)</option>
+   <option value="50|5">50 عملة — 5.00$ (500 سنت)</option>
+   <option value="130|1" selected>130 عملة — 1.00$</option>
+   <option value="260|2">260 عملة — 2.00$</option>
+   <option value="650|5">650 عملة — 5.00$</option>
+   <option value="1300|10">1,300 عملة — 10.00$</option>
+   <option value="2600|20">2,600 عملة — 20.00$</option>
+   <option value="6500|50">6,500 عملة — 50.00$</option>
+   <option value="13000|100">13,000 عملة — 100.00$</option>
+  </select>
+  <label for="settingsPayMethodSelect">اختر وسيلة الدفع:</label>
+  <select id="settingsPayMethodSelect">
+   <option value="zaincash">زين كاش</option>
+   <option value="superkey">سوبر كي</option>
+   <option value="zain_iraq">زين العراق</option>
+   <option value="asiacell">آسياسيل</option>
+  </select>
+  <label for="settingsProviderRefInput">رقم المرسل أو رقم العملية / الوصل:</label>
+  <input id="settingsProviderRefInput" type="text" placeholder="مثال: رقم المحفظة أو كود التحويل">
+  <button type="button" class="green full" id="settingsSubmitIntentBtn">إرسال طلب الشحن</button>
+  <p id="settingsIntentStatus" class="small" style="margin-top:8px"></p>
+ </div>
+
+ <div class="tt-sub-box">
   <h3>🎨 المظهر واللغة</h3>
   <div class="tt-opt-row" style="margin-top:8px">
    <span>المظهر (ليلي / نهاري)</span>
@@ -1072,6 +1101,19 @@ const MANDATORY_FOLLOW_USER_ID="221ecf80-7f89-4172-b61a-304369cbe870";
 const STREAMER_SHARE_RATE=0.60;
 const OWNER_SHARE_RATE=0.40;
 
+const COIN_PACKAGES=[
+ {coins:10,amount:1,label:"10 عملات — 1.00$ (100 سنت)"},
+ {coins:20,amount:2,label:"20 عملة — 2.00$ (200 سنت)"},
+ {coins:50,amount:5,label:"50 عملة — 5.00$ (500 سنت)"},
+ {coins:130,amount:1,label:"130 عملة — 1.00$"},
+ {coins:260,amount:2,label:"260 عملة — 2.00$"},
+ {coins:650,amount:5,label:"650 عملة — 5.00$"},
+ {coins:1300,amount:10,label:"1,300 عملة — 10.00$"},
+ {coins:2600,amount:20,label:"2,600 عملة — 20.00$"},
+ {coins:6500,amount:50,label:"6,500 عملة — 50.00$"},
+ {coins:13000,amount:100,label:"13,000 عملة — 100.00$"}
+];
+
 const DERT_SONGS=[
  {id:"s1",title:"أيامي بيك - Elissa",artist:"Music Mix",duration:"0:28",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"},
  {id:"s2",title:"نبض الليل - Night Pulse",artist:"DERT Sound",duration:"0:32",url:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"},
@@ -1104,7 +1146,7 @@ let followedIdsSet=new Set(),selectedImages=[],selectedVideo=null,selectedSong=n
 let tabHistory=["videos"],previewAudio=new Audio(),playingSongId=null;
 let activeProfileMediaTab="posts",liveStream=null;
 let liveChatMessages=["أهلاً بالجميع في بث DERT المباشر! 🎉 (توزيع الدعم: 60% لصاحب البث • 40% أرباحك)"];
-let selectedPayMethod="zaincash",selectedPackage={amount:5000,coins:100},intentPollTimer=null;
+let selectedPayMethod="zaincash",selectedPackage={coins:130,amount:1,label:"130 عملة — 1.00$"},intentPollTimer=null;
 
 let chatReplyTarget=null,selectedDocFile=null,recordedVoiceFile=null;
 let mediaRecorderRef=null,voiceChunksRef=[];
@@ -2075,11 +2117,59 @@ async function enforceMandatoryFollow(){
 function closeAllStandaloneScreens(){stopLiveCamera();stopIntentPolling();el("menuScreen")?.classList.add("hidden");el("settingsScreen")?.classList.add("hidden");el("toolScreen")?.classList.add("hidden")}
 function openMenuScreen(){closeAllStandaloneScreens();el("menuScreen").classList.remove("hidden")}
 function closeMenuScreen(){el("menuScreen").classList.add("hidden")}
-async function openSettingsScreen(){el("menuScreen").classList.add("hidden");el("settingsScreen").classList.remove("hidden");applyAppPrefs();await loadMyVerificationStatus()}
+
+async function refreshSettingsCoinsBalance(){
+ if(!currentUser || !el("settingsCoinsBalance"))return;
+ const bal=await fetchWalletBalance(currentUser.id);
+ el("settingsCoinsBalance").textContent=Number(bal||0).toLocaleString();
+}
+
+async function openSettingsScreen(){
+ el("menuScreen").classList.add("hidden");
+ el("settingsScreen").classList.remove("hidden");
+ applyAppPrefs();
+ await refreshSettingsCoinsBalance();
+ await loadMyVerificationStatus();
+}
 function closeSettingsScreen(){el("settingsScreen").classList.add("hidden");el("menuScreen").classList.remove("hidden")}
 function closeToolScreen(){stopLiveCamera();stopIntentPolling();el("toolScreen").classList.add("hidden");el("menuScreen").classList.remove("hidden")}
 
-function getMethodArabicName(method){const map={zaincash:"زين كاش",superqi:"سوبر كي",zain_iq:"زين العراق",asiacell:"آسياسيل"};return map[method]||method}
+function getMethodArabicName(method){
+ const map={zaincash:"زين كاش",superkey:"سوبر كي",superqi:"سوبر كي",zain_iraq:"زين العراق",zain_iq:"زين العراق",asiacell:"آسياسيل"};
+ return map[method]||method;
+}
+
+el("settingsSubmitIntentBtn")?.addEventListener("click",async()=>{
+ msg("settingsIntentStatus","");
+ if(!currentUser){msg("settingsIntentStatus","يرجى تسجيل الدخول أولاً لإرسال طلب الشحن.");return}
+ const [coinsStr,amountStr]=(el("settingsCoinPkgSelect")?.value||"130|1").split("|");
+ const coinsAmount=Number(coinsStr);
+ const packageAmount=Number(amountStr);
+ const paymentMethod=el("settingsPayMethodSelect")?.value||"zaincash";
+ const providerRef=(el("settingsProviderRefInput")?.value||"").trim();
+ if(!providerRef){msg("settingsIntentStatus","يرجى إدخال رقم المرسل أو رقم العملية.");return}
+ const b=el("settingsSubmitIntentBtn");
+ b.disabled=true;
+ msg("settingsIntentStatus","جارٍ إرسال الطلب...");
+ try{
+  const {error}=await client.from("payment_intents").insert({
+   user_id:currentUser.id,
+   payment_method:paymentMethod,
+   package_amount:packageAmount,
+   coins_amount:coinsAmount,
+   provider_ref:providerRef,
+   status:"pending"
+  });
+  if(error)throw error;
+  el("settingsProviderRefInput").value="";
+  msg("settingsIntentStatus","تم إرسال طلب الشحن بنجاح وحالته قيد المراجعة (pending). ستضاف العملات فور تأكيد الدفع.");
+ }catch(e){
+  msg("settingsIntentStatus","تعذر إرسال الطلب: "+e.message);
+ }finally{
+  b.disabled=false;
+ }
+});
+
 function watchPaymentIntent(intentId){
  stopIntentPolling();let checks=0;
  intentPollTimer=setInterval(async()=>{
@@ -2098,35 +2188,45 @@ async function openStandaloneTool(tool){
 
  if(tool==="topup"){
   el("toolScreenTitle").textContent="شراء العملات";const currentBal=await fetchWalletBalance(currentUser.id);
-  const pkgs=[{amount:5000,coins:100,label:"5,000 د.ع = 100 عملة"},{amount:10000,coins:220,label:"10,000 د.ع = 220 عملة"},{amount:25000,coins:600,label:"25,000 د.ع = 600 عملة"}];
   let intents=[];try{const {data}=await client.from("payment_intents").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(10);intents=data||[]}catch(e){}
   body.innerHTML=`
-   <div class="tt-split-summary" style="margin-bottom:10px"><div class="tt-split-box" style="grid-column:1/-1"><strong>${currentBal}</strong><span>رصيد العملات الحالي المؤكد في حسابك</span></div></div>
+   <div class="tt-split-summary" style="margin-bottom:10px"><div class="tt-split-box" style="grid-column:1/-1"><strong>${Number(currentBal||0).toLocaleString()}</strong><span>رصيد العملات الحالي المؤكد في حسابك</span></div></div>
    <div class="tt-sub-box">
-    <strong>اختر طريقة الدفع الآمنة</strong>
+    <strong>اختر طريقة الدفع</strong>
     <div class="pay-methods-grid">
      <button type="button" class="pay-method-btn ${selectedPayMethod==='zaincash'?'active':''}" data-m="zaincash">زين كاش</button>
-     <button type="button" class="pay-method-btn ${selectedPayMethod==='superqi'?'active':''}" data-m="superqi">سوبر كي</button>
-     <button type="button" class="pay-method-btn ${selectedPayMethod==='zain_iq'?'active':''}" data-m="zain_iq">زين العراق</button>
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='superkey'?'active':''}" data-m="superkey">سوبر كي</button>
+     <button type="button" class="pay-method-btn ${selectedPayMethod==='zain_iraq'?'active':''}" data-m="zain_iraq">زين العراق</button>
      <button type="button" class="pay-method-btn ${selectedPayMethod==='asiacell'?'active':''}" data-m="asiacell">آسياسيل</button>
     </div>
     <strong>اختر الباقة</strong>
-    <div class="packages-grid">${pkgs.map((p,idx)=>`<button type="button" class="pkg-btn ${selectedPackage.coins===p.coins?'active':''}" data-idx="${idx}">${p.label}</button>`).join("")}</div>
-    <p class="small">يتم إنشاء عملية دفع رسمية وموثقة من الخادم؛ تُضاف العملات تلقائياً فور إتمام الدفع.</p>
-    <button type="button" class="green full" id="startSecureTopupBtn">متابعة إلى الدفع الآمن</button>
+    <div class="packages-grid">${COIN_PACKAGES.map((p,idx)=>`<button type="button" class="pkg-btn ${selectedPackage.coins===p.coins && selectedPackage.amount===p.amount?'active':''}" data-idx="${idx}">${p.label}</button>`).join("")}</div>
+    <label for="toolProviderRefInput" style="margin-top:8px">رقم المرسل أو رقم العملية / الوصل:</label>
+    <input id="toolProviderRefInput" type="text" placeholder="مثال: رقم المحفظة أو كود التحويل">
+    <button type="button" class="green full" id="startSecureTopupBtn">إرسال طلب الشحن</button>
     <p id="topupStatusMsg" class="small" style="margin-top:8px"></p>
    </div>
-   <div class="tt-sub-box"><strong>سجل عمليات الدفع</strong><div>${intents.length?intents.map(t=>`<div class="item small"><strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع) — الحالة: <span class="status-${t.status}">${t.status}</span>${t.checkout_url && t.status==='pending'?` • <a href="${t.checkout_url}" target="_blank" style="color:#25f4ee">فتح رابط الدفع</a>`:""}</div>`).join(""):`<div class="small">لا توجد عمليات دفع بعد</div>`}</div></div>`;
+   <div class="tt-sub-box"><strong>سجل عمليات الدفع</strong><div>${intents.length?intents.map(t=>`<div class="item small"><strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة ($${t.package_amount}) — الحالة: <span class="status-${t.status}">${t.status}</span>${t.provider_ref?` • مرجع: ${t.provider_ref}`:""}</div>`).join(""):`<div class="small">لا توجد عمليات دفع بعد</div>`}</div></div>`;
   body.querySelectorAll(".pay-method-btn").forEach(btn=>{btn.onclick=()=>{selectedPayMethod=btn.dataset.m;body.querySelectorAll(".pay-method-btn").forEach(b=>b.classList.toggle("active",b===btn))}});
-  body.querySelectorAll(".pkg-btn").forEach(btn=>{btn.onclick=()=>{const p=pkgs[Number(btn.dataset.idx)];if(!p)return;selectedPackage={amount:p.amount,coins:p.coins};body.querySelectorAll(".pkg-btn").forEach(b=>b.classList.toggle("active",b===btn))}});
+  body.querySelectorAll(".pkg-btn").forEach(btn=>{btn.onclick=()=>{const p=COIN_PACKAGES[Number(btn.dataset.idx)];if(!p)return;selectedPackage=p;body.querySelectorAll(".pkg-btn").forEach(b=>b.classList.toggle("active",b===btn))}});
   el("startSecureTopupBtn").onclick=async()=>{
-   const b=el("startSecureTopupBtn");b.disabled=true;msg("topupStatusMsg","جارٍ إنشاء طلب الدفع الآمن...");
+   const providerRef=(el("toolProviderRefInput")?.value||"").trim();
+   if(!providerRef){msg("topupStatusMsg","يرجى إدخال رقم المرسل أو رقم العملية.");return}
+   const b=el("startSecureTopupBtn");b.disabled=true;msg("topupStatusMsg","جارٍ إرسال طلب الشحن...");
    try{
-    const {data,error}=await client.functions.invoke("create-payment-intent",{body:{payment_method:selectedPayMethod,package_amount:selectedPackage.amount}});
-    if(error)throw error;if(!data?.ok || !data?.intent_id)throw new Error(data?.error || "تعذر إنشاء طلب الدفع");
-    if(data.checkout_url)window.open(data.checkout_url,"_blank","noopener,noreferrer");
-    msg("topupStatusMsg","تم فتح صفحة الدفع. ننتظر تأكيد الدفع تلقائياً...");watchPaymentIntent(data.intent_id);
-   }catch(e){msg("topupStatusMsg","تعذر بدء الدفع: "+(e.message||e));b.disabled=false}
+    const {error}=await client.from("payment_intents").insert({
+     user_id:currentUser.id,
+     payment_method:selectedPayMethod,
+     package_amount:selectedPackage.amount,
+     coins_amount:selectedPackage.coins,
+     provider_ref:providerRef,
+     status:"pending"
+    });
+    if(error)throw error;
+    el("toolProviderRefInput").value="";
+    msg("topupStatusMsg","تم إرسال طلب الشحن بنجاح وحالته قيد المراجعة (pending). ستضاف العملات فور تأكيد الدفع.");
+   }catch(e){msg("topupStatusMsg","تعذر إرسال الطلب: "+(e.message||e))}
+   finally{b.disabled=false}
   };return;
  }
 
@@ -2908,673 +3008,725 @@ async function acceptFriendRequest(requesterId){
  try{
   await client.from("follows").update({status:"accepted"}).eq("follower_id",requesterId).eq("following_id",currentUser.id);
   await client.from("follows").upsert({follower_id:currentUser.id,following_id:requesterId,status:"accepted"},{onConflict:"follower_id,following_id"});
-  await pushNotification(requesterId,"friend_accepted",`${currentProfile?.full_name||currentProfile?.username||"مستخدم"} قبل طلب الصداقة 🎉`);
-  await loadFriendRequestsAndFriends();
-  await loadStats();
- }catch(e){alert("تعذر قبول الطلب: "+e.message)}
+  await pushNotification(requesterId,"friend_accepted",`${currentProfile?.full_name||currentProfile?.username||"مستخدم"} قبل طلب صداقتك ✓`);
+  await loadFriendRequestsAndFriends();await loadStats();
+ }catch(e){alert("تعذر القبول: "+e.message)}
 }
 
 async function declineFriendRequest(requesterId){
  if(!currentUser || !requesterId)return;
  try{
   await client.from("follows").delete().eq("follower_id",requesterId).eq("following_id",currentUser.id);
-  await loadFriendRequestsAndFriends();
- }catch(e){alert("تعذر رفض الطلب: "+e.message)}
+  await loadFriendRequestsAndFriends();await loadStats();
+ }catch(e){alert("تعذر الرفض: "+e.message)}
 }
 
 async function loadFriendRequestsAndFriends(){
  if(!currentUser)return;
  const reqBox=el("friendRequestsList");
- const friBox=el("friendsDirectoryList");
- if(!reqBox || !friBox)return;
+ const friendsBox=el("friendsDirectoryList");
+ if(!reqBox || !friendsBox)return;
  try{
-  const {data:incoming}=await client.from("follows").select("follower_id,status").eq("following_id",currentUser.id).eq("status","pending");
-  const {data:myAccepted}=await client.from("follows").select("following_id,status").eq("follower_id",currentUser.id);
-  const {data:allProfiles}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified,is_online,last_seen").neq("id",currentUser.id).limit(40);
-  const pMap={};(allProfiles||[]).forEach(p=>pMap[p.id]=p);
+  const [{data:incoming},{data:outgoing}]=await Promise.all([
+   client.from("follows").select("follower_id,status").eq("following_id",currentUser.id),
+   client.from("follows").select("following_id,status").eq("follower_id",currentUser.id)
+  ]);
+
+  const pendingIds=[...new Set((incoming||[]).filter(r=>r.status==="pending" && r.follower_id!==currentUser.id && !isUserBlocked(r.follower_id)).map(r=>r.follower_id))];
+  const acceptedOut=new Set((outgoing||[]).filter(r=>r.status==="accepted" || !r.status).map(r=>r.following_id));
+  const acceptedIn=new Set((incoming||[]).filter(r=>r.status==="accepted" || !r.status).map(r=>r.follower_id));
+  const friendIds=[...new Set([...acceptedOut].filter(id=>acceptedIn.has(id) && id!==currentUser.id && !isUserBlocked(id)))];
+
+  const allIds=[...new Set([...pendingIds,...friendIds])];
+  let profMap={};
+  if(allIds.length){
+   const {data:profs}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified,is_online,last_seen").in("id",allIds);
+   (profs||[]).forEach(p=>profMap[p.id]=p);
+  }
 
   reqBox.replaceChildren();
-  const pendingRows=(incoming||[]).filter(r=>!isUserBlocked(r.follower_id));
-  if(!pendingRows.length)reqBox.textContent="لا توجد طلبات صداقة واردة حالياً";
-  else{
-   pendingRows.forEach(r=>{
-    const p=pMap[r.follower_id]||{};
+  if(!pendingIds.length){
+   reqBox.textContent="لا توجد طلبات صداقة معلقة حالياً";
+  }else{
+   pendingIds.forEach(uid=>{
+    const p=profMap[uid]||{};
     const row=document.createElement("div");row.className="item";
-    const name=document.createElement("strong");addVerifiedName(name,(p.full_name||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
-    const acts=document.createElement("div");acts.className="user-row-actions";
-    const acc=document.createElement("button");acc.type="button";acc.className="green";acc.textContent="✓ قبول";acc.onclick=()=>acceptFriendRequest(r.follower_id);
-    const dec=document.createElement("button");dec.type="button";dec.className="red";dec.textContent="✕ رفض";dec.onclick=()=>declineFriendRequest(r.follower_id);
-    acts.append(acc,dec);row.append(name,acts);reqBox.appendChild(row);
-   });
-  }
-
-  friBox.replaceChildren();
-  const friendIds=[...new Set((myAccepted||[]).filter(r=>!isUserBlocked(r.following_id)).map(r=>r.following_id))];
-  if(!friendIds.length)friBox.textContent="لا يوجد أصدقاء أو متابعون بعد";
-  else{
-   friendIds.forEach(fid=>{
-    const p=pMap[fid]||{};
-    const row=document.createElement("div");row.className="item";
-    const line=document.createElement("div");line.className="chat-row clickable-user";line.onclick=()=>openUserProfile(fid);
+    const line=document.createElement("div");line.className="chat-row clickable-user";line.onclick=()=>openUserProfile(uid);
     line.appendChild(makeAvatar(p.avatar_url,p.full_name||p.username));
     const info=document.createElement("div");info.className="chat-row-info";
-    const nm=document.createElement("strong");addVerifiedName(nm,(p.full_name||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
-    const stLine=document.createElement("div");stLine.className="small";stLine.innerHTML=formatPresenceLabel(p);
-    info.append(nm,stLine);line.appendChild(info);
+    const title=document.createElement("strong");addVerifiedName(title,(p.full_name||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
+    const sub=document.createElement("div");sub.className="small";sub.innerHTML=formatPresenceLabel(p);
+    info.append(title,sub);line.appendChild(info);row.appendChild(line);
+
     const acts=document.createElement("div");acts.className="user-row-actions";
-    const dm=document.createElement("button");dm.type="button";dm.textContent="💬 دردشة";dm.onclick=(e)=>{e.stopPropagation();startChat(fid,p.username)};
-    const vc=document.createElement("button");vc.type="button";vc.className="green";vc.textContent="📞 صوتي";vc.onclick=(e)=>{e.stopPropagation();initiateCall(fid,p.full_name||p.username,p.avatar_url,false)};
-    acts.append(dm,vc);row.append(line,acts);friBox.appendChild(row);
+    const accBtn=document.createElement("button");accBtn.type="button";accBtn.className="green";accBtn.textContent="قبول الصداقة";
+    accBtn.onclick=()=>acceptFriendRequest(uid);
+    const decBtn=document.createElement("button");decBtn.type="button";decBtn.className="red";decBtn.textContent="رفض";
+    decBtn.onclick=()=>declineFriendRequest(uid);
+    acts.append(accBtn,decBtn);row.appendChild(acts);reqBox.appendChild(row);
    });
   }
- }catch(e){reqBox.textContent="تعذر التحميل"}
-}
 
-async function followUser(targetUserId,button){
- if(!currentUser||targetUserId===currentUser.id)return;button.disabled=true;
- try{
-  if(followedIdsSet.has(targetUserId)){
-   const {error}=await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",targetUserId);if(error)throw error;
-   followedIdsSet.delete(targetUserId);button.textContent=button.classList.contains("tt-plus-badge")?"+":"متابعة";
+  friendsBox.replaceChildren();
+  if(!friendIds.length){
+   friendsBox.textContent="لا يوجد أصدقاء متبادلون في القائمة بعد";
   }else{
-   const {error}=await client.from("follows").insert({follower_id:currentUser.id,following_id:targetUserId,status:"accepted"});if(error)throw error;
-   followedIdsSet.add(targetUserId);button.textContent=button.classList.contains("tt-plus-badge")?"✓":"يتابع";
+   friendIds.forEach(uid=>{
+    const p=profMap[uid]||{};
+    const row=document.createElement("div");row.className="item";
+    const line=document.createElement("div");line.className="chat-row clickable-user";line.onclick=()=>openUserProfile(uid);
+    line.appendChild(makeAvatar(p.avatar_url,p.full_name||p.username));
+    const info=document.createElement("div");info.className="chat-row-info";
+    const title=document.createElement("strong");addVerifiedName(title,(p.full_name||"مستخدم")+" @"+(p.username||"user"),p.is_verified===true);
+    const sub=document.createElement("div");sub.className="small";sub.innerHTML=formatPresenceLabel(p);
+    info.append(title,sub);line.appendChild(info);row.appendChild(line);
+
+    const acts=document.createElement("div");acts.className="user-row-actions";
+    const chatBtn=document.createElement("button");chatBtn.type="button";chatBtn.textContent="💬 دردشة";
+    chatBtn.onclick=()=>startChat(uid,p.username);
+    const vCallBtn=document.createElement("button");vCallBtn.type="button";vCallBtn.className="green";vCallBtn.textContent="📞 صوتي";
+    vCallBtn.onclick=()=>initiateCall(uid,p.full_name||p.username,p.avatar_url,false);
+    const vidCallBtn=document.createElement("button");vidCallBtn.type="button";vidCallBtn.className="gray";vidCallBtn.textContent="📹 فيديو";
+    vidCallBtn.onclick=()=>initiateCall(uid,p.full_name||p.username,p.avatar_url,true);
+    acts.append(chatBtn,vCallBtn,vidCallBtn);row.appendChild(acts);friendsBox.appendChild(row);
+   });
   }
-  await loadStats();if(videoFeedMode==="following" && el("videos").classList.contains("active"))await loadVideos();
- }catch(e){alert(e.message)}finally{button.disabled=false}
+ }catch(e){
+  reqBox.textContent="تعذر تحميل طلبات الصداقة";
+  friendsBox.textContent="تعذر تحميل قائمة الأصدقاء";
+ }
 }
 
 el("searchUser").addEventListener("input",e=>{
  renderShortUsernameBuyBox("searchShortBuyNotice",e.target.value);
 });
 
-async function searchUsers(){
- const q=el("searchUser").value.trim();
+el("searchBtn").onclick=async()=>{
+ const q=el("searchUser").value.trim().replace(/^@+/,"").toLowerCase();
  renderShortUsernameBuyBox("searchShortBuyNotice",q);
  const list=el("peopleList");list.textContent="جارٍ البحث...";
- const {data:myFollows}=await client.from("follows").select("following_id").eq("follower_id",currentUser.id);
- followedIdsSet=new Set((myFollows||[]).map(x=>x.following_id));
- let query=client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified,is_online,last_seen").neq("id",currentUser.id).limit(20);
- if(q){const clean=q.replace(/^@/,"");query=query.or("username.ilike.%"+clean+"%,full_name.ilike.%"+clean+"%")}
- const {data,error}=await query;list.replaceChildren();
- if(error){list.textContent="خطأ في البحث: "+error.message;return}
- const users=(data||[]).filter(u=>!isUserBlocked(u.id));
- if(!users.length){list.textContent="لا يوجد مستخدمون مطابقون";return}
- users.forEach(u=>{
+ let query=client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified,is_online,last_seen").limit(20);
+ if(q){
+  const {data:byUser,error:e1}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified,is_online,last_seen").ilike("username","%"+q+"%").limit(20);
+  const {data:byName,error:e2}=await client.from("profiles").select("id,username,full_name,avatar_url,bio,is_verified,is_online,last_seen").ilike("full_name","%"+q+"%").limit(20);
+  if(e1||e2){list.textContent="تعذر البحث: "+(e1?.message||e2?.message);return}
+  const merged=new Map();[...(byUser||[]),...(byName||[])].forEach(p=>merged.set(p.id,p));
+  renderPeopleResults([...merged.values()]);return;
+ }
+ const {data,error}=await query;if(error){list.textContent="تعذر البحث: "+error.message;return}
+ renderPeopleResults(data||[]);
+};
+
+async function renderPeopleResults(users){
+ const list=el("peopleList");list.replaceChildren();
+ const filtered=users.filter(u=>u.id!==currentUser.id && !isUserBlocked(u.id));
+ if(!filtered.length){list.textContent="لا توجد نتائج";return}
+ const {data:myFollows}=await client.from("follows").select("following_id,status").eq("follower_id",currentUser.id);
+ const followMap={};(myFollows||[]).forEach(x=>followMap[x.following_id]=x.status||"accepted");
+ filtered.forEach(u=>{
   const row=document.createElement("div");row.className="item";const line=document.createElement("div");line.className="chat-row clickable-user";line.onclick=()=>openUserProfile(u.id);
-  line.appendChild(makeAvatar(u.avatar_url,u.full_name||u.username));
-  const info=document.createElement("div");info.className="chat-row-info";const name=document.createElement("strong");addVerifiedName(name,(u.full_name||"مستخدم")+" @"+(u.username||"user"),u.is_verified===true);
+  line.appendChild(makeAvatar(u.avatar_url,u.full_name||u.username));const info=document.createElement("div");info.className="chat-row-info";
+  const name=document.createElement("strong");addVerifiedName(name,(u.full_name||"مستخدم")+" @"+(u.username||"user"),u.is_verified===true);
   const bio=document.createElement("div");bio.className="small";bio.innerHTML=`${formatPresenceLabel(u)} ${u.bio?"• "+u.bio:""}`;info.append(name,bio);line.appendChild(info);row.appendChild(line);
   const actions=document.createElement("div");actions.className="user-row-actions";
-  const follow=document.createElement("button");follow.textContent=followedIdsSet.has(u.id)?"يتابع":"متابعة";follow.onclick=()=>followUser(u.id,follow);
-  const friendBtn=document.createElement("button");friendBtn.className="gray";friendBtn.textContent="🤝 صداقة";friendBtn.onclick=()=>sendFriendRequest(u.id,u.full_name||u.username);
-  const dm=document.createElement("button");dm.className="gray";dm.textContent="💬 دردشة";dm.onclick=()=>startChat(u.id,u.username);
-  const callV=document.createElement("button");callV.className="green";callV.textContent="📞 صوتي";callV.onclick=()=>initiateCall(u.id,u.full_name||u.username,u.avatar_url,false);
-  const callVid=document.createElement("button");callVid.className="gray";callVid.textContent="📹 فيديو";callVid.onclick=()=>initiateCall(u.id,u.full_name||u.username,u.avatar_url,true);
-  actions.append(follow,friendBtn,dm,callV,callVid);row.appendChild(actions);list.appendChild(row);
+  let isFollowing=Boolean(followMap[u.id]);
+  const followBtn=document.createElement("button");followBtn.textContent=isFollowing?"يتابع":"متابعة";
+  followBtn.onclick=async()=>{
+   followBtn.disabled=true;
+   try{
+    if(isFollowing){await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",u.id);isFollowing=false;followBtn.textContent="متابعة"}
+    else{await client.from("follows").insert({follower_id:currentUser.id,following_id:u.id,status:"accepted"});isFollowing=true;followBtn.textContent="يتابع"}
+    await loadStats();
+   }catch(e){alert(e.message)}finally{followBtn.disabled=false}
+  };
+  const friendBtn=document.createElement("button");friendBtn.className="gray";friendBtn.textContent=followMap[u.id]==="pending"?"⏳ طلب مرسل":"🤝 صداقة";
+  friendBtn.onclick=()=>sendFriendRequest(u.id,u.full_name||u.username);
+  const chatBtn=document.createElement("button");chatBtn.className="gray";chatBtn.textContent="دردشة";chatBtn.onclick=()=>startChat(u.id,u.username);
+  const callBtn=document.createElement("button");callBtn.className="green";callBtn.textContent="📞 اتصال";callBtn.onclick=()=>initiateCall(u.id,u.full_name||u.username,u.avatar_url,false);
+  actions.append(followBtn,friendBtn,chatBtn,callBtn);row.appendChild(actions);list.appendChild(row);
  });
 }
-el("searchBtn").onclick=searchUsers;
-el("searchUser").onkeydown=e=>{if(e.key==="Enter")searchUsers()};
 
-function getChatExtras(msgId){
- const st=getDertState();
- return st.chatExtras?.[String(msgId)]||{reactions:{},deletedForMe:false,deletedForEveryone:false,editedText:null,replyTo:null};
+async function followUser(userId,badge){
+ if(!currentUser||!userId||userId===currentUser.id)return;const already=followedIdsSet.has(userId);
+ try{
+  if(already){await client.from("follows").delete().eq("follower_id",currentUser.id).eq("following_id",userId);followedIdsSet.delete(userId);if(badge)badge.textContent="+"}
+  else{await client.from("follows").insert({follower_id:currentUser.id,following_id:userId,status:"accepted"});followedIdsSet.add(userId);if(badge)badge.textContent="✓"}
+  await loadStats();
+ }catch(e){alert(e.message)}
 }
-function saveChatExtra(msgId,patch){
- const st=getDertState();
- const all=st.chatExtras||{};
- all[String(msgId)]={...getChatExtras(msgId),...patch};
- saveDertState({chatExtras:all});
+
+/* ===== تحسينات الدردشة: رد على رسالة، تفاعلات، حذف رسالة، ملفات ورسائل صوتية، تثبيت/كتم/مسح محادثة ===== */
+function getChatMetaState(){
+ try{return JSON.parse(localStorage.getItem("dert_chat_meta_"+(currentUser?.id||"guest"))||"{}")}catch(e){return {}}
+}
+function saveChatMetaState(patch){
+ const next={...getChatMetaState(),...patch};
+ localStorage.setItem("dert_chat_meta_"+(currentUser?.id||"guest"),JSON.stringify(next));
+ return next;
+}
+function togglePinConversation(convId,e){
+ e?.stopPropagation();
+ const st=getChatMetaState();
+ const pinned=new Set(st.pinned||[]);
+ if(pinned.has(convId))pinned.delete(convId);else pinned.add(convId);
+ saveChatMetaState({pinned:[...pinned]});
+ renderChatList(el("chatSearch")?.value||"");
+}
+function toggleMuteConversation(convId,e){
+ e?.stopPropagation();
+ const st=getChatMetaState();
+ const muted=new Set(st.muted||[]);
+ if(muted.has(convId))muted.delete(convId);else muted.add(convId);
+ saveChatMetaState({muted:[...muted]});
+ renderChatList(el("chatSearch")?.value||"");
+}
+function deleteConversationLocal(convId,e){
+ e?.stopPropagation();
+ if(!confirm("حذف هذه المحادثة من قائمتك؟"))return;
+ const st=getChatMetaState();
+ const hidden=new Set(st.hidden||[]);
+ hidden.add(convId);
+ saveChatMetaState({hidden:[...hidden]});
+ renderChatList(el("chatSearch")?.value||"");
+}
+
+function getMessageReactionsMap(){
+ try{return JSON.parse(localStorage.getItem("dert_msg_reactions_"+(currentUser?.id||"guest"))||"{}")}catch(e){return {}}
 }
 function toggleMessageReaction(msgId,emoji){
- const ex=getChatExtras(msgId);
- const reactions={...(ex.reactions||{})};
- const cur=Number(reactions[emoji]||0);
- reactions[emoji]=cur>0?0:1;
- saveChatExtra(msgId,{reactions});
- loadMessages();
+ if(!msgId)return;
+ const map=getMessageReactionsMap();
+ const cur=Array.isArray(map[msgId])?[...map[msgId]]:[];
+ const idx=cur.indexOf(emoji);
+ if(idx>=0)cur.splice(idx,1);else cur.push(emoji);
+ map[msgId]=cur;
+ localStorage.setItem("dert_msg_reactions_"+(currentUser?.id||"guest"),JSON.stringify(map));
+ if(activeConversation)loadMessages(activeConversation);
 }
 function setChatReply(msgId,senderLabel,previewText){
- chatReplyTarget={id:msgId,senderLabel,previewText:(previewText||"").slice(0,45)};
- el("chatReplyBannerText").textContent=`الرد على ${senderLabel}: ${chatReplyTarget.previewText}`;
- el("chatReplyBanner").classList.remove("hidden");
- el("chatText").focus();
+ chatReplyTarget={id:msgId,senderLabel:senderLabel||"مستخدم",previewText:String(previewText||"").slice(0,50)};
+ if(el("chatReplyBannerText"))el("chatReplyBannerText").textContent=`↩ الرد على ${chatReplyTarget.senderLabel}: ${chatReplyTarget.previewText}`;
+ el("chatReplyBanner")?.classList.remove("hidden");
+ el("chatText")?.focus();
 }
 function clearChatReply(){
  chatReplyTarget=null;
  el("chatReplyBanner")?.classList.add("hidden");
+ if(el("chatReplyBannerText"))el("chatReplyBannerText").textContent="";
+}
+function encodeChatMessageBody(plainText){
+ const t=String(plainText||"");
+ if(!chatReplyTarget)return t;
+ const safeSender=String(chatReplyTarget.senderLabel||"user").replace(/\]/g,"");
+ const safePrev=String(chatReplyTarget.previewText||"").replace(/\]/g,"").replace(/\n/g," ");
+ return `[MSG_REPLY:${safeSender}|${safePrev}]\n${t}`;
+}
+function decodeChatMessageBody(raw){
+ const str=String(raw||"");
+ const m=str.match(/^\[MSG_REPLY:([^|\]]+)\|([^\]]*)\]\n?([\s\S]*)$/);
+ if(m)return{hasReply:true,replySender:m[1].trim(),replyPreview:m[2].trim(),text:m[3]};
+ return{hasReply:false,replySender:"",replyPreview:"",text:str};
 }
 
-function getPinnedConvos(){
- const st=getDertState();
- return Array.isArray(st.pinnedConvos)?st.pinnedConvos:[];
-}
-function togglePinConvo(convId){
- const cur=getPinnedConvos();
- const next=cur.includes(convId)?cur.filter(x=>x!==convId):[convId,...cur];
- saveDertState({pinnedConvos:next});
- renderChatList();
-}
-function hideConvo(convId){
- if(!confirm("إخفاء هذه المحادثة من القائمة؟"))return;
- const st=getDertState();
- const hidden=Array.isArray(st.hiddenConvos)?st.hiddenConvos:[];
- if(!hidden.includes(convId))saveDertState({hiddenConvos:[convId,...hidden]});
- renderChatList();
-}
-
-async function loadChats(){
- const list=el("chatList");list.textContent="جارٍ تحميل الدردشات...";
- const {data,error}=await client.from("conversations").select("*").or("user1_id.eq."+currentUser.id+",user2_id.eq."+currentUser.id).order("created_at",{ascending:false});
- if(error){list.textContent="تعذر تحميل الدردشات: "+error.message;return}
- const otherIds=[...new Set((data||[]).map(c=>c.user1_id===currentUser.id?c.user2_id:c.user1_id))];
- const {data:profiles}=otherIds.length?await client.from("profiles").select("id,username,full_name,avatar_url,is_verified,is_online,last_seen").in("id",otherIds):{data:[]};
- const map={};(profiles||[]).forEach(p=>map[p.id]=p);
-
- const enriched=[];
- for(const c of (data||[])){
-  const otherId=c.user1_id===currentUser.id?c.user2_id:c.user1_id;
-  if(isUserBlocked(otherId))continue;
-  let lastMsgText="اضغط لفتح المحادثة";
-  let lastMsgTime=c.created_at;
-  let unreadCount=0;
-  try{
-   const {data:lastMsgs}=await client.from("messages").select("id,sender_id,content,media_type,created_at").eq("conversation_id",c.id).order("created_at",{ascending:false}).limit(10);
-   const m0=(lastMsgs||[])[0];
-   if(m0){
-    lastMsgTime=m0.created_at;
-    const dec=decryptText(m0.content||"");
-    lastMsgText=m0.media_type==="image"?"🖼️ صورة":(m0.media_type==="video"?"🎬 فيديو":(m0.media_type==="audio"?"🎤 رسالة صوتية":(m0.media_type==="file"?"📎 ملف":(dec||"رسالة"))));
-    unreadCount=(lastMsgs||[]).filter(x=>x.sender_id!==currentUser.id).length>0 && activeConversation!==c.id ? Math.min(9,(lastMsgs||[]).filter(x=>x.sender_id!==currentUser.id && new Date(x.created_at) > new Date(Date.now()-3600000)).length) : 0;
-   }
-  }catch(e){}
-  enriched.push({conv:c,otherId,profile:map[otherId]||{},lastMsgText,lastMsgTime,unreadCount});
+el("pickChatMediaBtn")?.addEventListener("click",()=>el("chatFile")?.click());
+el("pickChatDocBtn")?.addEventListener("click",()=>el("chatDocFile")?.click());
+el("chatFile")?.addEventListener("change",()=>{
+ const f=el("chatFile")?.files?.[0];
+ if(f){recordedVoiceFile=null;selectedDocFile=null;if(el("chatDocFile"))el("chatDocFile").value="";if(el("chatAttachPreview"))el("chatAttachPreview").textContent="🖼️ مرفق وسائط: "+f.name}
+});
+el("chatDocFile")?.addEventListener("change",()=>{
+ const f=el("chatDocFile")?.files?.[0];
+ if(f){recordedVoiceFile=null;selectedDocFile=f;if(el("chatFile"))el("chatFile").value="";if(el("chatAttachPreview"))el("chatAttachPreview").textContent="📎 مرفق ملف: "+f.name}
+});
+el("voiceRecordBtn")?.addEventListener("click",async()=>{
+ const btn=el("voiceRecordBtn");
+ if(mediaRecorderRef && mediaRecorderRef.state==="recording"){
+  mediaRecorderRef.stop();
+  return;
  }
+ if(!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder==="undefined"){
+  alert("المتصفح لا يدعم تسجيل الرسائل الصوتية هنا.");
+  return;
+ }
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  voiceChunksRef=[];
+  const recorder=new MediaRecorder(stream);
+  mediaRecorderRef=recorder;
+  btn.textContent="⏹ إيقاف التسجيل";
+  recorder.ondataavailable=e=>{if(e.data && e.data.size>0)voiceChunksRef.push(e.data)};
+  recorder.onstop=()=>{
+   stream.getTracks().forEach(t=>t.stop());
+   const blob=new Blob(voiceChunksRef,{type:"audio/webm"});
+   recordedVoiceFile=new File([blob],"voice_"+Date.now()+".webm",{type:"audio/webm"});
+   selectedDocFile=null;if(el("chatFile"))el("chatFile").value="";if(el("chatDocFile"))el("chatDocFile").value="";
+   if(el("chatAttachPreview"))el("chatAttachPreview").textContent="🎤 تم تسجيل رسالة صوتية جاهزة للإرسال";
+   btn.textContent="🎤 رسالة صوتية";
+   mediaRecorderRef=null;
+  };
+  recorder.start();
+ }catch(e){
+  alert("تعذر الوصول للمايكروفون: "+e.message);
+ }
+});
 
- const pinnedIds=getPinnedConvos();
- enriched.sort((a,b)=>{
-  const pa=pinnedIds.includes(a.conv.id)?1:0;
-  const pb=pinnedIds.includes(b.conv.id)?1:0;
-  if(pa!==pb)return pb-pa;
-  return new Date(b.lastMsgTime||0)-new Date(a.lastMsgTime||0);
- });
+el("newChatBtn").onclick=()=>{openTab("people");el("searchUser").focus()};
+el("newGroupBtn").onclick=async()=>{
+ const title=prompt("اسم مجموعة الدردشة الجديدة:");
+ if(!title?.trim())return;
+ const roomId="grp_"+currentUser.id.slice(0,8)+"_"+Date.now();
+ await openChatRoom(roomId,null,"👥 "+title.trim(),"مجموعة دردشة");
+ if(el("chatText"))el("chatText").value=`مرحباً بالجميع في مجموعة ${title.trim()} 👋`;
+};
 
- chatCache=enriched;
- if(el("chatsTotalBadge"))el("chatsTotalBadge").textContent=`${chatCache.length} محادثة`;
- const totalUnread=chatCache.reduce((sum,x)=>sum+(x.unreadCount||0),0);
- const navBadge=el("navChatsUnread");
- if(navBadge){navBadge.textContent=totalUnread>99?"99+":String(totalUnread);navBadge.classList.toggle("hidden",totalUnread===0)}
- renderChatList();
-}
-
-function renderChatList(){
- const list=el("chatList");if(!list)return;
- const q=(el("chatSearch")?.value||"").trim().toLowerCase();
- const hiddenIds=Array.isArray(getDertState().hiddenConvos)?getDertState().hiddenConvos:[];
- const pinnedIds=getPinnedConvos();
-
- const visible=chatCache.filter(item=>{
-  if(hiddenIds.includes(item.conv.id))return false;
-  if(!q)return true;
-  const fn=(item.profile?.full_name||"").toLowerCase();
-  const un=(item.profile?.username||"").toLowerCase();
-  return fn.includes(q) || un.includes(q) || (item.lastMsgText||"").toLowerCase().includes(q);
- });
-
- list.replaceChildren();
- if(!visible.length){list.innerHTML=`<div class="small" style="text-align:center;padding:20px">لا توجد محادثات</div>`;return}
-
- visible.forEach(item=>{
-  const {conv,otherId,profile,lastMsgText,lastMsgTime,unreadCount}=item;
-  const isPinned=pinnedIds.includes(conv.id);
-  const row=document.createElement("div");
-  row.className="chat-entry"+(isPinned?" pinned":"");
-
-  const av=makeAvatar(profile.avatar_url,profile.full_name||profile.username);
-  av.onclick=(e)=>{e.stopPropagation();openUserProfile(otherId)};
-
-  const info=document.createElement("div");info.className="chat-entry-info";
-  const topRow=document.createElement("div");topRow.className="chat-title-row";
-  const name=document.createElement("strong");
-  addVerifiedName(name,(profile.full_name||profile.username||"مستخدم DERT")+(isPinned?" 📌":""),profile.is_verified===true);
-  const pres=document.createElement("span");pres.className="small";pres.innerHTML=formatPresenceLabel(profile);
-  topRow.append(name,pres);
-
-  const lastP=document.createElement("div");lastP.className="chat-last";lastP.textContent=lastMsgText;
-
-  const miniActs=document.createElement("div");miniActs.className="chat-entry-actions";
-  const pinBtn=document.createElement("button");pinBtn.type="button";pinBtn.className="chat-mini-act";
-  pinBtn.textContent=isPinned?"إلغاء التثبيت":"📌 تثبيت";
-  pinBtn.onclick=(e)=>{e.stopPropagation();togglePinConvo(conv.id)};
-
-  const hideBtn=document.createElement("button");hideBtn.type="button";hideBtn.className="chat-mini-act danger";
-  hideBtn.textContent="🗑️ إخفاء";
-  hideBtn.onclick=(e)=>{e.stopPropagation();hideConvo(conv.id)};
-
-  miniActs.append(pinBtn,hideBtn);
-  info.append(topRow,lastP,miniActs);
-
-  const metaCol=document.createElement("div");metaCol.className="chat-meta-col";
-  const tm=document.createElement("span");tm.className="chat-time";tm.textContent=lastMsgTime?formatSmartDate(lastMsgTime):"";
-  metaCol.appendChild(tm);
-  if(unreadCount>0){
-   const ub=document.createElement("span");ub.className="unread-badge";ub.textContent=String(unreadCount);
-   metaCol.appendChild(ub);
-  }
-
-  row.append(av,info,metaCol);
-  row.onclick=()=>openConversation(conv.id,otherId,(profile.full_name||profile.username||"مستخدم DERT"),profile.avatar_url||null);
-  list.appendChild(row);
- });
-}
-el("chatSearch").oninput=renderChatList;
-
-async function startChat(otherId,label=""){
- if(isUserBlocked(otherId)){alert("هذا المستخدم محظور، ألغِ الحظر أولاً من مركز الأمان والخصوصية.");return}
- const {data:existing}=await client.from("conversations").select("*").or("and(user1_id.eq."+currentUser.id+",user2_id.eq."+otherId+"),and(user1_id.eq."+otherId+",user2_id.eq."+currentUser.id+")").limit(1);
- if(existing?.[0]){await openConversation(existing[0].id,otherId,label);return}
- const {data:created,error}=await client.from("conversations").insert({user1_id:currentUser.id,user2_id:otherId}).select().single();
- if(error){alert(error.message);return}
- await openConversation(created.id,otherId,label);
-}
-
-async function openConversation(id,otherId,label="",avatarUrl=null){
- activeConversation=id;activeReceiver=otherId;
+async function openChatRoom(conversationId,otherUserId,titleText,subText=""){
+ activeConversation=conversationId;activeReceiver=otherUserId||null;
  clearChatReply();
+ el("chatsDirectoryCard")?.classList.add("hidden");el("chatPanel")?.classList.remove("hidden");
+ el("chatTitle").textContent=titleText||"المحادثة";el("chatUsername").textContent=subText||"";
+ const oldAv=el("chatAvatar");const newAv=makeAvatar(null,titleText||"D");newAv.id="chatAvatar";oldAv.replaceWith(newAv);
+ el("chatVoiceCallBtn").classList.toggle("hidden",!otherUserId);
+ el("chatVideoCallBtn").classList.toggle("hidden",!otherUserId);
+ el("chatBlockUserBtn").classList.toggle("hidden",!otherUserId);
+ el("chatVoiceCallBtn").onclick=()=>otherUserId && initiateCall(otherUserId,titleText,null,false);
+ el("chatVideoCallBtn").onclick=()=>otherUserId && initiateCall(otherUserId,titleText,null,true);
+ el("chatBlockUserBtn").onclick=()=>{if(!otherUserId)return;const b=toggleBlockUser(otherUserId,titleText);alert(b?"تم حظر المستخدم":"تم إلغاء الحظر");if(b){el("closeChatBtn").click();loadChats()}};
+ await loadMessages(conversationId);subscribeRoom(conversationId);
+}
+
+async function startChat(userId,username){
+ if(!currentUser||!userId||userId===currentUser.id)return;
+ if(isUserBlocked(userId)){alert("هذا المستخدم محظور.");return}
+ const {data:p}=await client.from("profiles").select("id,username,full_name,avatar_url,is_verified,is_online,last_seen").eq("id",userId).maybeSingle();
+ const roomId=getDirectRoomId(currentUser.id,userId);
+ const title=(p?.full_name||username||"مستخدم DERT");
+ const sub=(p?.username?"@"+p.username+" • ":"")+formatPresenceLabel(p||{});
+ await openChatRoom(roomId,userId,title,sub);
+ if(p?.avatar_url){const oldAv=el("chatAvatar");const newAv=makeAvatar(p.avatar_url,title);newAv.id="chatAvatar";oldAv.replaceWith(newAv)}
+}
+
+el("closeChatBtn").onclick=()=>{
+ activeConversation=null;activeReceiver=null;clearChatReply();
  selectedDocFile=null;recordedVoiceFile=null;
  if(el("chatFile"))el("chatFile").value="";
  if(el("chatDocFile"))el("chatDocFile").value="";
  if(el("chatAttachPreview"))el("chatAttachPreview").textContent="";
+ if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}
+ el("chatPanel")?.classList.add("hidden");el("chatsDirectoryCard")?.classList.remove("hidden");loadChats();
+};
 
- let pInfo={full_name:label,username:label,avatar_url:avatarUrl,is_online:false,last_seen:null};
- try{const {data}=await client.from("profiles").select("id,username,full_name,avatar_url,is_online,last_seen").eq("id",otherId).maybeSingle();if(data)pInfo={...pInfo,...data}}catch(e){}
+function renderChatList(filterQuery=""){
+ const list=el("chatList");if(!list)return;list.replaceChildren();
+ const q=filterQuery.trim().toLowerCase().replace(/^@+/,"");
+ const metaSt=getChatMetaState();
+ const pinnedSet=new Set(metaSt.pinned||[]);
+ const mutedSet=new Set(metaSt.muted||[]);
+ const hiddenSet=new Set(metaSt.hidden||[]);
 
- el("chatsDirectoryCard").classList.add("hidden");
- el("chatPanel").classList.remove("hidden");
- el("chatTitle").textContent=pInfo.full_name||pInfo.username||"المحادثة";
- el("chatUsername").innerHTML=`@${pInfo.username||"user"} • ${formatPresenceLabel(pInfo)}`;
- const avWrap=el("chatAvatar");
- const newAv=makeAvatar(pInfo.avatar_url,pInfo.full_name||pInfo.username);
- newAv.id="chatAvatar";
- avWrap.replaceWith(newAv);
+ const rows=chatCache.filter(c=>{
+  if(hiddenSet.has(c.conversationId))return false;
+  if(!q)return true;
+  return (c.title||"").toLowerCase().includes(q) || (c.username||"").toLowerCase().includes(q) || (c.lastText||"").toLowerCase().includes(q);
+ }).sort((a,b)=>{
+  const pa=pinnedSet.has(a.conversationId)?1:0;
+  const pb=pinnedSet.has(b.conversationId)?1:0;
+  if(pa!==pb)return pb-pa;
+  return new Date(b.lastTime||0)-new Date(a.lastTime||0);
+ });
 
- msg("chatStatus","");
- await loadMessages();
- subscribeRoom(id);
+ if(el("chatsTotalBadge"))el("chatsTotalBadge").textContent=`${rows.length} محادثة`;
+ const totalUnread=rows.reduce((sum,x)=>sum+(Number(x.unread||0)),0);
+ const navBadge=el("navChatsUnread");
+ if(navBadge){navBadge.textContent=totalUnread>99?"99+":String(totalUnread);navBadge.classList.toggle("hidden",totalUnread===0)}
+
+ if(!rows.length){list.innerHTML=`<div class="small" style="text-align:center;padding:20px">لا توجد محادثات مطابقة</div>`;return}
+
+ rows.forEach(c=>{
+  const isPinned=pinnedSet.has(c.conversationId);
+  const isMuted=mutedSet.has(c.conversationId);
+  const item=document.createElement("div");item.className="chat-entry"+(isPinned?" pinned":"");
+  item.onclick=()=>openChatRoom(c.conversationId,c.otherUserId,c.title,c.sub);
+
+  const av=makeAvatar(c.avatarUrl,c.title);item.appendChild(av);
+
+  const info=document.createElement("div");info.className="chat-entry-info";
+  const topRow=document.createElement("div");topRow.className="chat-title-row";
+  const strong=document.createElement("strong");strong.textContent=(isPinned?"📌 ":"")+c.title+(isMuted?" 🔕":"");
+  topRow.appendChild(strong);
+  const last=document.createElement("div");last.className="chat-last";last.textContent=c.lastText||"ابدأ المحادثة الآن";
+
+  const acts=document.createElement("div");acts.className="chat-entry-actions";
+  const pinB=document.createElement("button");pinB.type="button";pinB.className="chat-mini-act";pinB.textContent=isPinned?"إلغاء التثبيت":"تثبيت";pinB.onclick=e=>togglePinConversation(c.conversationId,e);
+  const muteB=document.createElement("button");muteB.type="button";muteB.className="chat-mini-act";muteB.textContent=isMuted?"إلغاء الكتم":"كتم";muteB.onclick=e=>toggleMuteConversation(c.conversationId,e);
+  const delB=document.createElement("button");delB.type="button";delB.className="chat-mini-act danger";delB.textContent="حذف";delB.onclick=e=>deleteConversationLocal(c.conversationId,e);
+  acts.append(pinB,muteB,delB);
+
+  info.append(topRow,last,acts);item.appendChild(info);
+
+  const meta=document.createElement("div");meta.className="chat-meta-col";
+  const tm=document.createElement("span");tm.className="chat-time";tm.textContent=c.lastTime?formatSmartDate(c.lastTime):"";
+  meta.appendChild(tm);
+  if(Number(c.unread||0)>0){const b=document.createElement("span");b.className="unread-badge";b.textContent=String(c.unread);meta.appendChild(b)}
+  item.appendChild(meta);list.appendChild(item);
+ });
+}
+el("chatSearch")?.addEventListener("input",e=>renderChatList(e.target.value));
+
+async function loadChats(){
+ if(!currentUser)return;const list=el("chatList");list.textContent="جارٍ تحميل المحادثات...";
+ const {data,error}=await client.from("messages").select("id,conversation_id,sender_id,receiver_id,content,created_at,read_at").or("sender_id.eq."+currentUser.id+",receiver_id.eq."+currentUser.id).order("created_at",{ascending:false}).limit(200);
+ if(error){list.textContent="تعذر تحميل المحادثات: "+error.message;return}
+ const convMap=new Map(),otherIds=new Set();
+ (data||[]).forEach(m=>{
+  const convId=m.conversation_id||(m.receiver_id?getDirectRoomId(m.sender_id,m.receiver_id):null);if(!convId)return;
+  const otherId=m.sender_id===currentUser.id?m.receiver_id:m.sender_id;if(otherId && isUserBlocked(otherId))return;
+  if(otherId)otherIds.add(otherId);
+  const decoded=decodeChatMessageBody(decryptText(m.content||"")).text;
+  const isUnreadForMe=m.receiver_id===currentUser.id && !m.read_at;
+  if(!convMap.has(convId))convMap.set(convId,{conversationId:convId,otherUserId:otherId||null,lastText:decoded||(m.receiver_id?"مرفق":"مجموعة دردشة"),lastTime:m.created_at,unread:isUnreadForMe?1:0});
+  else if(isUnreadForMe)convMap.get(convId).unread+=1;
+ });
+ let profMap={};
+ if(otherIds.size){const {data:profs}=await client.from("profiles").select("id,username,full_name,avatar_url,is_online,last_seen").in("id",[...otherIds]);(profs||[]).forEach(p=>profMap[p.id]=p)}
+ chatCache=[...convMap.values()].map(c=>{
+  if(c.otherUserId && profMap[c.otherUserId]){const p=profMap[c.otherUserId];return {...c,title:p.full_name||p.username||"مستخدم DERT",username:p.username||"",avatarUrl:p.avatar_url||null,sub:(p.username?"@"+p.username+" • ":"")+formatPresenceLabel(p)}}
+  return {...c,title:"👥 مجموعة دردشة",username:"",avatarUrl:null,sub:"مجموعة"}
+ });
+ renderChatList(el("chatSearch")?.value||"");
 }
 
-el("chatVoiceCallBtn").onclick=()=>{if(activeReceiver)initiateCall(activeReceiver,el("chatTitle").textContent,null,false)};
-el("chatVideoCallBtn").onclick=()=>{if(activeReceiver)initiateCall(activeReceiver,el("chatTitle").textContent,null,true)};
-el("chatBlockUserBtn").onclick=()=>{
- if(!activeReceiver)return;
- const blocked=toggleBlockUser(activeReceiver,el("chatTitle").textContent);
- alert(blocked?"تم حظر المستخدم ولن تظهر رسائله أو اتصالاته":"تم إلغاء الحظر");
- if(blocked)el("closeChatBtn").click();
-};
-el("closeChatBtn").onclick=()=>{
- activeConversation=null;activeReceiver=null;clearChatReply();
- el("chatPanel").classList.add("hidden");
- el("chatsDirectoryCard").classList.remove("hidden");
- stopRealtime();loadChats();
-};
+async function loadMessages(conversationId){
+ if(!conversationId)return;const box=el("chatMessages");box.replaceChildren();
+ const {data,error}=await client.from("messages").select("*").eq("conversation_id",conversationId).order("created_at",{ascending:true});
+ if(error){box.textContent="تعذر تحميل الرسائل: "+error.message;return}
+ const reactionsMap=getMessageReactionsMap();
+ (data||[]).forEach(m=>{
+  if(isUserBlocked(m.sender_id))return;
+  const mine=m.sender_id===currentUser.id;
+  const b=document.createElement("div");b.className="bubble"+(mine?" mine":"");
+  const plainFull=decryptText(m.content||"");
+  const parsed=decodeChatMessageBody(plainFull);
 
-el("pickChatMediaBtn").onclick=()=>el("chatFile").click();
-el("pickChatDocBtn").onclick=()=>el("chatDocFile").click();
-el("chatFile").onchange=()=>{
- const f=el("chatFile").files[0];
- if(f){selectedDocFile=null;recordedVoiceFile=null;el("chatAttachPreview").textContent=`مرفق وسائط: ${f.name}`}
-};
-el("chatDocFile").onchange=()=>{
- const f=el("chatDocFile").files[0];
- if(f){selectedDocFile=f;recordedVoiceFile=null;el("chatFile").value="";el("chatAttachPreview").textContent=`مرفق ملف: ${f.name}`}
-};
-el("voiceRecordBtn").onclick=async()=>{
- const btn=el("voiceRecordBtn");
- if(!mediaRecorderRef || mediaRecorderRef.state!=="recording"){
-  try{
-   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-   voiceChunksRef=[];
-   mediaRecorderRef=new MediaRecorder(stream);
-   mediaRecorderRef.ondataavailable=e=>{if(e.data.size>0)voiceChunksRef.push(e.data)};
-   mediaRecorderRef.onstop=()=>{
-    const blob=new Blob(voiceChunksRef,{type:"audio/webm"});
-    recordedVoiceFile=new File([blob],`voice_${Date.now()}.webm`,{type:"audio/webm"});
-    el("chatAttachPreview").textContent=`🎤 رسالة صوتية جاهزة للإرسال (${Math.max(1,Math.round(blob.size/4000))} ثانية)`;
-    stream.getTracks().forEach(t=>t.stop());
-   };
-   mediaRecorderRef.start();
-   btn.textContent="⏹️ إيقاف التسجيل";
-  }catch(e){alert("تعذر الوصول إلى المايكروفون: "+e.message)}
- }else{
-  mediaRecorderRef.stop();
-  btn.textContent="🎤 رسالة صوتية";
- }
-};
+  if(parsed.hasReply){
+   const q=document.createElement("div");q.className="msg-reply-quote";
+   q.textContent=`↩ ${parsed.replySender}: ${parsed.replyPreview}`;
+   b.appendChild(q);
+  }
 
-function renderBubble(m){
- const ex=getChatExtras(m.id);
- if(ex.deletedForMe)return null;
+  if(parsed.text){
+   const t=document.createElement("div");
+   t.textContent=parsed.text;
+   b.appendChild(t);
+  }
 
- const div=document.createElement("div");
- const mine=m.sender_id===currentUser.id;
- div.className="bubble"+(mine?" mine":"");
+  if(m.media_url){
+   if(m.media_type==="video"){
+    const v=document.createElement("video");v.src=m.media_url;v.controls=true;v.playsInline=true;v.style.cssText="max-width:240px;max-height:240px;border-radius:10px;margin-top:6px";
+    b.appendChild(v);
+   }else if(m.media_type==="audio"){
+    const a=document.createElement("audio");a.src=m.media_url;a.controls=true;a.style.cssText="max-width:230px;height:36px;margin-top:6px";
+    b.appendChild(a);
+   }else if(m.media_type==="file"){
+    const link=document.createElement("a");link.href=m.media_url;link.target="_blank";link.rel="noopener noreferrer";link.className="file-chip";
+    link.textContent="📎 فتح الملف / المستند";
+    b.appendChild(link);
+   }else{
+    const img=document.createElement("img");img.src=m.media_url;img.className="media protected-media";img.style.maxHeight="220px";
+    b.appendChild(img);
+   }
+  }
 
- if(ex.replyTo){
-  const q=document.createElement("div");
-  q.className="msg-reply-quote";
-  q.textContent=`↩ ${ex.replyTo.senderLabel}: ${ex.replyTo.previewText}`;
-  div.appendChild(q);
- }
+  const rxList=Array.isArray(reactionsMap[m.id])?reactionsMap[m.id]:[];
+  if(rxList.length){
+   const rBar=document.createElement("div");rBar.className="msg-reactions-bar";
+   rxList.forEach(em=>{
+    const pill=document.createElement("span");pill.className="msg-react-pill active";pill.textContent=em;
+    rBar.appendChild(pill);
+   });
+   b.appendChild(rBar);
+  }
 
- const decoded=ex.deletedForEveryone?"🚫 تم حذف هذه الرسالة":(ex.editedText || decryptText(m.content||""));
+  const meta=document.createElement("div");meta.className="message-meta";
+  const tm=document.createElement("span");tm.textContent=formatSmartDate(m.created_at);
+  meta.appendChild(tm);
+  if(mine){const st=document.createElement("span");st.textContent=m.read_at?"✓✓ مقروءة":"✓ مرسلة";meta.appendChild(st)}
+  b.appendChild(meta);
 
- if(decoded){
-  const p=document.createElement("div");
-  p.textContent=decoded;
-  div.appendChild(p);
- }
+  const bar=document.createElement("div");bar.className="msg-toolbar";
+  const repBtn=document.createElement("button");repBtn.type="button";repBtn.className="msg-mini-btn";repBtn.textContent="↩ رد";
+  repBtn.onclick=()=>setChatReply(m.id,mine?"أنت":"الطرف الآخر",parsed.text||"مرفق");
+  bar.appendChild(repBtn);
 
- if(!ex.deletedForEveryone && m.media_url){
-  if(m.media_type==="image"){const i=document.createElement("img");i.src=m.media_url;i.className="media protected-media";div.appendChild(i)}
-  else if(m.media_type==="video"){const v=document.createElement("video");v.src=m.media_url;v.controls=true;v.playsInline=true;div.appendChild(v)}
-  else if(m.media_type==="audio"){const a=document.createElement("audio");a.src=m.media_url;a.controls=true;a.style.cssText="width:100%;margin-top:8px";div.appendChild(a)}
-  else{const link=document.createElement("a");link.href=m.media_url;link.target="_blank";link.rel="noopener noreferrer";link.className="file-chip";link.textContent="📎 تحميل الملف المرفق";div.appendChild(link)}
- }
-
- const rx=ex.reactions||{};
- const activeEmojis=Object.keys(rx).filter(k=>Number(rx[k])>0);
- if(activeEmojis.length){
-  const rBar=document.createElement("div");rBar.className="msg-reactions-bar";
-  activeEmojis.forEach(emo=>{
-   const pill=document.createElement("button");pill.type="button";pill.className="msg-react-pill active";
-   pill.textContent=`${emo} 1`;pill.onclick=()=>toggleMessageReaction(m.id,emo);
-   rBar.appendChild(pill);
+  ["❤️","👍","😂"].forEach(em=>{
+   const rb=document.createElement("button");rb.type="button";rb.className="msg-mini-btn";rb.textContent=em;
+   rb.onclick=()=>toggleMessageReaction(m.id,em);
+   bar.appendChild(rb);
   });
-  div.appendChild(rBar);
- }
-
- const meta=document.createElement("div");meta.className="message-meta";
- const t=document.createElement("span");t.textContent=(ex.editedText?"معدّلة • ":"")+new Date(m.created_at).toLocaleTimeString("ar-IQ",{hour:"2-digit",minute:"2-digit"});
- meta.appendChild(t);
- if(mine){const status=document.createElement("span");status.textContent=m.id?"✓✓ مقروءة":"✓ مرسلة";meta.appendChild(status)}
- div.appendChild(meta);
-
- if(!ex.deletedForEveryone){
-  const tools=document.createElement("div");tools.className="msg-toolbar";
-  ["❤️","👍","😂"].forEach(emo=>{
-   const b=document.createElement("button");b.type="button";b.className="msg-mini-btn";b.textContent=emo;
-   b.onclick=()=>toggleMessageReaction(m.id,emo);tools.appendChild(b);
-  });
-  const repB=document.createElement("button");repB.type="button";repB.className="msg-mini-btn";repB.textContent="↩ رد";
-  repB.onclick=()=>setChatReply(m.id,mine?"أنت":el("chatTitle").textContent,decoded||"مرفق");
-  tools.appendChild(repB);
 
   if(mine){
-   const edB=document.createElement("button");edB.type="button";edB.className="msg-mini-btn";edB.textContent="✏️ تعديل";
-   edB.onclick=()=>{const nt=prompt("تعديل الرسالة:",decoded);if(nt && nt.trim()){saveChatExtra(m.id,{editedText:nt.trim()});loadMessages()}};
-   const delMeB=document.createElement("button");delMeB.type="button";delMeB.className="msg-mini-btn";delMeB.textContent="حذف لي";
-   delMeB.onclick=()=>{saveChatExtra(m.id,{deletedForMe:true});loadMessages()};
-   const delAllB=document.createElement("button");delAllB.type="button";delAllB.className="msg-mini-btn";delAllB.textContent="حذف للجميع";
-   delAllB.onclick=()=>{saveChatExtra(m.id,{deletedForEveryone:true});loadMessages()};
-   tools.append(edB,delMeB,delAllB);
+   const delBtn=document.createElement("button");delBtn.type="button";delBtn.className="msg-mini-btn";delBtn.textContent="🗑 حذف";
+   delBtn.onclick=async()=>{
+    if(!confirm("حذف هذه الرسالة؟"))return;
+    const {error:dErr}=await client.from("messages").delete().eq("id",m.id).eq("sender_id",currentUser.id);
+    if(dErr){alert("تعذر حذف الرسالة: "+dErr.message);return}
+    await loadMessages(conversationId);
+   };
+   bar.appendChild(delBtn);
   }
-  div.appendChild(tools);
- }
 
- return div;
-}
-
-async function loadMessages(){
- if(!activeConversation)return;
- const {data,error}=await client.from("messages").select("*").eq("conversation_id",activeConversation).order("created_at",{ascending:true});
- const box=el("chatMessages");box.replaceChildren();
- if(error){box.textContent="تعذر تحميل الرسائل: "+error.message;return}
- (data||[]).filter(m=>!isUserBlocked(m.sender_id)).forEach(m=>{
-  const b=renderBubble(m);
-  if(b)box.appendChild(b);
+  b.appendChild(bar);
+  box.appendChild(b);
  });
- box.scrollTop=box.scrollHeight;applyScreenShield();
+ applyScreenShield();
+ box.scrollTop=box.scrollHeight;
+ if(currentUser){
+  await client.from("messages").update({read_at:new Date().toISOString()}).eq("conversation_id",conversationId).eq("receiver_id",currentUser.id).is("read_at",null);
+ }
 }
 
-el("sendMessageBtn").onclick=async()=>{
- if(!activeConversation||!currentUser)return;
- const raw=el("chatText").value.trim();
- const mediaFile=el("chatFile").files[0]||null;
- const fileToUpload=recordedVoiceFile || selectedDocFile || mediaFile;
- if(!raw && !fileToUpload){msg("chatStatus","اكتب رسالة أو اختر ملفاً");return}
-
- const btn=el("sendMessageBtn");btn.disabled=true;msg("chatStatus","جارٍ الإرسال...");
- try{
-  let media_url=null,media_type=null;
-  if(fileToUpload){
-   media_url=await uploadFile(fileToUpload,"messages");
-   if(fileToUpload.type.startsWith("image/"))media_type="image";
-   else if(fileToUpload.type.startsWith("video/"))media_type="video";
-   else if(fileToUpload.type.startsWith("audio/"))media_type="audio";
-   else media_type="file";
-  }
-  const payloadText=encryptText(raw);
-  const {data:inserted,error}=await client.from("messages").insert({
-   conversation_id:activeConversation,
-   sender_id:currentUser.id,
-   content:payloadText||null,
-   media_url,
-   media_type
-  }).select("id").single();
-  if(error)throw error;
-
-  if(inserted?.id && chatReplyTarget){
-   saveChatExtra(inserted.id,{replyTo:chatReplyTarget});
-  }
-
-  if(activeReceiver && getAppPrefs().notifMsg!==false){
-   await pushNotification(activeReceiver,"message",`رسالة جديدة من ${currentProfile?.full_name||currentProfile?.username||"مستخدم"} 💬`);
-  }
-
-  el("chatText").value="";
-  if(el("chatFile"))el("chatFile").value="";
-  if(el("chatDocFile"))el("chatDocFile").value="";
-  selectedDocFile=null;recordedVoiceFile=null;
-  if(el("chatAttachPreview"))el("chatAttachPreview").textContent="";
-  clearChatReply();
-  msg("chatStatus","");
-  await loadMessages();
- }catch(e){msg("chatStatus","تعذر الإرسال: "+e.message)}finally{btn.disabled=false}
-};
-
-function subscribeRoom(id){
- stopRealtime();
- activeChannel=client.channel("dert-room-"+id)
-  .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"conversation_id=eq."+id},payload=>{
-   if(isUserBlocked(payload.new?.sender_id))return;
-   const box=el("chatMessages");
-   if(!box.querySelector('[data-msg-id="'+payload.new.id+'"]')){
-    const b=renderBubble(payload.new);
-    if(b){b.dataset.msgId=payload.new.id;box.appendChild(b);box.scrollTop=box.scrollHeight;applyScreenShield()}
+function subscribeRoom(conversationId){
+ if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}
+ activeChannel=client.channel("room-"+conversationId)
+  .on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:"conversation_id=eq."+conversationId},async payload=>{
+   if(payload.new?.sender_id && isUserBlocked(payload.new.sender_id))return;
+   await loadMessages(conversationId);
+   if(payload.eventType==="INSERT" && payload.new?.sender_id!==currentUser?.id && getAppPrefs().notifMsg!==false){
+    await pushNotification(currentUser.id,"message","رسالة جديدة في الدردشة 💬");
    }
   }).subscribe();
 }
-function stopRealtime(){if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}}
 
-async function pushNotification(userId,type,message){
- if(!userId || userId===currentUser?.id)return;
- try{await client.from("notifications").insert({user_id:userId,type,message})}catch(e){}
-}
+el("sendMessageBtn").onclick=async()=>{
+ if(!activeConversation||!currentUser){msg("chatStatus","اختر محادثة أولاً");return}
+ const rawText=el("chatText").value.trim();
+ const mediaFile=el("chatFile")?.files?.[0]||null;
+ const attachFile=recordedVoiceFile || selectedDocFile || mediaFile;
+ if(!rawText && !attachFile){msg("chatStatus","اكتب رسالة أو اختر مرفقاً");return}
 
-function getLocalAlerts(){
- const st=getDertState();
- return Array.isArray(st.localAlerts)?st.localAlerts:[];
-}
-function saveLocalAlerts(list){
- saveDertState({localAlerts:(list||[]).slice(0,50)});
-}
-
-async function loadAlerts(){
- if(!currentUser)return;
- const list=el("alertsList");list.textContent="جارٍ تحميل الإشعارات...";
- let dbAlerts=[];
+ const b=el("sendMessageBtn");b.disabled=true;msg("chatStatus","جارٍ الإرسال...");
  try{
-  const {data,error}=await client.from("notifications").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(40);
-  if(!error && data)dbAlerts=data;
- }catch(e){}
+  let mediaUrl=null,mediaType=null;
+  if(attachFile){
+   mediaUrl=await uploadFile(attachFile,"chat");
+   if(recordedVoiceFile)mediaType="audio";
+   else if(selectedDocFile)mediaType="file";
+   else if(attachFile.type.startsWith("video/"))mediaType="video";
+   else mediaType="image";
+  }
+  const encodedText=encodeChatMessageBody(rawText);
+  const cipher=encryptText(encodedText);
+  const {error}=await client.from("messages").insert({
+   conversation_id:activeConversation,
+   sender_id:currentUser.id,
+   receiver_id:activeReceiver,
+   content:cipher,
+   media_url:mediaUrl,
+   media_type:mediaType
+  });
+  if(error)throw error;
 
- const loc=getLocalAlerts();
- const merged=[
-  ...dbAlerts.map(a=>({id:a.id,message:a.message,created_at:a.created_at,is_read:!!a.is_read,source:"db"})),
-  ...loc.map(a=>({id:a.id,message:a.message,created_at:a.created_at,is_read:!!a.is_read,source:"local"}))
- ].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
-
- const unreadCount=merged.filter(x=>!x.is_read).length;
- const badge=el("navAlertsUnread");
- if(badge){badge.textContent=unreadCount>99?"99+":String(unreadCount);badge.classList.toggle("hidden",unreadCount===0)}
-
- list.replaceChildren();
- if(!merged.length){list.textContent="لا توجد إشعارات بعد";return}
- merged.forEach(a=>{
-  const row=document.createElement("div");row.className="item";
-  row.style.opacity=a.is_read?"0.72":"1";
-  const m=document.createElement("div");m.textContent=(a.is_read?"":"🔴 ")+a.message;
-  const d=document.createElement("div");d.className="small";d.textContent=a.created_at?formatSmartDate(a.created_at):"";
-  row.append(m,d);list.appendChild(row);
- });
-}
-
-el("markAllAlertsReadBtn").onclick=async()=>{
- if(!currentUser)return;
- const loc=getLocalAlerts().map(x=>({...x,is_read:true}));
- saveLocalAlerts(loc);
- try{await client.from("notifications").update({is_read:true}).eq("user_id",currentUser.id)}catch(e){}
- await loadAlerts();
+  el("chatText").value="";
+  clearChatReply();
+  recordedVoiceFile=null;selectedDocFile=null;
+  if(el("chatFile"))el("chatFile").value="";
+  if(el("chatDocFile"))el("chatDocFile").value="";
+  if(el("chatAttachPreview"))el("chatAttachPreview").textContent="";
+  msg("chatStatus","");
+  await loadMessages(activeConversation);
+ }catch(e){msg("chatStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
 };
 
-function startAlertsRealtime(){
- stopAlertsRealtime();
- if(!currentUser)return;
- alertsChannel=client.channel("dert-alerts-"+currentUser.id)
-  .on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:"user_id=eq."+currentUser.id},payload=>{
-   const prefs=getAppPrefs();
-   const t=payload.new?.type||"";
-   if(t==="message" && prefs.notifMsg===false)return;
-   if(t==="call" && prefs.notifCall===false)return;
-   if(t.startsWith("friend") && prefs.notifFriend===false)return;
-   const cur=getLocalAlerts();
-   cur.unshift({id:"rt_"+Date.now(),message:payload.new?.message||"إشعار جديد",created_at:new Date().toISOString(),is_read:false});
-   saveLocalAlerts(cur);
-   if(el("alerts").classList.contains("active"))loadAlerts();
-  }).subscribe();
-}
-function stopAlertsRealtime(){if(alertsChannel){client.removeChannel(alertsChannel);alertsChannel=null}}
-el("refreshAlerts").onclick=loadAlerts;
+function stopRealtime(){if(activeChannel){client.removeChannel(activeChannel);activeChannel=null}}
+async function pushNotification(userId,type,title){if(!userId)return;try{await client.from("notifications").insert({user_id:userId,type,title})}catch(e){}}
 
-async function loadAdminTopups(){
- if(!isAdmin())return;const box=el("adminTopups");box.textContent="جارٍ تحميل سجل الشحن...";
- const {data,error}=await client.from("payment_intents").select("*").order("created_at",{ascending:false}).limit(30);
- if(error){box.textContent="تعذر التحميل: "+error.message;return}box.replaceChildren();
- if(!data?.length){box.textContent="لا توجد عمليات دفع حالياً";return}
- data.forEach(t=>{
-  const card=document.createElement("div");card.className="request-card";
-  card.innerHTML=`<strong>${getMethodArabicName(t.payment_method)}</strong> • ${t.coins_amount} عملة (${t.package_amount} د.ع)<div class="small">المستخدم: ${t.user_id} • الحالة: <strong class="status-${t.status}">${t.status}</strong></div>`;
-  box.appendChild(card);
+async function loadAlerts(){
+ if(!currentUser)return;const list=el("alertsList");list.textContent="جارٍ تحميل الإشعارات...";
+ const {data,error}=await client.from("notifications").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:false}).limit(40);
+ if(error){list.textContent="تعذر تحميل الإشعارات: "+error.message;return}
+ const prefs=getAppPrefs();
+ const rows=(data||[]).filter(n=>{
+  if(n.type==="message" && prefs.notifMsg===false)return false;
+  if(n.type==="call" && prefs.notifCall===false)return false;
+  if((n.type==="friend_request" || n.type==="friend_accepted") && prefs.notifFriend===false)return false;
+  return true;
+ });
+ const unreadCount=rows.filter(x=>!x.is_read).length;
+ const badge=el("navAlertsUnread");
+ if(badge){badge.textContent=unreadCount>99?"99+":String(unreadCount);badge.classList.toggle("hidden",unreadCount===0)}
+ list.replaceChildren();if(!rows.length){list.textContent="لا توجد إشعارات بعد";return}
+ rows.forEach(n=>{
+  const row=document.createElement("div");row.className="item";if(!n.is_read)row.style.borderInlineStart="3px solid #fe2c55";
+  const title=document.createElement("strong");title.textContent=n.title||"إشعار";
+  const date=document.createElement("div");date.className="small";date.textContent=new Date(n.created_at).toLocaleString("ar-IQ");
+  row.append(title,date);
+  if(n.type==="friend_request"){
+   const acts=document.createElement("div");acts.className="user-row-actions";
+   const goBtn=document.createElement("button");goBtn.type="button";goBtn.className="green";goBtn.textContent="عرض طلبات الصداقة";
+   goBtn.onclick=()=>openTab("people");acts.appendChild(goBtn);row.appendChild(acts);
+  }
+  list.appendChild(row);
  });
 }
+el("markAllAlertsReadBtn")?.addEventListener("click",async()=>{
+ if(!currentUser)return;
+ try{await client.from("notifications").update({is_read:true}).eq("user_id",currentUser.id);await loadAlerts()}catch(e){}
+});
+el("refreshAlerts").onclick=loadAlerts;
+function startAlertsRealtime(){
+ stopAlertsRealtime();if(!currentUser)return;
+ alertsChannel=client.channel("alerts-"+currentUser.id).on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications",filter:"user_id=eq."+currentUser.id},async payload=>{
+  const t=payload.new?.type;const prefs=getAppPrefs();
+  if(t==="message" && prefs.notifMsg===false)return;
+  if(t==="call" && prefs.notifCall===false)return;
+  if((t==="friend_request" || t==="friend_accepted") && prefs.notifFriend===false)return;
+  await loadAlerts();
+ }).subscribe();
+}
+function stopAlertsRealtime(){if(alertsChannel){client.removeChannel(alertsChannel);alertsChannel=null}}
 
+el("refreshTopups").onclick=loadAdminTopups;
+async function loadAdminTopups(){
+ const box=el("adminTopups");box.textContent="جارٍ التحميل...";
+ try{
+  const {data,error}=await client.from("payment_intents").select("*").order("created_at",{ascending:false}).limit(30);
+  if(error)throw error;box.replaceChildren();
+  if(!data?.length){box.textContent="لا توجد عمليات دفع بعد";return}
+  data.forEach(item=>{
+   const card=document.createElement("div");card.className="request-card";
+   card.innerHTML=`<div><strong>${getMethodArabicName(item.payment_method)}</strong> • ${item.coins_amount} عملة ($${item.package_amount})</div><div class="small">المستخدم: ${item.user_id}</div>${item.provider_ref?`<div class="small">المرجع: ${item.provider_ref}</div>`:""}<div class="small">الحالة: <strong class="status-${item.status}">${item.status}</strong></div>`;
+   if(item.status==="pending"){
+    const acts=document.createElement("div");acts.className="admin-actions";
+    const ok=document.createElement("button");ok.className="green";ok.textContent="تأكيد الدفع وإضافة العملات";
+    ok.onclick=async()=>{
+     ok.disabled=true;
+     try{
+      const {error:rpcErr}=await client.rpc("approve_payment_intent",{p_intent_id:item.id});
+      if(rpcErr)throw rpcErr;
+      alert("تم تأكيد الدفع وإضافة العملات للمستخدم بنجاح ✓");
+      await loadAdminTopups();
+     }catch(err){alert("تعذر التأكيد: "+err.message);ok.disabled=false}
+    };
+    const no=document.createElement("button");no.className="red";no.textContent="رفض";
+    no.onclick=async()=>{no.disabled=true;await client.from("payment_intents").update({status:"rejected"}).eq("id",item.id);loadAdminTopups()};
+    acts.append(ok,no);card.appendChild(acts);
+   }
+   box.appendChild(card);
+  });
+ }catch(e){box.textContent="تعذر تحميل سجل الدفع: "+e.message}
+}
+
+el("refreshWithdrawals").onclick=loadAdminWithdrawals;
 async function loadAdminWithdrawals(){
- if(!isAdmin())return;const box=el("adminWithdrawals");box.textContent="جارٍ تحميل طلبات السحب...";
- const {data,error}=await client.from("withdrawal_requests").select("*").order("created_at",{ascending:false}).limit(30);
- if(error){box.textContent="تعذر التحميل: "+error.message;return}box.replaceChildren();
- if(!data?.length){box.textContent="لا توجد طلبات سحب";return}
- data.forEach(w=>{
-  const card=document.createElement("div");card.className="request-card";
-  card.innerHTML=`<strong>مبلغ السحب: ${w.amount}</strong><div class="small">الطريقة: ${w.method_details||""} • الحالة: <strong class="status-${w.status}">${w.status}</strong></div>`;
-  if(w.status==="pending"){
-   const acts=document.createElement("div");acts.className="admin-actions";
-   const appBtn=document.createElement("button");appBtn.className="green";appBtn.textContent="اعتماد السحب";
-   appBtn.onclick=async()=>{await client.from("withdrawal_requests").update({status:"approved"}).eq("id",w.id);loadAdminWithdrawals()};
-   const rejBtn=document.createElement("button");rejBtn.className="red";rejBtn.textContent="رفض";
-   rejBtn.onclick=async()=>{await client.from("withdrawal_requests").update({status:"rejected"}).eq("id",w.id);loadAdminWithdrawals()};
-   acts.append(appBtn,rejBtn);card.appendChild(acts);
+ const box=el("adminWithdrawals");box.textContent="جارٍ التحميل...";
+ try{
+  const {data,error}=await client.from("withdrawal_requests").select("*").order("created_at",{ascending:false}).limit(30);
+  if(error)throw error;box.replaceChildren();
+  if(!data?.length){box.textContent="لا توجد طلبات سحب حالياً";return}
+  data.forEach(w=>{
+   const card=document.createElement("div");card.className="request-card";
+   card.innerHTML=`<div><strong>مبلغ السحب: ${w.amount}</strong></div><div class="small">المستخدم: ${w.user_id}</div><div class="small">الطريقة: ${w.method_details||"—"}</div><div class="small">الحالة: <strong class="status-${w.status}">${w.status}</strong></div>`;
+   if(w.status==="pending"){
+    const acts=document.createElement("div");acts.className="admin-actions";
+    const ok=document.createElement("button");ok.className="green";ok.textContent="موافقة";
+    ok.onclick=async()=>{await client.from("withdrawal_requests").update({status:"approved"}).eq("id",w.id);loadAdminWithdrawals()};
+    const no=document.createElement("button");no.className="red";no.textContent="رفض";
+    no.onclick=async()=>{await client.from("withdrawal_requests").update({status:"rejected"}).eq("id",w.id);loadAdminWithdrawals()};
+    acts.append(ok,no);card.appendChild(acts);
+   }
+   box.appendChild(card);
+  });
+ }catch(e){box.textContent="تعذر تحميل طلبات السحب: "+e.message}
+}
+
+el("refreshAdmin").onclick=loadAdminRequests;
+async function loadAdminRequests(){
+ const box=el("adminRequests");box.textContent="جارٍ التحميل...";
+ const {data,error}=await client.from("verification_requests").select("*").order("created_at",{ascending:false});
+ if(error){box.textContent="تعذر تحميل الطلبات: "+error.message;return}box.replaceChildren();
+ if(!data?.length){box.textContent="لا توجد طلبات توثيق";return}
+ const ids=[...new Set(data.map(r=>r.user_id))];const {data:profiles}=await client.from("profiles").select("id,username,full_name").in("id",ids);
+ const map={};(profiles||[]).forEach(p=>map[p.id]=p);
+ data.forEach(req=>{
+  const p=map[req.user_id],card=document.createElement("div");card.className="request-card";
+  card.innerHTML=`<div><strong>${p?.full_name||"مستخدم"}</strong> @${p?.username||""}</div><div class="small">الحالة: <strong class="status-${req.status}">${req.status}</strong></div>`;
+  if(req.status==="pending"){
+   const actions=document.createElement("div");actions.className="admin-actions";
+   const approve=document.createElement("button");approve.className="green";approve.textContent="قبول";
+   approve.onclick=async()=>{approve.disabled=true;await client.from("verification_requests").update({status:"approved"}).eq("id",req.id);await client.from("profiles").update({is_verified:true}).eq("id",req.user_id);await pushNotification(req.user_id,"verification","تمت الموافقة على طلب توثيق حسابك ✓");loadAdminRequests()};
+   const reject=document.createElement("button");reject.className="red";reject.textContent="رفض";
+   reject.onclick=async()=>{reject.disabled=true;await client.from("verification_requests").update({status:"rejected"}).eq("id",req.id);await pushNotification(req.user_id,"verification","تم رفض طلب توثيق حسابك");loadAdminRequests()};
+   actions.append(approve,reject);card.appendChild(actions);
   }
   box.appendChild(card);
  });
 }
 
-async function loadAdminRequests(){
- if(!isAdmin())return;msg("adminMessage","جارٍ التحميل...");
- const {data,error}=await client.from("verification_requests").select("*").order("created_at",{ascending:false});
- const box=el("adminRequests");box.replaceChildren();if(error){msg("adminMessage","خطأ: "+error.message);return}
- msg("adminMessage",data?.length?"":"لا توجد طلبات");
- for(const r of (data||[])){
-  const {data:p}=await client.from("profiles").select("username,full_name,is_verified").eq("id",r.user_id).maybeSingle();
-  const card=document.createElement("div");card.className="request-card";
-  card.innerHTML=`<strong>${p?.full_name||p?.username||r.user_id}</strong> (@${p?.username||""})<div class="small">الحالة: <strong class="status-${r.status}">${r.status}</strong></div>`;
-  const acts=document.createElement("div");acts.className="admin-actions";
-  const ok=document.createElement("button");ok.textContent="توثيق ✓";
-  ok.onclick=async()=>{await client.from("profiles").update({is_verified:true}).eq("id",r.user_id);await client.from("verification_requests").update({status:"approved"}).eq("id",r.id);loadAdminRequests()};
-  const no=document.createElement("button");no.className="gray";no.textContent="رفض";
-  no.onclick=async()=>{await client.from("profiles").update({is_verified:false}).eq("id",r.user_id);await client.from("verification_requests").update({status:"rejected"}).eq("id",r.id);loadAdminRequests()};
-  acts.append(ok,no);card.appendChild(acts);box.appendChild(card);
- }
-}
+el("refreshReports").onclick=loadReports;
 async function loadReports(){
- if(!isAdmin())return;const {data,error}=await client.from("content_reports").select("*").order("created_at",{ascending:false});
- const box=el("adminReports");box.replaceChildren();if(error){box.textContent=error.message;return}if(!data?.length){box.textContent="لا توجد بلاغات";return}
- data.forEach(r=>{const d=document.createElement("div");d.className="request-card";d.innerHTML=`<strong>${r.target_type}</strong>: ${r.reason||""}<div class="small">الهدف: ${r.target_id} • الحالة: ${r.status}</div>`;box.appendChild(d)});
+ const box=el("adminReports");box.textContent="جارٍ التحميل...";
+ const {data,error}=await client.from("content_reports").select("*").order("created_at",{ascending:false});
+ if(error){box.textContent="تعذر تحميل البلاغات: "+error.message;return}box.replaceChildren();
+ if(!data?.length){box.textContent="لا توجد بلاغات";return}
+ data.forEach(r=>{
+  const card=document.createElement("div");card.className="request-card";
+  card.innerHTML=`<div><strong>بلاغ ${r.target_type}</strong>: ${r.reason}</div><div class="small">الهدف: ${r.target_id}</div>`;
+  if(r.target_type==="post"){const del=document.createElement("button");del.className="red";del.textContent="حذف المنشور";del.onclick=async()=>{await client.from("posts").delete().eq("id",r.target_id);await client.from("content_reports").delete().eq("id",r.id);loadReports()};card.appendChild(del)}
+  box.appendChild(card);
+ });
 }
 
 el("sendSupportBtn").onclick=async()=>{
- const text=el("supportText").value.trim();if(!text){msg("supportStatus","اكتب رسالتك أولاً");return}
- const b=el("sendSupportBtn");b.disabled=true;msg("supportStatus","جارٍ الإرسال...");
- try{const {error}=await client.from("support_messages").insert({user_id:currentUser.id,sender_role:"user",message:text});if(error)throw error;el("supportText").value="";msg("supportStatus","تم إرسال رسالتك إلى الدعم ✓");await loadMySupport()}
- catch(e){msg("supportStatus","تعذر الإرسال: "+e.message)}finally{b.disabled=false}
+ const text=el("supportText").value.trim();if(!text){msg("supportStatus","اكتب رسالتك");return}
+ const {error}=await client.from("support_messages").insert({user_id:currentUser.id,sender_role:"user",message:text});
+ if(error){msg("supportStatus",error.message);return}
+ el("supportText").value="";msg("supportStatus","تم إرسال رسالتك إلى الدعم ✓");loadMySupport();
 };
+el("loadMySupport").onclick=loadMySupport;
 async function loadMySupport(){
+ const box=el("mySupportMessages");box.textContent="جارٍ التحميل...";
  const {data,error}=await client.from("support_messages").select("*").eq("user_id",currentUser.id).order("created_at",{ascending:true});
- const box=el("mySupportMessages");box.replaceChildren();if(error){box.textContent=error.message;return}if(!data?.length){box.textContent="لا توجد رسائل دعم سابقة";return}
+ if(error){box.textContent=error.message;return}box.replaceChildren();
+ if(!data?.length){box.textContent="لا توجد رسائل";return}
  data.forEach(m=>{const d=document.createElement("div");d.className="support-message"+(m.sender_role==="user"?" mine":"");d.textContent=(m.sender_role==="admin"?"الدعم: ":"أنت: ")+m.message;box.appendChild(d)});
 }
+
+el("refreshSupportAdmin").onclick=loadAdminSupport;
 async function loadAdminSupport(){
- if(!isAdmin())return;const {data,error}=await client.from("support_messages").select("*").order("created_at",{ascending:false});
- const box=el("adminSupport");box.replaceChildren();if(error){box.textContent=error.message;return}if(!data?.length){box.textContent="لا توجد رسائل دعم";return}
+ const box=el("adminSupport");box.textContent="جارٍ التحميل...";
+ const {data,error}=await client.from("support_messages").select("*").order("created_at",{ascending:false});
+ if(error){box.textContent=error.message;return}box.replaceChildren();
+ if(!data?.length){box.textContent="لا توجد رسائل دعم";return}
  data.forEach(m=>{
-  const card=document.createElement("div");card.className="request-card";
-  card.innerHTML=`<strong>${m.sender_role==="admin"?"الدعم":"مستخدم"}</strong> <span class="small">(${m.user_id})</span><p class="post-text">${m.message}</p>`;
-  const replyBtn=document.createElement("button");replyBtn.textContent="رد على المستخدم";
-  replyBtn.onclick=async()=>{const ans=prompt("اكتب رد الدعم:");if(!ans?.trim())return;await client.from("support_messages").insert({user_id:m.user_id,sender_role:"admin",message:ans.trim()});loadAdminSupport()};
-  card.appendChild(replyBtn);box.appendChild(card);
+  const card=document.createElement("div");card.className="request-card";card.innerHTML=`<div class="small">المستخدم: ${m.user_id} • ${m.sender_role}</div><div>${m.message}</div>`;
+  const reply=document.createElement("button");reply.textContent="رد على المستخدم";
+  reply.onclick=async()=>{const r=prompt("اكتب رد الدعم:");if(!r?.trim())return;await client.from("support_messages").insert({user_id:m.user_id,sender_role:"admin",message:r.trim()});await pushNotification(m.user_id,"support","وصلك رد جديد من الدعم الفني 🎧");loadAdminSupport()};
+  card.appendChild(reply);box.appendChild(card);
  });
 }
-el("refreshTopups").onclick=loadAdminTopups;el("refreshWithdrawals").onclick=loadAdminWithdrawals;el("refreshAdmin").onclick=loadAdminRequests;el("refreshReports").onclick=loadReports;el("refreshSupportAdmin").onclick=loadAdminSupport;el("loadMySupport").onclick=loadMySupport;
 
 async function showHome(user){
  currentUser=user;el("auth").classList.add("hidden");el("home").classList.remove("hidden");
- initPrefsListeners();
- registerCurrentDevice();
- startPresenceLoop();
+ initPrefsListeners();registerCurrentDevice();startPresenceLoop();
  const cached=getLocalProfileCache(user.id);
  if(cached){currentProfile={...(currentProfile||{}),...cached};renderProfileUI(currentProfile)}
- el("adminNav").classList.toggle("hidden",!isAdmin());
- el("mainNav").classList.toggle("has-admin",isAdmin());
- await loadProfile();
+ try{await loadProfile()}catch(e){msg("profileMessage",e.message)}
  await enforceMandatoryFollow();
- await loadStats();
- await loadVideos();
- await loadCallsLog();
- await loadFriendRequestsAndFriends();
- await loadAlerts();
- startAlertsRealtime();
- startCallsRealtime();
- applyScreenShield();
- const cfg=getSecurityConfig();
- if(cfg.appLockEnabled && cfg.pinCode)lockAppNow();
+ await loadStats();await loadVideos();await loadPosts();await loadCallsLog();await loadAlerts();
+ startAlertsRealtime();startCallsRealtime();
 }
 
 client.auth.onAuthStateChange(async(event,session)=>{
- if(event==="PASSWORD_RECOVERY"){showAuthForm("login");msg("message","أدخل كلمة المرور الجديدة من صفحة الإعدادات أو عبر تحديث الحساب.")}
  if(session?.user){if(!currentUser || currentUser.id!==session.user.id)await showHome(session.user)}
- else if(event==="SIGNED_OUT")showLogin();
+ else showLogin();
 });
-client.auth.getSession().then(({data})=>{if(data?.session?.user)showHome(data.session.user);else showLogin()});
+
+(async()=>{
+ initPrefsListeners();
+ const {data:{session}}=await client.auth.getSession();
+ if(session?.user)await showHome(session.user);
+ else showLogin();
+})();
 </script>
 </body>
 </html>

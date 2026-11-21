@@ -1,1 +1,445 @@
 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DART - Connect the World</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #080d18;
+  color: white;
+  min-height: 100vh;
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  background: #0d1524;
+  border-left: 1px solid #1c2a40;
+  padding: 25px 18px;
+}
+
+.logo {
+  font-size: 30px;
+  font-weight: bold;
+  color: #38bdf8;
+  margin-bottom: 35px;
+  letter-spacing: 2px;
+}
+
+.logo span {
+  color: white;
+}
+
+.new-chat {
+  width: 100%;
+  padding: 14px;
+  background: #14243a;
+  color: white;
+  border: 1px solid #263e5d;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-bottom: 25px;
+}
+
+.new-chat:hover {
+  background: #1c3453;
+}
+
+.menu-title {
+  color: #8594aa;
+  font-size: 13px;
+  margin-bottom: 15px;
+}
+
+.menu-item {
+  padding: 13px;
+  color: #d7e2f0;
+  border-radius: 10px;
+  margin-bottom: 8px;
+}
+
+.menu-item:hover {
+  background: #16243a;
+}
+
+.sidebar-bottom {
+  margin-top: 50px;
+  border-top: 1px solid #243248;
+  padding-top: 20px;
+  color: #9aabc1;
+  font-size: 14px;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.header {
+  height: 75px;
+  border-bottom: 1px solid #1b293d;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 25px;
+}
+
+.header-title {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.status {
+  font-size: 13px;
+  color: #4ade80;
+}
+
+.welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px 20px;
+}
+
+.logo-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0ea5e9, #1e3a8a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  box-shadow: 0 0 40px #0ea5e933;
+}
+
+.welcome h1 {
+  font-size: 36px;
+  margin-bottom: 15px;
+}
+
+.welcome h1 span {
+  color: #38bdf8;
+}
+
+.welcome p {
+  color: #93a4bb;
+  font-size: 16px;
+  line-height: 1.8;
+  max-width: 500px;
+}
+
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px));
+  gap: 12px;
+  margin-top: 35px;
+}
+
+.suggestion {
+  background: #101b2c;
+  border: 1px solid #223650;
+  padding: 16px;
+  border-radius: 12px;
+  text-align: right;
+  color: #dbeafe;
+  cursor: pointer;
+}
+
+.suggestion:hover {
+  border-color: #38bdf8;
+  background: #14243a;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.message {
+  max-width: 85%;
+  padding: 15px 18px;
+  border-radius: 16px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.user-message {
+  align-self: flex-start;
+  background: #12365b;
+}
+
+.bot-message {
+  align-self: flex-end;
+  background: #111c2d;
+  border: 1px solid #22344c;
+}
+
+.input-area {
+  padding: 20px;
+  border-top: 1px solid #1b293d;
+}
+
+.input-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #101a2b;
+  border: 1px solid #263b55;
+  border-radius: 16px;
+  padding: 10px;
+  max-width: 850px;
+  margin: auto;
+}
+
+.input-box input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  padding: 12px;
+  font-size: 16px;
+}
+
+.input-box input::placeholder {
+  color: #75869e;
+}
+
+.send-btn {
+  width: 48px;
+  height: 48px;
+  background: #0284c7;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.send-btn:hover {
+  background: #0ea5e9;
+}
+
+.disclaimer {
+  color: #65758c;
+  text-align: center;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .sidebar {
+    display: none;
+  }
+
+  .header {
+    height: 65px;
+    padding: 0 15px;
+  }
+
+  .welcome h1 {
+    font-size: 29px;
+  }
+
+  .suggestions {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .input-area {
+    padding: 12px;
+  }
+
+  .chat-messages {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="logo">DART<span>.</span></div>
+
+    <button class="new-chat" onclick="newChat()">
+      + محادثة جديدة
+    </button>
+
+    <div class="menu-title">القائمة الرئيسية</div>
+
+    <div class="menu-item">💬 المحادثات</div>
+    <div class="menu-item">🌍 التواصل العالمي</div>
+    <div class="menu-item">👥 الأصدقاء</div>
+    <div class="menu-item">⚙️ الإعدادات</div>
+
+    <div class="sidebar-bottom">
+      DART — Connect the World
+      <br><br>
+      الإصدار الأول
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <header class="header">
+      <div class="header-title">DART</div>
+      <div class="status">● واجهة تجريبية</div>
+    </header>
+
+    <section class="welcome" id="welcome">
+
+      <div class="logo-circle">D</div>
+
+      <h1>أهلاً بك في <span>DART</span></h1>
+
+      <p>
+        Connect the World 🌍
+        <br>
+        عالم واحد، تواصل بلا حدود.
+      </p>
+
+      <div class="suggestions">
+        <div class="suggestion"
+          onclick="suggest('عرفني على تطبيق DART')">
+          🌍 تعرف على DART
+        </div>
+
+        <div class="suggestion"
+          onclick="suggest('كيف أتواصل مع العالم؟')">
+          💬 التواصل العالمي
+        </div>
+
+        <div class="suggestion"
+          onclick="suggest('أريد بدء محادثة جديدة')">
+          ✨ محادثة جديدة
+        </div>
+
+        <div class="suggestion"
+          onclick="suggest('ما هي ميزات DART؟')">
+          🚀 ميزات التطبيق
+        </div>
+      </div>
+
+    </section>
+
+    <section class="chat-messages hidden" id="messages"></section>
+
+    <footer class="input-area">
+
+      <div class="input-box">
+        <input
+          id="messageInput"
+          type="text"
+          placeholder="اكتب رسالتك هنا..."
+          autocomplete="off"
+        >
+
+        <button class="send-btn" onclick="sendMessage()">
+          ↑
+        </button>
+      </div>
+
+      <div class="disclaimer">
+        DART — Connect the World | نسخة الواجهة التجريبية
+      </div>
+
+    </footer>
+
+  </main>
+
+</div>
+
+<script>
+const input = document.getElementById("messageInput");
+const welcome = document.getElementById("welcome");
+const messages = document.getElementById("messages");
+
+function suggest(text) {
+  input.value = text;
+  sendMessage();
+}
+
+function sendMessage() {
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  welcome.classList.add("hidden");
+  messages.classList.remove("hidden");
+
+  addMessage(text, "user-message");
+
+  input.value = "";
+
+  setTimeout(() => {
+    addMessage(
+      "أهلاً بك في DART 🌍 هذه واجهة تجريبية، وسيتم ربط المحادثات والخدمات الحقيقية في الخطوات القادمة.",
+      "bot-message"
+    );
+  }, 500);
+}
+
+function addMessage(text, className) {
+  const div = document.createElement("div");
+
+  div.className = "message " + className;
+  div.textContent = text;
+
+  messages.appendChild(div);
+
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function newChat() {
+  messages.innerHTML = "";
+  messages.classList.add("hidden");
+  welcome.classList.remove("hidden");
+  input.value = "";
+}
+
+input.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    sendMessage();
+  }
+});
+</script>
+
+</body>
+</html>

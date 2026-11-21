@@ -4,19 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
-  <title>DERT — تيك توك</title>
+  <title>DERT</title>
   <style>
     :root {
-      --bg-light: #ffffff;
       --bg-dark: #000000;
-      --surface: #f4f4f6;
-      --text-light: #161823;
-      --text-dark: #ffffff;
-      --muted: #737685;
-      --border: #ebebef;
+      --bg-light: #ffffff;
+      --surface: #f2f2f5;
+      --surface-2: #e7e8ed;
+      --text-dark: #161823;
+      --text-muted: #737685;
+      --border: #e8e8ec;
       --tt-red: #fe2c55;
       --tt-cyan: #25f4ee;
       --tt-yellow: #face15;
+      --accent-purple: #6c3ce9;
+      --green: #0f9d58;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -29,13 +31,14 @@
       user-select: none;
     }
 
-    input, textarea {
+    input, textarea, select {
       user-select: text;
+      font-family: inherit;
     }
 
     html, body {
       height: 100%;
-      background: #111318;
+      background: #08080a;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Kufi Arabic", "Cairo", sans-serif;
       overflow: hidden;
     }
@@ -45,45 +48,44 @@
       justify-content: center;
     }
 
-    .app-container {
+    .app-shell {
       width: 100%;
-      max-width: 450px;
+      max-width: 440px;
       height: 100dvh;
-      background: var(--bg-dark);
+      background: #000;
       position: relative;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
     }
 
-    .scroll-viewport {
+    .main-viewport {
       flex: 1;
       height: 100%;
       overflow-y: auto;
       scroll-snap-type: y mandatory;
       scrollbar-width: none;
-      padding-bottom: calc(56px + var(--safe-bottom));
+      padding-bottom: calc(58px + var(--safe-bottom));
     }
 
-    .scroll-viewport::-webkit-scrollbar {
+    .main-viewport::-webkit-scrollbar {
       display: none;
     }
 
-    .scroll-viewport.light-mode {
+    .main-viewport.light-mode {
       background: var(--bg-light);
-      color: var(--text-light);
+      color: var(--text-dark);
       scroll-snap-type: none;
     }
 
-    /* بطاقة الفيديو الكاملة (For You / Following) */
-    .tt-feed-item {
+    /* فيديوهات الرئيسية */
+    .tt-slide {
       position: relative;
       width: 100%;
-      height: calc(100dvh - 56px - var(--safe-bottom));
+      height: calc(100dvh - 58px - var(--safe-bottom));
       scroll-snap-align: start;
       scroll-snap-stop: always;
-      background: #090a0e;
+      background: #050507;
       color: #fff;
       overflow: hidden;
       display: flex;
@@ -91,12 +93,13 @@
       justify-content: flex-end;
     }
 
-    .tt-media-bg {
+    .tt-video {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      background: #050507;
     }
 
     .tt-scrim {
@@ -104,104 +107,162 @@
       inset: 0;
       background: linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.48) 0%,
-        rgba(0, 0, 0, 0.04) 35%,
-        rgba(0, 0, 0, 0.16) 60%,
+        rgba(0, 0, 0, 0.56) 0%,
+        rgba(0, 0, 0, 0.05) 26%,
+        rgba(0, 0, 0, 0.05) 60%,
         rgba(0, 0, 0, 0.88) 100%
       );
       pointer-events: none;
     }
 
-    /* قلب النقر المزدوج (Double Tap Heart) */
-    .double-tap-heart {
+    .pause-mark {
       position: absolute;
-      width: 96px;
-      height: 96px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.48);
+      color: #fff;
+      font-size: 22px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      opacity: 0;
       pointer-events: none;
-      z-index: 20;
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      z-index: 8;
+    }
+
+    .tt-slide.paused .pause-mark {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .seek-track {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: rgba(255, 255, 255, 0.22);
+      z-index: 12;
+    }
+
+    .seek-fill {
+      height: 100%;
+      width: 0%;
+      background: #ffffff;
+    }
+
+    .heart-pop {
+      position: absolute;
+      font-size: 82px;
+      color: var(--tt-red);
+      pointer-events: none;
+      z-index: 25;
       transform: translate(-50%, -50%) scale(0);
-      animation: burstHeart 0.75s cubic-bezier(0.17, 0.89, 0.32, 1.28) forwards;
-      filter: drop-shadow(0 6px 18px rgba(254, 44, 85, 0.55));
+      animation: heartBurst 0.72s cubic-bezier(0.17, 0.89, 0.32, 1.28) forwards;
+      text-shadow: 0 6px 20px rgba(254, 44, 85, 0.6);
     }
 
-    @keyframes burstHeart {
+    @keyframes heartBurst {
       0% { transform: translate(-50%, -50%) scale(0.2) rotate(-14deg); opacity: 0; }
-      25% { transform: translate(-50%, -50%) scale(1.18) rotate(8deg); opacity: 1; }
+      25% { transform: translate(-50%, -50%) scale(1.2) rotate(8deg); opacity: 1; }
       55% { transform: translate(-50%, -50%) scale(1) rotate(-4deg); opacity: 1; }
-      100% { transform: translate(-50%, -75%) scale(1.25) rotate(0deg); opacity: 0; }
+      100% { transform: translate(-50%, -78%) scale(1.25) rotate(0deg); opacity: 0; }
     }
 
-    /* الشريط العلوي في الرئيسية */
-    .tt-top-bar {
+    /* الشريط العلوي */
+    .tt-top {
       position: fixed;
       top: calc(10px + var(--safe-top));
       width: 100%;
-      max-width: 450px;
-      z-index: 18;
+      max-width: 440px;
+      z-index: 20;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 14px;
+      padding: 0 12px;
       color: #fff;
       pointer-events: none;
+      gap: 6px;
     }
 
-    .tt-top-bar > * {
+    .tt-top > * {
       pointer-events: auto;
     }
 
-    .tt-top-btn {
-      background: none;
+    .live-btn {
+      background: var(--tt-red);
       border: none;
       color: #fff;
-      font-size: 21px;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.4px;
       cursor: pointer;
-      width: 36px;
-      height: 36px;
-      display: grid;
-      place-items: center;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     }
 
-    .tt-top-tabs {
+    .top-tabs {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
     }
 
-    .tt-tab-btn {
+    .top-tabs::-webkit-scrollbar { display: none; }
+
+    .top-tab {
       background: none;
       border: none;
-      color: rgba(255, 255, 255, 0.68);
-      font-size: 16px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
       position: relative;
       padding: 4px 2px;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-      transition: color 0.15s ease, transform 0.15s ease;
+      white-space: nowrap;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
     }
 
-    .tt-tab-btn.active {
+    .top-tab.active {
       color: #ffffff;
-      transform: scale(1.04);
     }
 
-    .tt-tab-btn.active::after {
+    .top-tab.active::after {
       content: "";
       position: absolute;
-      bottom: -4px;
-      left: 18%;
-      right: 18%;
-      height: 3px;
+      bottom: -3px;
+      left: 15%;
+      right: 15%;
+      height: 2.5px;
       border-radius: 99px;
       background: #ffffff;
     }
 
-    /* شريط التفاعل الجانبي المطابق لتيك توك */
-    .tt-overlay-row {
+    .search-icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(20, 20, 26, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    /* التفاعل الجانبي والمعلومات */
+    .tt-overlay {
       position: relative;
-      z-index: 6;
+      z-index: 10;
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
@@ -210,61 +271,57 @@
       pointer-events: none;
     }
 
-    .tt-meta-col,
-    .tt-rail {
+    .tt-caption-col,
+    .tt-action-rail {
       pointer-events: auto;
     }
 
-    .tt-meta-col {
+    .tt-caption-col {
       flex: 1;
       min-width: 0;
       padding-left: 8px;
     }
 
-    .tt-author {
+    .tt-handle-line {
       font-size: 15.5px;
       font-weight: 800;
       margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
     }
 
-    .tt-caption {
+    .tt-desc-line {
       font-size: 13.5px;
-      line-height: 1.48;
+      line-height: 1.45;
       color: rgba(255, 255, 255, 0.96);
       margin-bottom: 8px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
     }
 
-    .tt-sound-line {
+    .tt-sound-row {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 12.5px;
-      color: #fff;
       font-weight: 600;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
     }
 
-    .tt-rail {
+    .tt-action-rail {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
       flex-shrink: 0;
     }
 
-    .tt-avatar-wrap {
+    .avatar-ring-box {
       position: relative;
       width: 48px;
       height: 48px;
       margin-bottom: 6px;
     }
 
-    .tt-avatar-img {
+    .avatar-ring-box img {
       width: 48px;
       height: 48px;
       border-radius: 50%;
@@ -273,7 +330,7 @@
       display: block;
     }
 
-    .tt-plus-badge {
+    .follow-plus-btn {
       position: absolute;
       bottom: -8px;
       left: 50%;
@@ -286,258 +343,397 @@
       border: none;
       font-size: 14px;
       font-weight: 900;
-      line-height: 1;
       cursor: pointer;
       display: grid;
       place-items: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-      transition: transform 0.16s ease, background 0.16s ease;
     }
 
-    .tt-plus-badge.followed {
-      background: #ffffff;
+    .follow-plus-btn.followed {
+      background: #fff;
       color: var(--tt-red);
       font-size: 11px;
     }
 
-    .tt-rail-btn {
+    .rail-act-btn {
+      background: rgba(18, 18, 22, 0.68);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      color: #fff;
+      border-radius: 12px;
+      padding: 6px 8px;
+      min-width: 58px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 3px;
-      background: none;
-      border: none;
-      color: #fff;
+      gap: 2px;
       cursor: pointer;
-      min-width: 46px;
+      backdrop-filter: blur(6px);
+      transition: transform 0.14s ease;
     }
 
-    .tt-rail-svg {
-      width: 34px;
-      height: 34px;
-      display: grid;
-      place-items: center;
-      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.55));
-      transition: transform 0.18s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+    .rail-act-btn:active {
+      transform: scale(0.92);
     }
 
-    .tt-rail-btn:active .tt-rail-svg {
-      transform: scale(0.84);
+    .rail-act-btn.liked {
+      border-color: var(--tt-red);
+      background: rgba(254, 44, 85, 0.28);
+      color: #ff6b86;
     }
 
-    .tt-rail-btn.pop .tt-rail-svg {
-      animation: iconPop 0.32s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+    .rail-act-btn.saved {
+      border-color: var(--tt-yellow);
+      background: rgba(250, 206, 21, 0.24);
+      color: var(--tt-yellow);
     }
 
-    @keyframes iconPop {
-      0% { transform: scale(0.75); }
-      55% { transform: scale(1.26); }
-      100% { transform: scale(1); }
-    }
-
-    .tt-rail-count {
-      font-size: 12px;
+    .rail-act-label {
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.2px;
-      color: #ffffff;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
+    }
+
+    .rail-act-val {
+      font-size: 12px;
+      font-weight: 800;
       direction: ltr;
     }
 
-    .tt-disc {
+    .vinyl-spin {
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      background: radial-gradient(circle, #222 25%, #0a0a0a 26%, #2b2b2b 65%, #000 66%);
-      border: 6px solid #1d1f26;
+      background: radial-gradient(circle, #222 25%, #090909 26%, #2a2a2a 65%, #000 66%);
+      border: 6px solid #1c1d24;
       display: grid;
       place-items: center;
       overflow: hidden;
       margin-top: 2px;
-      animation: spinDisc 6s linear infinite;
+      animation: spinWheel 6s linear infinite;
     }
 
-    .tt-disc img {
+    .tt-slide.paused .vinyl-spin {
+      animation-play-state: paused;
+    }
+
+    .vinyl-spin img {
       width: 20px;
       height: 20px;
       border-radius: 50%;
       object-fit: cover;
     }
 
-    @keyframes spinDisc {
+    @keyframes spinWheel {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
 
-    /* شاشة الأصدقاء (Friends) */
-    .light-header {
+    /* الصفحات الداخلية */
+    .page-header {
       position: sticky;
       top: 0;
-      z-index: 12;
-      height: 52px;
-      padding: var(--safe-top) 16px 0;
+      z-index: 15;
+      min-height: 52px;
+      padding: calc(var(--safe-top) + 4px) 14px 4px;
       background: #fff;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: var(--text-light);
+      gap: 8px;
     }
 
-    .light-title {
-      font-size: 17px;
+    .page-heading {
+      font-size: 16.5px;
       font-weight: 800;
     }
 
-    .friend-card {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .friend-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .friend-avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .btn-follow-pill {
-      background: var(--tt-red);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .btn-follow-pill.muted-pill {
-      background: var(--surface);
-      color: var(--text-light);
-    }
-
-    /* صندوق الوارد (Inbox) */
-    .stories-row {
-      display: flex;
-      gap: 14px;
-      padding: 12px 16px;
-      overflow-x: auto;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .stories-row::-webkit-scrollbar { display: none; }
-
-    .story-bubble {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      min-width: 62px;
-      font-size: 11.5px;
-      cursor: pointer;
-    }
-
-    .story-circle {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      border: 2px solid #00c48c;
-      padding: 2px;
-      position: relative;
-      display: grid;
-      place-items: center;
-    }
-
-    .story-circle img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .story-create-badge {
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #25f4ee;
-      color: #000;
-      font-size: 14px;
-      font-weight: 900;
-      display: grid;
-      place-items: center;
-      border: 2px solid #fff;
-    }
-
-    .inbox-item {
+    .list-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 12px 16px;
       border-bottom: 1px solid var(--border);
-      cursor: pointer;
+      gap: 10px;
     }
 
-    .inbox-left {
+    .row-user {
       display: flex;
       align-items: center;
       gap: 12px;
       min-width: 0;
+      flex: 1;
     }
 
-    .inbox-icon-circle {
-      width: 48px;
-      height: 48px;
+    .av-50 {
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-size: 20px;
-      color: #fff;
+      object-fit: cover;
       flex-shrink: 0;
     }
 
-    .red-dot {
-      width: 8px;
-      height: 8px;
+    .online-dot {
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
-      background: var(--tt-red);
+      background: var(--green);
       display: inline-block;
+      margin-right: 4px;
     }
 
-    /* الملف الشخصي (Profile) */
-    .profile-top {
-      padding: calc(12px + var(--safe-top)) 16px 14px;
-      border-bottom: 1px solid var(--border);
+    .btn-red {
+      background: var(--tt-red);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
-    .profile-header-bar {
-      display: flex;
+    .btn-gray {
+      background: var(--surface);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 7px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .notif-pill {
+      position: relative;
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
+      gap: 4px;
     }
 
-    .profile-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .count-badge {
+      background: var(--tt-red);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 999px;
+      min-width: 18px;
       text-align: center;
     }
 
-    .profile-pic {
+    /* غرفة الدردشة الفردية المدمج بها الإشعارات والأصدقاء والاتصالات */
+    .chat-room {
+      display: flex;
+      flex-direction: column;
+      height: calc(100dvh - 58px - var(--safe-bottom));
+      background: #f7f8fa;
+    }
+
+    .chat-room-header {
+      background: #fff;
+      padding: calc(var(--safe-top) + 8px) 12px 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .chat-sub-strip {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11.5px;
+      flex-shrink: 0;
+    }
+
+    .chat-inline-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mini-action-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 8px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg-bubble-wrap {
+      display: flex;
+      flex-direction: column;
+      max-width: 80%;
+    }
+
+    .msg-bubble-wrap.me {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .msg-bubble-wrap.them {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .msg-bubble {
+      padding: 10px 13px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .msg-bubble-wrap.me .msg-bubble {
+      background: var(--tt-red);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-bubble-wrap.them .msg-bubble {
+      background: #fff;
+      color: var(--text-dark);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-media-img {
+      width: 190px;
+      height: 135px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .msg-shared-post {
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 10px;
+      padding: 8px;
+      margin-top: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .msg-meta {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .chat-toolbar {
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .chat-media-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+
+    .chat-media-bar::-webkit-scrollbar { display: none; }
+
+    .chat-tool-chip {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* الاستكشاف والملف الشخصي */
+    .search-box-wrap {
+      padding: 10px 14px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      padding-top: 2px;
+    }
+
+    .grid-item {
+      aspect-ratio: 3 / 4;
+      position: relative;
+      background: #14151a;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .grid-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .grid-play-txt {
+      position: absolute;
+      bottom: 5px;
+      right: 6px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+      direction: ltr;
+    }
+
+    .profile-head {
+      padding: calc(10px + var(--safe-top)) 16px 14px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-top-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .profile-avatar-xl {
       width: 88px;
       height: 88px;
       border-radius: 50%;
@@ -546,68 +742,32 @@
       margin-bottom: 8px;
     }
 
-    .profile-name {
-      font-size: 17px;
-      font-weight: 800;
-    }
-
-    .profile-handle {
-      font-size: 12.5px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    .profile-metrics {
+    .stats-strip {
       display: flex;
       justify-content: center;
       gap: 28px;
       margin: 14px 0;
     }
 
-    .metric-val {
+    .st-num {
       font-size: 16.5px;
       font-weight: 800;
       direction: ltr;
     }
 
-    .metric-lbl {
+    .st-lbl {
       font-size: 12px;
-      color: var(--muted);
-    }
-
-    .profile-btns {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
-    .p-btn {
-      border: none;
-      background: var(--surface);
-      color: var(--text-light);
-      font-size: 13.5px;
-      font-weight: 700;
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .p-btn.primary {
-      background: var(--tt-red);
-      color: #fff;
+      color: var(--text-muted);
     }
 
     .profile-bio {
       margin-top: 12px;
       font-size: 13px;
       line-height: 1.5;
-      color: var(--text-light);
       white-space: pre-line;
-      text-align: center;
     }
 
-    .profile-tabs {
+    .p-tabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       border-bottom: 1px solid var(--border);
@@ -616,15 +776,16 @@
     .p-tab {
       background: none;
       border: none;
-      padding: 12px 0;
-      font-size: 16px;
-      color: var(--muted);
+      padding: 11px 0;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text-muted);
       cursor: pointer;
       position: relative;
     }
 
     .p-tab.active {
-      color: var(--text-light);
+      color: var(--text-dark);
       font-weight: 800;
     }
 
@@ -632,111 +793,78 @@
       content: "";
       position: absolute;
       bottom: 0;
-      left: 25%;
-      right: 25%;
+      left: 22%;
+      right: 22%;
       height: 2.5px;
-      background: var(--text-light);
+      background: var(--text-dark);
     }
 
-    .video-grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-      padding-top: 2px;
-    }
-
-    .v-tile {
-      aspect-ratio: 3 / 4;
-      position: relative;
-      background: #1c1e26;
-      cursor: pointer;
-      overflow: hidden;
-    }
-
-    .v-tile img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .v-plays {
-      position: absolute;
-      bottom: 5px;
-      right: 6px;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
-      direction: ltr;
-    }
-
-    /* الشريط السفلي بأسلوب تيك توك */
-    .tt-bottom-nav {
+    /* الشريط السفلي النظيف (الرئيسية - + - الإشعارات - حسابي) بدون الأصدقاء والاتصالات والدردشات */
+    .bottom-nav {
       position: fixed;
       bottom: 0;
       width: 100%;
-      max-width: 450px;
-      height: calc(56px + var(--safe-bottom));
+      max-width: 440px;
+      height: calc(58px + var(--safe-bottom));
       padding-bottom: var(--safe-bottom);
-      background: var(--bg-dark);
-      color: #fff;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      background: #000000;
+      color: #ffffff;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       align-items: center;
       z-index: 25;
-      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     }
 
-    .tt-bottom-nav.light-nav {
+    .bottom-nav.light-nav {
       background: #ffffff;
-      color: var(--text-light);
+      color: var(--text-dark);
       border-top-color: var(--border);
     }
 
-    .tt-nav-btn {
+    .nav-item {
       background: none;
       border: none;
       color: inherit;
-      opacity: 0.6;
+      opacity: 0.65;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 2px;
       font-size: 10.5px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       position: relative;
+      height: 100%;
     }
 
-    .tt-nav-btn.active {
+    .nav-item.active {
       opacity: 1;
       font-weight: 800;
     }
 
-    .tt-create-box {
-      position: relative;
-      width: 44px;
-      height: 28px;
+    .plus-box {
+      width: 42px;
+      height: 27px;
       border-radius: 8px;
-      background: #fff;
-      color: #000;
+      background: #ffffff;
+      color: #000000;
       display: grid;
       place-items: center;
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 900;
       box-shadow: -3px 0 0 var(--tt-cyan), 3px 0 0 var(--tt-red);
     }
 
-    .tt-bottom-nav.light-nav .tt-create-box {
+    .bottom-nav.light-nav .plus-box {
       background: #161823;
-      color: #fff;
+      color: #ffffff;
     }
 
-    .nav-badge-num {
+    .nav-badge {
       position: absolute;
-      top: -3px;
+      top: 4px;
       left: 22%;
       background: var(--tt-red);
       color: #fff;
@@ -746,59 +874,7 @@
       border-radius: 999px;
     }
 
-    /* القائمة الجانبية والنافذة السفلية */
-    .drawer-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      display: none;
-      justify-content: flex-start;
-      align-items: stretch;
-      z-index: 50;
-    }
-
-    .drawer-overlay.open {
-      display: flex;
-    }
-
-    .side-drawer {
-      width: 82%;
-      max-width: 340px;
-      background: #fff;
-      color: var(--text-light);
-      height: 100%;
-      padding-top: calc(14px + var(--safe-top));
-      padding-bottom: calc(16px + var(--safe-bottom));
-      overflow-y: auto;
-    }
-
-    .drawer-group-title {
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--muted);
-      padding: 14px 18px 6px;
-    }
-
-    .drawer-row {
-      width: 100%;
-      border: none;
-      background: #fff;
-      color: var(--text-light);
-      padding: 13px 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 14.5px;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: right;
-    }
-
-    .drawer-row:hover {
-      background: var(--surface);
-    }
-
-    .modal-overlay {
+    .modal-backdrop {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.5);
@@ -808,24 +884,24 @@
       z-index: 60;
     }
 
-    .modal-overlay.open {
+    .modal-backdrop.open {
       display: flex;
     }
 
-    .modal-card {
+    .modal-sheet {
       width: 100%;
-      max-width: 450px;
-      max-height: 82dvh;
+      max-width: 440px;
+      max-height: 84dvh;
       background: #fff;
-      color: var(--text-light);
-      border-radius: 18px 18px 0 0;
+      color: var(--text-dark);
+      border-radius: 16px 16px 0 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
-    .modal-top {
-      padding: 14px 16px;
+    .modal-header {
+      padding: 13px 16px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -834,13 +910,12 @@
       font-size: 14.5px;
     }
 
-    .modal-content {
+    .modal-body {
       padding: 14px 16px;
       overflow-y: auto;
     }
 
-    /* تعليقات مطابقة لتيك توك */
-    .cmt-item {
+    .cmt-row {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
@@ -849,14 +924,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .cmt-left {
-      display: flex;
-      gap: 10px;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .cmt-avatar {
+    .cmt-av {
       width: 34px;
       height: 34px;
       border-radius: 50%;
@@ -864,85 +932,34 @@
       flex-shrink: 0;
     }
 
-    .cmt-user {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .cmt-text {
-      font-size: 13.5px;
-      color: var(--text-light);
-      margin-top: 2px;
-      line-height: 1.45;
-    }
-
-    .cmt-meta {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    .cmt-like-btn {
-      background: none;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      font-size: 11px;
-      color: var(--muted);
-      cursor: pointer;
-      padding: 2px 4px;
-    }
-
-    .cmt-like-btn.liked {
-      color: var(--tt-red);
-    }
-
-    /* نافذة المشاركة بأسلوب تيك توك */
     .share-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      padding: 6px 0 12px;
-      text-align: center;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      padding: 6px 0;
     }
 
-    .share-opt {
-      background: none;
-      border: none;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      font-size: 11.5px;
-      font-weight: 600;
-      color: var(--text-light);
+    .share-choice {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
     }
 
-    .share-circle {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      font-size: 20px;
-      color: #fff;
-    }
-
-    .m-input {
+    .field-inp {
       width: 100%;
-      border: 1px solid #d5d8e0;
+      border: 1px solid #d8dae2;
       border-radius: 10px;
       padding: 10px 12px;
       font-size: 14px;
-      margin-top: 8px;
-      font-family: inherit;
+      margin-top: 6px;
     }
 
-    .m-btn {
+    .primary-submit {
       width: 100%;
       background: var(--tt-red);
       color: #fff;
@@ -955,7 +972,7 @@
       cursor: pointer;
     }
 
-    .gw-row {
+    .gw-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
@@ -963,7 +980,7 @@
     }
 
     .gw-opt {
-      border: 1px solid #d5d8e0;
+      border: 1px solid #d8dae2;
       background: #fff;
       border-radius: 9px;
       padding: 9px;
@@ -980,7 +997,7 @@
 
     .toast {
       position: fixed;
-      bottom: calc(68px + var(--safe-bottom));
+      bottom: calc(70px + var(--safe-bottom));
       left: 50%;
       transform: translateX(-50%);
       background: rgba(22, 24, 35, 0.92);
@@ -1001,106 +1018,71 @@
   </style>
 </head>
 <body>
-  <div class="app-container">
-    <div class="scroll-viewport" id="viewport"></div>
+  <div class="app-shell">
+    <div class="main-viewport" id="viewport"></div>
 
-    <nav class="tt-bottom-nav" id="bottomNav">
-      <button class="tt-nav-btn active" data-nav="home" type="button">
-        <span>🏠</span>
-        <span>الصفحة الرئيسية</span>
+    <!-- الشريط السفلي بدون الأصدقاء والاتصالات والدردشات -->
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="nav-item active" data-page="home" type="button">
+        <span>الرئيسية</span>
       </button>
-      <button class="tt-nav-btn" data-nav="friends" type="button">
-        <span>👥</span>
-        <span>الأصدقاء</span>
+      <button class="nav-item" id="openUploadBtn" type="button">
+        <span class="plus-box">+</span>
       </button>
-      <button class="tt-nav-btn" id="createPostBtn" type="button">
-        <span class="tt-create-box">+</span>
+      <button class="nav-item" data-page="notifications" type="button">
+        <span class="nav-badge" id="notifBadge">2</span>
+        <span>الإشعارات</span>
       </button>
-      <button class="tt-nav-btn" data-nav="inbox" type="button">
-        <span class="nav-badge-num" id="inboxBadge">2</span>
-        <span>💬</span>
-        <span>صندوق الوارد</span>
-      </button>
-      <button class="tt-nav-btn" data-nav="profile" type="button">
-        <span>👤</span>
-        <span>الملف الشخصي</span>
+      <button class="nav-item" data-page="profile" type="button">
+        <span>حسابي</span>
       </button>
     </nav>
   </div>
 
-  <!-- قائمة الاختصارات الجانبية -->
-  <div class="drawer-overlay" id="drawerOverlay">
-    <aside class="side-drawer" id="sideDrawer">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:0 18px 8px;">
-        <strong>الاختصارات</strong>
-        <button class="tt-top-btn" style="color:#161823;" id="closeDrawerBtn" type="button">✕</button>
-      </div>
-
-      <div class="drawer-group-title">الأصول</div>
-      <button class="drawer-row" onclick="openWalletModal()" type="button">
-        <span>💳 الرصيد</span>
-        <span id="drawerCoinsTxt">500 عملة ‹</span>
-      </button>
-
-      <div class="drawer-group-title">الأدوات الشخصية</div>
-      <button class="drawer-row" onclick="toast('مركز الأنشطة')" type="button"><span>🕒 مركز الأنشطة</span><span>‹</span></button>
-      <button class="drawer-row" onclick="addOfflineVideo()" type="button"><span>☁️ فيديوهات دون اتصال بالإنترنت</span><span id="drawerOfflineTxt">3 ‹</span></button>
-      <button class="drawer-row" onclick="toast('رمز QR الخاص بك')" type="button"><span>🔳 رمز QR لديك</span><span>‹</span></button>
-      <button class="drawer-row" onclick="toast('DERT Minis')" type="button"><span>🧊 DERT Minis</span><span>‹</span></button>
-
-      <div class="drawer-group-title">أدوات الإبداع والأعمال</div>
-      <button class="drawer-row" onclick="toast('المجموعة التجارية')" type="button"><span>🛍️ المجموعة التجارية</span><span>‹</span></button>
-      <button class="drawer-row" onclick="toast('DERT Studio')" type="button"><span>👤✨ DERT Studio</span><span>‹</span></button>
-      <button class="drawer-row" onclick="addPromoCampaign()" type="button"><span>🔥 الترويج</span><span id="drawerPromoTxt">1 نشط ‹</span></button>
-
-      <div class="drawer-group-title">الإعدادات والخصوصية</div>
-      <button class="drawer-row" onclick="togglePrivateAccount()" type="button"><span>⚙️ الإعدادات والخصوصية</span><span id="drawerPrivTxt">عام ‹</span></button>
-    </aside>
-  </div>
-
-  <!-- نافذة منبثقة -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-card">
-      <div class="modal-top">
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-sheet">
+      <div class="modal-header">
         <span id="modalTitle"></span>
-        <button class="tt-top-btn" style="color:#161823;" id="closeModalBtn" type="button">✕</button>
+        <button class="btn-gray" style="padding:4px 10px;" id="closeModalBtn" type="button">إغلاق</button>
       </div>
-      <div class="modal-content" id="modalContent"></div>
+      <div class="modal-body" id="modalBody"></div>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-    const STORAGE_KEY = "dert_tiktok_exact_interactions_v2";
+    const STORAGE_KEY = "dert_tiktok_inline_chat_v6";
 
-    const initialState = {
-      nav: "home",
-      homeTab: "foryou",
-      profileTab: "videos",
-      profile: {
+    const defaultState = {
+      page: "home",
+      feedFilter: "foryou",
+      activeChatId: "u1",
+      profileFilter: "videos",
+      user: {
         name: "وسام | wessam",
         handle: "@w20xw",
         bio: "الرمادي\nأصنع لنفسك تاريخ و أجعل غيرك يتعلمة 🦅.\nDERT Creator",
-        avatar: "https://picsum.photos/200/200?random=101",
+        avatar: "https://picsum.photos/200/200?random=11",
         following: 85,
         followers: 14900,
         likes: 82900,
         coins: 500,
         grossCoins: 1000,
         gateway: "زين كاش",
-        offlineCount: 3,
-        promoCount: 1,
-        privateAcc: false
+        privateAcc: false,
+        twoFactor: true,
+        onlineStatusVisible: true
       },
       videos: [
         {
           id: "v1",
           author: "وسام | wessam",
           handle: "@w20xw",
-          avatar: "https://picsum.photos/200/200?random=101",
-          media: "https://picsum.photos/480/850?random=201",
-          caption: "محتوى جديد على DERT 🔥 #تيك_توك #DERT",
+          avatar: "https://picsum.photos/200/200?random=11",
+          videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
+          poster: "https://picsum.photos/480/850?random=51",
+          caption: "محتوى جديد على DERT #تيك_توك #DERT",
           sound: "الصوت الأصلي - w20xw",
           plays: "12.4K",
           likes: 14200,
@@ -1110,17 +1092,18 @@
           saved: false,
           following: true,
           comments: [
-            { id: "cm1", user: "علي رشيد", avatar: "https://picsum.photos/100/100?random=102", text: "رهيب جداً 👏", time: "منذ 2 س", likes: 48, liked: false },
-            { id: "cm2", user: "عبدالله آل فهد", avatar: "https://picsum.photos/100/100?random=103", text: "استمر يا بطل 🔥", time: "منذ 45 د", likes: 19, liked: true }
+            { id: "c1", user: "علي رشيد", avatar: "https://picsum.photos/100/100?random=12", text: "رهيب جداً", time: "منذ 2 س", likes: 48, liked: false },
+            { id: "c2", user: "عبدالله آل فهد", avatar: "https://picsum.photos/100/100?random=13", text: "استمر يا بطل", time: "منذ 45 د", likes: 19, liked: true }
           ]
         },
         {
           id: "v2",
           author: "علي رشيد",
           handle: "@ali_rasheed",
-          avatar: "https://picsum.photos/200/200?random=102",
-          media: "https://picsum.photos/480/850?random=202",
-          caption: "لقطات سريعة ومقاطع يومية ✨ #محتوى",
+          avatar: "https://picsum.photos/200/200?random=12",
+          videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4",
+          poster: "https://picsum.photos/480/850?random=52",
+          caption: "لقطات سريعة ومقاطع يومية #محتوى",
           sound: "موسيقى ترند - DERT",
           plays: "4226",
           likes: 3256,
@@ -1130,15 +1113,16 @@
           saved: true,
           following: false,
           comments: [
-            { id: "cm3", user: "وسام | wessam", avatar: "https://picsum.photos/100/100?random=101", text: "تصوير ومونتاج روعة", time: "منذ 1 س", likes: 12, liked: false }
+            { id: "c3", user: "وسام | wessam", avatar: "https://picsum.photos/100/100?random=11", text: "تصوير ومونتاج روعة", time: "منذ 1 س", likes: 12, liked: false }
           ]
         },
         {
           id: "v3",
           author: "عبدالله آل فهد",
           handle: "@abdullah_f",
-          avatar: "https://picsum.photos/200/200?random=103",
-          media: "https://picsum.photos/480/850?random=203",
+          avatar: "https://picsum.photos/200/200?random=13",
+          videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4",
+          poster: "https://picsum.photos/480/850?random=53",
           caption: "بث مباشر وتفاعل مستمر على DERT",
           sound: "بث مباشر - DERT Live",
           plays: "19.8K",
@@ -1149,23 +1133,52 @@
           saved: false,
           following: true,
           comments: [
-            { id: "cm4", user: "حساب تجريبي", avatar: "https://picsum.photos/100/100?random=104", text: "متابعينك من البداية 🔥", time: "الآن", likes: 7, liked: false }
+            { id: "c4", user: "متابع DERT", avatar: "https://picsum.photos/100/100?random=14", text: "متابعينك من البداية", time: "الآن", likes: 7, liked: false }
           ]
         }
       ],
-      inbox: [
-        { id: "i1", title: "النشاط والمتابعون الجدد", sub: "أعجب بالمقطع الخاص بك", time: "الآن", color: "#fe2c55", dot: true },
-        { id: "i2", title: "علي رشيد", sub: "شارك فيديو • منذ 3 س", time: "3 س", color: "#161823", avatar: "https://picsum.photos/100/100?random=102", dot: true },
-        { id: "i3", title: "إشعارات النظام", sub: "تم تفعيل المحفظة وتقسيم الأرباح 60% / 40%", time: "1 ي", color: "#0095f6", dot: false }
+      chats: [
+        {
+          id: "u1",
+          name: "علي رشيد",
+          handle: "@ali_rasheed",
+          avatar: "https://picsum.photos/100/100?random=12",
+          online: true,
+          lastSeen: "متصل الآن",
+          isFriend: true,
+          unread: 2,
+          messages: [
+            { id: "m1", from: "them", type: "text", text: "هلا وسام، شفت المقطع الجديد؟", time: "01:50 م", read: true },
+            { id: "m2", from: "them", type: "post", postId: "v1", text: "محتوى جديد على DERT", time: "01:51 م", read: true }
+          ]
+        },
+        {
+          id: "u2",
+          name: "عبدالله آل فهد",
+          handle: "@abdullah_f",
+          avatar: "https://picsum.photos/100/100?random=13",
+          online: false,
+          lastSeen: "آخر ظهور منذ 18 د",
+          isFriend: true,
+          unread: 1,
+          messages: [
+            { id: "m3", from: "them", type: "text", text: "جاهزين للبث المباشر اليوم؟", time: "12:15 م", read: true }
+          ]
+        }
+      ],
+      notifications: [
+        { id: "n1", text: "أعجب @ali_rasheed بمقطعك الجديد", time: "منذ 5 د", read: false },
+        { id: "n2", text: "علّق @abdullah_f: استمر يا بطل", time: "منذ 22 د", read: false },
+        { id: "n3", text: "بدأ @ali_rasheed بمتابعتك", time: "منذ 1 س", read: true }
       ]
     };
 
-    let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || JSON.parse(JSON.stringify(initialState));
-    let lastPopId = null;
+    let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || JSON.parse(JSON.stringify(defaultState));
+    let tapTimer = null;
 
     function save() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      syncDrawerLabels();
+      syncBadges();
     }
 
     function toast(msg) {
@@ -1180,256 +1193,562 @@
       return String(s ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
     }
 
-    // تنسيق الأرقام بأسلوب تيك توك (14.2K / 1.5M)
-    function formatTikTokCount(num) {
+    function fmtNum(num) {
       const n = Number(num) || 0;
       if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
       if (n >= 10000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
       return String(n);
     }
 
-    const svgIcons = {
-      heart: (liked) => `
-        <svg width="33" height="33" viewBox="0 0 24 24" fill="${liked ? "#fe2c55" : "#ffffff"}">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-        </svg>`,
-      comment: `
-        <svg width="31" height="31" viewBox="0 0 24 24" fill="#ffffff">
-          <path d="M12 3C6.48 3 2 6.92 2 11.75c0 2.66 1.37 5.04 3.53 6.64-.17 1.38-.78 2.68-1.45 3.47-.22.26-.04.66.3.63 1.72-.16 3.55-.84 4.74-1.69.92.22 1.89.35 2.88.35 5.52 0 10-3.92 10-8.75S17.52 3 12 3z"/>
-        </svg>`,
-      bookmark: (saved) => `
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="${saved ? "#face15" : "#ffffff"}">
-          <path d="M6 3h12a1 1 0 0 1 1 1v16.38a.6.6 0 0 1-.96.48L12 16.2l-6.04 4.66A.6.6 0 0 1 5 20.38V4a1 1 0 0 1 1-1z"/>
-        </svg>`,
-      share: `
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="#ffffff">
-          <path d="M14 5v4.06C7.95 9.65 4.28 13.45 3 19c2.52-3.48 6.13-5.12 11-5.12V18l7-6.5L14 5z"/>
-        </svg>`
-    };
+    function goPage(p) {
+      state.page = p;
+      save();
+      render();
+    }
 
-    function syncDrawerLabels() {
-      document.getElementById("drawerCoinsTxt").textContent = `${state.profile.coins} عملة ‹`;
-      document.getElementById("drawerOfflineTxt").textContent = `${state.profile.offlineCount} ‹`;
-      document.getElementById("drawerPromoTxt").textContent = `${state.profile.promoCount} نشط ‹`;
-      document.getElementById("drawerPrivTxt").textContent = `${state.profile.privateAcc ? "خاص" : "عام"} ‹`;
-      const unread = state.inbox.filter(x => x.dot).length;
-      const badge = document.getElementById("inboxBadge");
-      badge.textContent = unread;
-      badge.style.display = unread ? "inline-block" : "none";
+    function syncBadges() {
+      const unreadNotifs = state.notifications.filter(n => !n.read).length;
+      const badge = document.getElementById("notifBadge");
+      badge.textContent = unreadNotifs;
+      badge.style.display = unreadNotifs ? "inline-block" : "none";
     }
 
     function render() {
       const vp = document.getElementById("viewport");
-      const bNav = document.getElementById("bottomNav");
+      const nav = document.getElementById("bottomNav");
 
-      document.querySelectorAll(".tt-nav-btn[data-nav]").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.nav === state.nav);
+      const navMap = { home: "home", notifications: "notifications", profile: "profile", settings: "profile" };
+      document.querySelectorAll(".nav-item[data-page]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.page === navMap[state.page]);
       });
 
-      const isDark = state.nav === "home";
-      bNav.classList.toggle("light-nav", !isDark);
-      vp.classList.toggle("light-mode", !isDark);
+      const isHome = state.page === "home";
+      nav.classList.toggle("light-nav", !isHome);
+      vp.classList.toggle("light-mode", !isHome);
 
-      if (state.nav === "home") {
-        const list = state.homeTab === "following" ? state.videos.filter(v => v.following) : state.videos;
-        const items = list.length ? list : state.videos;
+      if (state.page === "home") {
+        let items = state.videos;
+        if (state.feedFilter === "following") {
+          const f = state.videos.filter(v => v.following);
+          if (f.length) items = f;
+        }
 
         vp.innerHTML = `
-          <div class="tt-top-bar">
-            <button class="tt-top-btn" onclick="openDrawer()" type="button">☰</button>
-            <div class="tt-top-tabs">
-              <button class="tt-tab-btn ${state.homeTab === "following" ? "active" : ""}" onclick="setHomeTab('following')" type="button">أتابعه</button>
-              <button class="tt-tab-btn ${state.homeTab === "foryou" ? "active" : ""}" onclick="setHomeTab('foryou')" type="button">لك</button>
+          <div class="tt-top">
+            <button class="live-btn" onclick="openLiveModal()" type="button">LIVE</button>
+            <div class="top-tabs">
+              <button class="top-tab ${state.feedFilter === "following" ? "active" : ""}" onclick="setFeedFilter('following')" type="button">أتابعه</button>
+              <button class="top-tab ${state.feedFilter === "foryou" ? "active" : ""}" onclick="setFeedFilter('foryou')" type="button">لك</button>
+              <button class="top-tab ${state.feedFilter === "posts" ? "active" : ""}" onclick="setFeedFilter('posts')" type="button">المنشورات</button>
+              <button class="top-tab ${state.feedFilter === "chats" ? "active" : ""}" onclick="openChatFromTop()" type="button">الدردشات</button>
+              <button class="top-tab ${state.feedFilter === "calls" ? "active" : ""}" onclick="openCallsFromTop()" type="button">الاتصالات</button>
             </div>
-            <button class="tt-top-btn" onclick="openSearchModal()" type="button">🔍</button>
+            <button class="search-icon-btn" onclick="goPage('explore')" type="button">⌕</button>
           </div>
           ${items.map(v => `
-            <section class="tt-feed-item" data-vid="${v.id}" ondblclick="handleDoubleTap(event, '${v.id}')">
-              <img class="tt-media-bg" src="${esc(v.media)}" alt="" />
+            <section class="tt-slide" data-vid="${v.id}" onclick="onSlideClick(event, '${v.id}')">
+              <video class="tt-video" src="${esc(v.videoUrl)}" poster="${esc(v.poster)}" loop muted playsinline preload="metadata"></video>
               <div class="tt-scrim"></div>
-              <div class="tt-overlay-row">
-                <div class="tt-meta-col">
-                  <div class="tt-author">${esc(v.handle)}</div>
-                  <div class="tt-caption">${esc(v.caption)}</div>
-                  <div class="tt-sound-line"><span>🎵</span><span>${esc(v.sound)}</span></div>
+              <div class="pause-mark">||</div>
+              <div class="seek-track"><div class="seek-fill"></div></div>
+
+              <div class="tt-overlay" onclick="event.stopPropagation()">
+                <div class="tt-caption-col">
+                  <div class="tt-handle-line">${esc(v.handle)}</div>
+                  <div class="tt-desc-line">${esc(v.caption)}</div>
+                  <div class="tt-sound-row"><span>صوت:</span><span>${esc(v.sound)}</span></div>
                 </div>
-                <div class="tt-rail">
-                  <div class="tt-avatar-wrap">
-                    <img class="tt-avatar-img" src="${esc(v.avatar)}" alt="" />
-                    <button class="tt-plus-badge ${v.following ? "followed" : ""}" onclick="toggleFollow('${v.id}')" type="button">
+
+                <div class="tt-action-rail">
+                  <div class="avatar-ring-box">
+                    <img src="${esc(v.avatar)}" alt="" />
+                    <button class="follow-plus-btn ${v.following ? "followed" : ""}" onclick="toggleFollow('${v.id}')" type="button">
                       ${v.following ? "✓" : "+"}
                     </button>
                   </div>
 
-                  <!-- زر اللايك وعدد اللايكات -->
-                  <button class="tt-rail-btn ${lastPopId === "like-" + v.id ? "pop" : ""}" onclick="toggleLike('${v.id}')" type="button">
-                    <span class="tt-rail-svg">${svgIcons.heart(v.liked)}</span>
-                    <span class="tt-rail-count">${formatTikTokCount(v.likes)}</span>
+                  <button class="rail-act-btn ${v.liked ? "liked" : ""}" onclick="toggleLike('${v.id}')" type="button">
+                    <span class="rail-act-label">${v.liked ? "أعجبني" : "إعجاب"}</span>
+                    <span class="rail-act-val">${fmtNum(v.likes)}</span>
                   </button>
 
-                  <!-- زر التعليقات وعدد التعليقات -->
-                  <button class="tt-rail-btn" onclick="openComments('${v.id}')" type="button">
-                    <span class="tt-rail-svg">${svgIcons.comment}</span>
-                    <span class="tt-rail-count">${formatTikTokCount(v.comments.length)}</span>
+                  <button class="rail-act-btn" onclick="openComments('${v.id}')" type="button">
+                    <span class="rail-act-label">تعليقات</span>
+                    <span class="rail-act-val">${fmtNum(v.comments.length)}</span>
                   </button>
 
-                  <!-- زر المفضلة / الحفظ وعدد الحفظ -->
-                  <button class="tt-rail-btn ${lastPopId === "save-" + v.id ? "pop" : ""}" onclick="toggleSave('${v.id}')" type="button">
-                    <span class="tt-rail-svg">${svgIcons.bookmark(v.saved)}</span>
-                    <span class="tt-rail-count">${formatTikTokCount(v.saves || 0)}</span>
+                  <button class="rail-act-btn ${v.saved ? "saved" : ""}" onclick="toggleSave('${v.id}')" type="button">
+                    <span class="rail-act-label">${v.saved ? "محفوظ" : "حفظ"}</span>
+                    <span class="rail-act-val">${fmtNum(v.saves || 0)}</span>
                   </button>
 
-                  <!-- زر المشاركة وعدد المشاركات -->
-                  <button class="tt-rail-btn" onclick="openShareSheet('${v.id}')" type="button">
-                    <span class="tt-rail-svg">${svgIcons.share}</span>
-                    <span class="tt-rail-count">${formatTikTokCount(v.shares || 0)}</span>
+                  <button class="rail-act-btn" onclick="openShareModal('${v.id}')" type="button">
+                    <span class="rail-act-label">مشاركة</span>
+                    <span class="rail-act-val">${fmtNum(v.shares || 0)}</span>
                   </button>
 
-                  <div class="tt-disc"><img src="${esc(v.avatar)}" alt="" /></div>
+                  <div class="vinyl-spin"><img src="${esc(v.avatar)}" alt="" /></div>
                 </div>
               </div>
             </section>
           `).join("")}
         `;
-        lastPopId = null;
-      } else if (state.nav === "friends") {
+        attachVideoObservers();
+      } else if (state.page === "chat") {
+        renderPersonChatRoom(vp);
+      } else if (state.page === "explore") {
         vp.innerHTML = `
-          <div class="light-header">
-            <span class="light-title">الأصدقاء</span>
-            <button class="tt-top-btn" style="color:#161823;" onclick="openSearchModal()" type="button">🔍</button>
+          <div class="page-header">
+            <span class="page-heading">البحث والاستكشاف</span>
+            <button class="btn-gray" onclick="goPage('home')" type="button">الرئيسية</button>
           </div>
-          ${state.videos.map(v => `
-            <div class="friend-card">
-              <div class="friend-left">
-                <img class="friend-avatar" src="${esc(v.avatar)}" alt="" />
-                <div>
-                  <div style="font-weight:700;font-size:14.5px;">${esc(v.author)}</div>
-                  <div style="font-size:12px;color:var(--muted);">${esc(v.handle)}</div>
-                </div>
+          <div class="search-box-wrap">
+            <input class="field-inp" style="margin-top:0;" id="exploreSearchInp" placeholder="ابحث عن الأشخاص أو الفيديوهات..." oninput="renderExploreList(this.value)" />
+          </div>
+          <div id="exploreResults"></div>
+        `;
+        renderExploreList("");
+      } else if (state.page === "notifications") {
+        vp.innerHTML = `
+          <div class="page-header">
+            <span class="page-heading">الإشعارات</span>
+            <button class="btn-gray" onclick="markAllNotifsRead()" type="button">تحديد كمقروء</button>
+          </div>
+          ${state.notifications.map(n => `
+            <div class="list-row" onclick="readNotif('${n.id}')" style="cursor:pointer;">
+              <div>
+                <div style="font-weight:700;font-size:13.5px;">${esc(n.text)}</div>
+                <div style="font-size:11.5px;color:var(--text-muted);margin-top:3px;">${esc(n.time)}</div>
               </div>
-              <button class="btn-follow-pill ${v.following ? "muted-pill" : ""}" onclick="toggleFollow('${v.id}')" type="button">
-                ${v.following ? "متابَع" : "متابعة"}
-              </button>
+              ${!n.read ? `<span class="count-badge">جديد</span>` : `<span style="font-size:11px;color:var(--text-muted);">مقروء</span>`}
             </div>
           `).join("")}
         `;
-      } else if (state.nav === "inbox") {
-        vp.innerHTML = `
-          <div class="light-header">
-            <span class="light-title">صندوق الوارد</span>
-            <button class="tt-top-btn" style="color:#161823;" onclick="openDrawer()" type="button">☰</button>
-          </div>
-          <div class="stories-row">
-            <div class="story-bubble" onclick="openCreateModal()">
-              <div class="story-circle">
-                <img src="${esc(state.profile.avatar)}" alt="" />
-                <span class="story-create-badge">+</span>
-              </div>
-              <span>إنشاء</span>
-            </div>
-            ${state.videos.map(v => `
-              <div class="story-bubble" onclick="toast('حالة ${esc(v.author)}')">
-                <div class="story-circle"><img src="${esc(v.avatar)}" alt="" /></div>
-                <span>${esc(v.author.split(" ")[0])}</span>
-              </div>
-            `).join("")}
-          </div>
-          ${state.inbox.map(item => `
-            <div class="inbox-item" onclick="openInboxItem('${item.id}')">
-              <div class="inbox-left">
-                ${item.avatar
-                  ? `<img class="friend-avatar" src="${esc(item.avatar)}" alt="" />`
-                  : `<div class="inbox-icon-circle" style="background:${item.color};">${item.id === "i1" ? "⚡" : "💳"}</div>`
-                }
-                <div>
-                  <div style="font-weight:700;font-size:14.5px;">${esc(item.title)}</div>
-                  <div style="font-size:12.5px;color:var(--muted);margin-top:2px;">${esc(item.sub)}</div>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);">
-                <span>${esc(item.time)}</span>
-                ${item.dot ? `<span class="red-dot"></span>` : ""}
-              </div>
-            </div>
-          `).join("")}
-        `;
-      } else if (state.nav === "profile") {
-        const gridList = state.profileTab === "saved"
+      } else if (state.page === "profile") {
+        const list = state.profileFilter === "saved"
           ? state.videos.filter(v => v.saved)
-          : state.profileTab === "liked"
+          : state.profileFilter === "liked"
             ? state.videos.filter(v => v.liked)
             : state.videos;
 
         vp.innerHTML = `
-          <div class="profile-top">
-            <div class="profile-header-bar">
-              <button class="tt-top-btn" style="color:#161823;" onclick="openDrawer()" type="button">☰</button>
-              <strong>${esc(state.profile.name)}</strong>
-              <button class="tt-top-btn" style="color:#161823;" onclick="openWalletModal()" type="button">💳</button>
+          <div class="profile-head">
+            <div class="profile-top-actions">
+              <button class="btn-gray" onclick="openChatFromTop()" type="button">الدردشة</button>
+              <strong>${esc(state.user.name)}</strong>
+              <button class="btn-gray" onclick="goPage('settings')" type="button">الإعدادات</button>
             </div>
-            <div class="profile-center">
-              <img class="profile-pic" src="${esc(state.profile.avatar)}" alt="" />
-              <div class="profile-name">${esc(state.profile.name)}</div>
-              <div class="profile-handle">${esc(state.profile.handle)}</div>
-              <div class="profile-metrics">
-                <div><div class="metric-val">${formatTikTokCount(state.profile.following)}</div><div class="metric-lbl">أتابعه</div></div>
-                <div><div class="metric-val">${formatTikTokCount(state.profile.followers)}</div><div class="metric-lbl">متابعون</div></div>
-                <div><div class="metric-val">${formatTikTokCount(state.profile.likes)}</div><div class="metric-lbl">تسجيلات الإعجاب</div></div>
-              </div>
-              <div class="profile-btns">
-                <button class="p-btn" onclick="openEditProfileModal()" type="button">تعديل الملف الشخصي</button>
-                <button class="p-btn primary" onclick="openWalletModal()" type="button">الرصيد (${state.profile.coins})</button>
-              </div>
-              <div class="profile-bio">${esc(state.profile.bio)}</div>
+            <img class="profile-avatar-xl" src="${esc(state.user.avatar)}" alt="" />
+            <div style="font-size:17px;font-weight:800;">${esc(state.user.name)}</div>
+            <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">${esc(state.user.handle)}</div>
+
+            <div class="stats-strip">
+              <div><div class="st-num">${fmtNum(state.user.following)}</div><div class="st-lbl">أتابعه</div></div>
+              <div><div class="st-num">${fmtNum(state.user.followers)}</div><div class="st-lbl">متابعون</div></div>
+              <div><div class="st-num">${fmtNum(state.user.likes)}</div><div class="st-lbl">تسجيلات الإعجاب</div></div>
             </div>
+
+            <div style="display:flex;gap:8px;justify-content:center;">
+              <button class="btn-gray" onclick="openEditProfile()" type="button">تعديل الملف الشخصي</button>
+              <button class="btn-red" onclick="openBalanceSheet()" type="button">الرصيد (${state.user.coins})</button>
+            </div>
+
+            <div class="profile-bio">${esc(state.user.bio)}</div>
           </div>
-          <div class="profile-tabs">
-            <button class="p-tab ${state.profileTab === "videos" ? "active" : ""}" onclick="setProfileTab('videos')" type="button">⋮⋮⋮</button>
-            <button class="p-tab ${state.profileTab === "saved" ? "active" : ""}" onclick="setProfileTab('saved')" type="button">🔖</button>
-            <button class="p-tab ${state.profileTab === "liked" ? "active" : ""}" onclick="setProfileTab('liked')" type="button">♥</button>
+
+          <div class="p-tabs">
+            <button class="p-tab ${state.profileFilter === "videos" ? "active" : ""}" onclick="setProfileFilter('videos')" type="button">الفيديوهات</button>
+            <button class="p-tab ${state.profileFilter === "saved" ? "active" : ""}" onclick="setProfileFilter('saved')" type="button">المحفوظات</button>
+            <button class="p-tab ${state.profileFilter === "liked" ? "active" : ""}" onclick="setProfileFilter('liked')" type="button">الإعجابات</button>
           </div>
-          <div class="video-grid-3">
-            ${gridList.map(v => `
-              <div class="v-tile" onclick="openComments('${v.id}')">
-                <img src="${esc(v.media)}" alt="" />
-                <span class="v-plays">▷ ${esc(v.plays)}</span>
+
+          <div class="grid-3">
+            ${list.map(v => `
+              <div class="grid-item" onclick="openComments('${v.id}')">
+                <img src="${esc(v.poster)}" alt="" />
+                <span class="grid-play-txt">${esc(v.plays)}</span>
               </div>
             `).join("")}
           </div>
         `;
+      } else if (state.page === "settings") {
+        vp.innerHTML = `
+          <div class="page-header">
+            <span class="page-heading">الإعدادات — الأمان والخصوصية</span>
+            <button class="btn-gray" onclick="goPage('profile')" type="button">رجوع</button>
+          </div>
+          <div class="list-row">
+            <div><div style="font-weight:700;">حساب خاص</div><div style="font-size:12px;color:var(--text-muted);">تقييد الحساب على المتابعين فقط</div></div>
+            <button class="btn-gray" onclick="togglePrivate()" type="button">${state.user.privateAcc ? "مفعّل" : "إيقاف"}</button>
+          </div>
+          <div class="list-row">
+            <div><div style="font-weight:700;">المصادقة الثنائية (2FA)</div><div style="font-size:12px;color:var(--text-muted);">حماية إضافية لتسجيل الدخول والأمان</div></div>
+            <button class="btn-gray" onclick="toggleTwoFactor()" type="button">${state.user.twoFactor ? "مفعّل" : "إيقاف"}</button>
+          </div>
+          <div class="list-row">
+            <div><div style="font-weight:700;">حالة الاتصال وآخر ظهور</div><div style="font-size:12px;color:var(--text-muted);">إظهار حالة الاتصال داخل الدردشة</div></div>
+            <button class="btn-gray" onclick="toggleOnlineVis()" type="button">${state.user.onlineStatusVisible ? "ظاهر" : "مخفي"}</button>
+          </div>
+          <div class="list-row">
+            <div><div style="font-weight:700;">الرصيد وبوابات الدفع</div><div style="font-size:12px;color:var(--text-muted);">60% للمذيع • 40% للمنصة</div></div>
+            <button class="btn-red" onclick="openBalanceSheet()" type="button">${state.user.coins} عملة</button>
+          </div>
+        `;
       }
 
-      syncDrawerLabels();
+      syncBadges();
     }
 
-    function setHomeTab(t) { state.homeTab = t; save(); render(); }
-    function setProfileTab(t) { state.profileTab = t; save(); render(); }
+    function renderPersonChatRoom(vp) {
+      const chat = state.chats.find(c => c.id === state.activeChatId) || state.chats[0];
+      if (!chat) return;
+      chat.unread = 0;
+      chat.messages.forEach(m => { if (m.from === "me") m.read = true; });
+      save();
 
-    // نقرتين متتاليتين على الفيديو تعطي لايك مثل تيك توك
-    function handleDoubleTap(e, id) {
-      const card = e.currentTarget;
-      const rect = card.getBoundingClientRect();
-      const heart = document.createElement("div");
-      heart.className = "double-tap-heart";
-      heart.style.left = (e.clientX - rect.left) + "px";
-      heart.style.top = (e.clientY - rect.top) + "px";
-      heart.innerHTML = `<svg width="96" height="96" viewBox="0 0 24 24" fill="#fe2c55"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
-      card.appendChild(heart);
-      setTimeout(() => heart.remove(), 780);
+      const unreadNotifs = state.notifications.filter(n => !n.read).length;
 
-      const v = state.videos.find(x => x.id === id);
-      if (v && !v.liked) {
-        toggleLike(id);
+      vp.className = "main-viewport light-mode";
+      vp.innerHTML = `
+        <div class="chat-room">
+          <div class="chat-room-header">
+            <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+              <button class="btn-gray" style="padding:5px 10px;" onclick="goPage('home')" type="button">رجوع</button>
+              <img src="${esc(chat.avatar)}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;" alt="" />
+              <div style="min-width:0;">
+                <div style="font-weight:800;font-size:14px;">${esc(chat.name)}</div>
+                <div style="font-size:11px;color:${chat.online ? "var(--green)" : "var(--text-muted)"};">
+                  ${state.user.onlineStatusVisible ? (chat.online ? "متصل الآن" : esc(chat.lastSeen)) : "الحالة مخفية"}
+                </div>
+              </div>
+            </div>
+            <button class="btn-gray" style="padding:5px 10px;" onclick="openSwitchPersonModal()" type="button">تبديل الشخص</button>
+          </div>
+
+          <!-- الأصدقاء والاتصالات والإشعارات مضافة داخل محادثة الشخص -->
+          <div class="chat-sub-strip">
+            <div class="chat-inline-actions">
+              <button class="mini-action-btn" onclick="togglePersonFriend('${chat.id}')" type="button">
+                <span>${chat.isFriend ? "صديق ✓" : "إضافة صديق"}</span>
+              </button>
+              <button class="mini-action-btn" onclick="startPersonCall('${esc(chat.name)}','صوتية')" type="button">
+                <span>اتصال صوتي</span>
+              </button>
+              <button class="mini-action-btn" onclick="startPersonCall('${esc(chat.name)}','مرئية')" type="button">
+                <span>اتصال مرئي</span>
+              </button>
+            </div>
+            <button class="mini-action-btn" onclick="openChatNotificationsSheet()" type="button">
+              <span>إشعارات</span>
+              <span class="count-badge">${unreadNotifs}</span>
+            </button>
+          </div>
+
+          <div class="chat-messages" id="chatMessagesBox">
+            ${chat.messages.map(m => {
+              const sharedVid = m.type === "post" ? state.videos.find(v => v.id === m.postId) : null;
+              return `
+                <div class="msg-bubble-wrap ${m.from}">
+                  <div class="msg-bubble">
+                    ${m.type === "image" ? `<div>صورة مرسلة</div><img class="msg-media-img" src="${esc(m.media)}" alt="" />` : ""}
+                    ${m.type === "video" ? `<div>فيديو مرسل (${esc(m.text)})</div>` : ""}
+                    ${m.type === "voice" ? `<div>رسالة صوتية (${esc(m.duration || "0:08")})</div>` : ""}
+                    ${m.type === "post" ? `
+                      <div>منشور مشارك:</div>
+                      <div class="msg-shared-post" onclick="goPage('home')">
+                        <strong>${esc(sharedVid ? sharedVid.handle : "@dert")}</strong> — ${esc(m.text)}
+                      </div>
+                    ` : ""}
+                    ${m.type === "text" ? esc(m.text) : ""}
+                  </div>
+                  <div class="msg-meta">
+                    <span>${esc(m.time)}</span>
+                    ${m.from === "me" ? `<span>${m.read ? "تمت القراءة" : "تم الإرسال"}</span>` : ""}
+                  </div>
+                </div>
+              `;
+            }).join("")}
+          </div>
+
+          <div class="chat-toolbar">
+            <div class="chat-media-bar">
+              <button class="chat-tool-chip" onclick="sendMediaMessage('image')" type="button">صورة</button>
+              <button class="chat-tool-chip" onclick="sendMediaMessage('video')" type="button">فيديو</button>
+              <button class="chat-tool-chip" onclick="sendMediaMessage('voice')" type="button">رسالة صوتية</button>
+              <button class="chat-tool-chip" onclick="openSharePostToChatModal('${chat.id}')" type="button">إرسال منشور / فيديو</button>
+            </div>
+            <div class="chat-input-row">
+              <input class="field-inp" style="margin-top:0;" id="chatMsgInput" placeholder="اكتب رسالة إلى ${esc(chat.name)}..." />
+              <button class="btn-red" style="padding:10px 15px;" onclick="sendTextMessage('${chat.id}')" type="button">إرسال</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const box = document.getElementById("chatMessagesBox");
+      if (box) box.scrollTop = box.scrollHeight;
+    }
+
+    function openChatFromTop() {
+      state.activeChatId = state.chats[0]?.id || "u1";
+      state.page = "chat";
+      save();
+      render();
+    }
+
+    function openCallsFromTop() {
+      const chat = state.chats.find(c => c.id === state.activeChatId) || state.chats[0];
+      state.page = "chat";
+      save();
+      render();
+      if (chat) startPersonCall(chat.name, "صوتية");
+    }
+
+    function openSwitchPersonModal() {
+      openSheet("اختر محادثة شخص", `
+        ${state.chats.map(c => `
+          <div class="list-row" style="cursor:pointer;" onclick="selectPersonChat('${c.id}')">
+            <div class="row-user">
+              <img class="av-50" src="${esc(c.avatar)}" alt="" />
+              <div>
+                <div style="font-weight:700;">${esc(c.name)} ${c.isFriend ? "• صديق" : ""}</div>
+                <div style="font-size:12px;color:var(--text-muted);">${c.online ? "متصل الآن" : esc(c.lastSeen)}</div>
+              </div>
+            </div>
+            <button class="btn-gray" type="button">فتح</button>
+          </div>
+        `).join("")}
+      `);
+    }
+
+    function selectPersonChat(id) {
+      state.activeChatId = id;
+      state.page = "chat";
+      save();
+      closeSheet();
+      render();
+    }
+
+    function togglePersonFriend(chatId) {
+      const chat = state.chats.find(c => c.id === chatId);
+      if (!chat) return;
+      chat.isFriend = !chat.isFriend;
+      state.notifications.unshift({
+        id: "n_" + Date.now(),
+        text: chat.isFriend ? `أصبحت صديقاً مع ${chat.name}` : `تمت إزالة ${chat.name} من الأصدقاء`,
+        time: "الآن",
+        read: false
+      });
+      save();
+      render();
+      toast(chat.isFriend ? "تمت الإضافة للأصدقاء" : "تمت الإزالة من الأصدقاء");
+    }
+
+    function startPersonCall(name, kind) {
+      state.notifications.unshift({
+        id: "n_" + Date.now(),
+        text: `مكالمة ${kind} مع ${name}`,
+        time: "الآن",
+        read: false
+      });
+      save();
+      syncBadges();
+      openSheet(`اتصال ${kind} — ${name}`, `
+        <div style="text-align:center;padding:12px 0;">
+          <div style="font-size:15px;font-weight:800;">اتصال ${kind} جاري مع ${esc(name)}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">تم تسجيل الإشعار داخل المحادثة</div>
+          <button class="primary-submit" onclick="closeSheet();toast('تم إنهاء الاتصال')" type="button">إنهاء الاتصال</button>
+        </div>
+      `);
+    }
+
+    function openChatNotificationsSheet() {
+      openSheet("إشعارات المحادثة والنشاط", `
+        ${state.notifications.map(n => `
+          <div class="list-row">
+            <div>
+              <div style="font-weight:700;font-size:13px;">${esc(n.text)}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${esc(n.time)}</div>
+            </div>
+            ${!n.read ? `<span class="count-badge">جديد</span>` : ""}
+          </div>
+        `).join("")}
+        <button class="primary-submit" onclick="markAllNotifsRead();openChatNotificationsSheet();" type="button">تحديد الكل كمقروء</button>
+      `);
+    }
+
+    function sendTextMessage(chatId) {
+      const inp = document.getElementById("chatMsgInput");
+      const txt = inp?.value.trim();
+      if (!txt) return;
+      const chat = state.chats.find(c => c.id === chatId);
+      if (!chat) return;
+      chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "text", text: txt, time: "الآن", read: true });
+      save();
+      renderPersonChatRoom(document.getElementById("viewport"));
+    }
+
+    function sendMediaMessage(kind) {
+      const chat = state.chats.find(c => c.id === state.activeChatId);
+      if (!chat) return;
+      const rnd = Math.floor(70 + Math.random() * 25);
+      if (kind === "image") {
+        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "image", media: `https://picsum.photos/400/300?random=${rnd}`, time: "الآن", read: true });
+      } else if (kind === "video") {
+        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "video", text: "مقطع فيديو 0:15", time: "الآن", read: true });
+      } else if (kind === "voice") {
+        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "voice", duration: "0:09", time: "الآن", read: true });
+      }
+      save();
+      renderPersonChatRoom(document.getElementById("viewport"));
+      toast("تم الإرسال");
+    }
+
+    function openSharePostToChatModal(chatId) {
+      openSheet("إرسال منشور أو فيديو للمحادثة", `
+        ${state.videos.map(v => `
+          <div class="list-row" style="cursor:pointer;" onclick="sendSharedPost('${chatId}','${v.id}')">
+            <div><strong>${esc(v.handle)}</strong> — ${esc(v.caption)}</div>
+            <button class="btn-red" type="button">إرسال</button>
+          </div>
+        `).join("")}
+      `);
+    }
+
+    function sendSharedPost(chatId, vidId) {
+      const chat = state.chats.find(c => c.id === chatId);
+      const vid = state.videos.find(v => v.id === vidId);
+      if (!chat || !vid) return;
+      chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "post", postId: vid.id, text: vid.caption, time: "الآن", read: true });
+      save();
+      closeSheet();
+      renderPersonChatRoom(document.getElementById("viewport"));
+      toast("تم إرسال المنشور في المحادثة");
+    }
+
+    function renderExploreList(q) {
+      const term = (q || "").trim().toLowerCase();
+      const matched = state.videos.filter(v => !term || v.author.toLowerCase().includes(term) || v.handle.toLowerCase().includes(term) || v.caption.toLowerCase().includes(term));
+      const box = document.getElementById("exploreResults");
+      if (!box) return;
+      box.innerHTML = `
+        <div style="padding:8px 16px;font-size:12px;font-weight:700;color:var(--text-muted);">الأشخاص</div>
+        ${matched.map(v => `
+          <div class="list-row">
+            <div class="row-user">
+              <img class="av-50" src="${esc(v.avatar)}" alt="" />
+              <div><div style="font-weight:700;">${esc(v.author)}</div><div style="font-size:12px;color:var(--text-muted);">${esc(v.handle)}</div></div>
+            </div>
+            <button class="btn-gray" onclick="openChatWithAuthor('${v.id}')" type="button">دردشة</button>
+          </div>
+        `).join("")}
+        <div style="padding:8px 16px;font-size:12px;font-weight:700;color:var(--text-muted);">الفيديوهات</div>
+        <div class="grid-3">
+          ${matched.map(v => `
+            <div class="grid-item" onclick="openComments('${v.id}')">
+              <img src="${esc(v.poster)}" alt="" />
+              <span class="grid-play-txt">${esc(v.plays)}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function openChatWithAuthor(vidId) {
+      const v = state.videos.find(x => x.id === vidId);
+      if (!v) return;
+      let existing = state.chats.find(c => c.handle === v.handle);
+      if (!existing) {
+        existing = {
+          id: "u_" + Date.now(),
+          name: v.author,
+          handle: v.handle,
+          avatar: v.avatar,
+          online: true,
+          lastSeen: "متصل الآن",
+          isFriend: v.following,
+          unread: 0,
+          messages: []
+        };
+        state.chats.unshift(existing);
+      }
+      selectPersonChat(existing.id);
+    }
+
+    function readNotif(id) {
+      const n = state.notifications.find(x => x.id === id);
+      if (n) { n.read = true; save(); render(); }
+    }
+
+    function markAllNotifsRead() {
+      state.notifications.forEach(n => n.read = true);
+      save(); render(); toast("تم تحديد الكل كمقروء");
+    }
+
+    function attachVideoObservers() {
+      const slides = document.querySelectorAll(".tt-slide");
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          const slide = entry.target;
+          const vid = slide.querySelector("video");
+          if (!vid) return;
+          if (entry.isIntersecting) {
+            slide.classList.remove("paused");
+            vid.play().catch(() => {});
+          } else {
+            vid.pause();
+            vid.currentTime = 0;
+          }
+        });
+      }, { threshold: 0.65 });
+
+      slides.forEach(slide => {
+        const vid = slide.querySelector("video");
+        const bar = slide.querySelector(".seek-fill");
+        if (vid && bar) {
+          vid.addEventListener("timeupdate", () => {
+            if (vid.duration) bar.style.width = ((vid.currentTime / vid.duration) * 100) + "%";
+          });
+        }
+        io.observe(slide);
+      });
+    }
+
+    function onSlideClick(e, id) {
+      const slide = e.currentTarget;
+      if (tapTimer) {
+        clearTimeout(tapTimer);
+        tapTimer = null;
+        const rect = slide.getBoundingClientRect();
+        const pop = document.createElement("div");
+        pop.className = "heart-pop";
+        pop.textContent = "♥";
+        pop.style.left = (e.clientX - rect.left) + "px";
+        pop.style.top = (e.clientY - rect.top) + "px";
+        slide.appendChild(pop);
+        setTimeout(() => pop.remove(), 750);
+        const v = state.videos.find(x => x.id === id);
+        if (v && !v.liked) toggleLike(id);
+      } else {
+        tapTimer = setTimeout(() => {
+          tapTimer = null;
+          const vid = slide.querySelector("video");
+          if (!vid) return;
+          if (vid.paused) { vid.play().catch(() => {}); slide.classList.remove("paused"); }
+          else { vid.pause(); slide.classList.add("paused"); }
+        }, 230);
       }
     }
+
+    function setFeedFilter(f) { state.feedFilter = f; save(); render(); }
+    function setProfileFilter(f) { state.profileFilter = f; save(); render(); }
 
     function toggleLike(id) {
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
       v.liked = !v.liked;
       v.likes += v.liked ? 1 : -1;
-      state.profile.likes += v.liked ? 1 : -1;
-      lastPopId = "like-" + id;
+      state.user.likes += v.liked ? 1 : -1;
       save(); render();
     }
 
@@ -1438,226 +1757,177 @@
       if (!v) return;
       v.saved = !v.saved;
       v.saves = (v.saves || 0) + (v.saved ? 1 : -1);
-      lastPopId = "save-" + id;
       save(); render();
-      toast(v.saved ? "تمت الإضافة إلى المفضلة" : "تمت الإزالة من المفضلة");
+      toast(v.saved ? "تمت الإضافة إلى المحفوظات" : "تمت الإزالة من المحفوظات");
     }
 
     function toggleFollow(id) {
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
       v.following = !v.following;
-      state.profile.following += v.following ? 1 : -1;
+      state.user.following += v.following ? 1 : -1;
       save(); render();
       toast(v.following ? "تمت المتابعة" : "تم إلغاء المتابعة");
     }
 
-    function openDrawer() { document.getElementById("drawerOverlay").classList.add("open"); }
-    function closeDrawer() { document.getElementById("drawerOverlay").classList.remove("open"); }
-
-    function openModal(title, html) {
+    function openSheet(title, html) {
       document.getElementById("modalTitle").textContent = title;
-      document.getElementById("modalContent").innerHTML = html;
-      document.getElementById("modalOverlay").classList.add("open");
+      document.getElementById("modalBody").innerHTML = html;
+      document.getElementById("modalBackdrop").classList.add("open");
     }
 
-    function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); }
+    function closeSheet() { document.getElementById("modalBackdrop").classList.remove("open"); }
 
-    // نافذة التعليقات الكاملة مع عداد التعليقات ولايك على كل تعليق
     function openComments(id) {
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
-      openModal(`${formatTikTokCount(v.comments.length)} تعليق`, `
+      openSheet(`${fmtNum(v.comments.length)} تعليق`, `
         <div>
-          ${v.comments.map(c => {
-            const cObj = typeof c === "string"
-              ? { id: "c_legacy", user: "مستخدم", avatar: state.profile.avatar, text: c, time: "الآن", likes: 0, liked: false }
-              : c;
-            return `
-              <div class="cmt-item">
-                <div class="cmt-left">
-                  <img class="cmt-avatar" src="${esc(cObj.avatar)}" alt="" />
-                  <div>
-                    <div class="cmt-user">${esc(cObj.user)}</div>
-                    <div class="cmt-text">${esc(cObj.text)}</div>
-                    <div class="cmt-meta">${esc(cObj.time)} • رد</div>
-                  </div>
+          ${v.comments.map(c => `
+            <div class="cmt-row">
+              <div style="display:flex;gap:10px;flex:1;min-width:0;">
+                <img class="cmt-av" src="${esc(c.avatar)}" alt="" />
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:var(--text-muted);">${esc(c.user)}</div>
+                  <div style="font-size:13.5px;margin-top:2px;">${esc(c.text)}</div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">${esc(c.time)} • رد</div>
                 </div>
-                <button class="cmt-like-btn ${cObj.liked ? "liked" : ""}" onclick="toggleCommentLike('${id}', '${cObj.id}')" type="button">
-                  <span>${cObj.liked ? "♥" : "♡"}</span>
-                  <span>${formatTikTokCount(cObj.likes || 0)}</span>
-                </button>
               </div>
-            `;
-          }).join("") || `<div style="text-align:center;color:var(--muted);padding:20px 0;">كن أول من يعلّق</div>`}
+              <button style="background:none;border:none;color:${c.liked ? "#fe2c55" : "#737685"};font-size:11.5px;font-weight:700;cursor:pointer;" onclick="likeComment('${id}','${c.id}')" type="button">
+                <div>${c.liked ? "إعجاب" : "أعجبني"}</div>
+                <div>${fmtNum(c.likes || 0)}</div>
+              </button>
+            </div>
+          `).join("") || `<div style="text-align:center;color:var(--text-muted);padding:18px 0;">كن أول من يعلّق</div>`}
         </div>
         <div style="display:flex;gap:8px;align-items:center;margin-top:10px;">
-          <input class="m-input" style="margin-top:0;" id="cInp" placeholder="إضافة تعليق..." />
-          <button class="m-btn" style="margin-top:0;width:auto;padding:10px 16px;" onclick="submitComment('${id}')" type="button">نشر</button>
+          <input class="field-inp" style="margin-top:0;" id="cmtInp" placeholder="إضافة تعليق..." />
+          <button class="primary-submit" style="margin-top:0;width:auto;padding:10px 16px;" onclick="submitCmt('${id}')" type="button">نشر</button>
         </div>
       `);
     }
 
-    function submitComment(id) {
-      const val = document.getElementById("cInp").value.trim();
+    function submitCmt(id) {
+      const val = document.getElementById("cmtInp").value.trim();
       if (!val) return;
       const v = state.videos.find(x => x.id === id);
-      v.comments.push({
-        id: "cm_" + Date.now(),
-        user: state.profile.name,
-        avatar: state.profile.avatar,
-        text: val,
-        time: "الآن",
-        likes: 0,
-        liked: false
-      });
+      v.comments.push({ id: "c_" + Date.now(), user: state.user.name, avatar: state.user.avatar, text: val, time: "الآن", likes: 0, liked: false });
       save(); render(); openComments(id);
     }
 
-    function toggleCommentLike(vidId, cmtId) {
+    function likeComment(vidId, cmtId) {
       const v = state.videos.find(x => x.id === vidId);
-      if (!v) return;
-      const c = v.comments.find(x => x.id === cmtId);
+      const c = v?.comments.find(x => x.id === cmtId);
       if (!c) return;
       c.liked = !c.liked;
       c.likes = (c.likes || 0) + (c.liked ? 1 : -1);
       save(); openComments(vidId);
     }
 
-    // نافذة المشاركة مع زيادة عدد المشاركات مباشرة
-    function openShareSheet(id) {
+    function openShareModal(id) {
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
-      openModal(`مشاركة (${formatTikTokCount(v.shares || 0)})`, `
+      openSheet(`مشاركة (${fmtNum(v.shares || 0)})`, `
         <div class="share-grid">
-          <button class="share-opt" onclick="confirmShare('${id}', 'إعادة النشر')" type="button">
-            <span class="share-circle" style="background:#face15;color:#000;">🔁</span>
-            <span>إعادة النشر</span>
-          </button>
-          <button class="share-opt" onclick="confirmShare('${id}', 'نسخ الرابط')" type="button">
-            <span class="share-circle" style="background:#25f4ee;color:#000;">🔗</span>
-            <span>نسخ الرابط</span>
-          </button>
-          <button class="share-opt" onclick="confirmShare('${id}', 'واتساب')" type="button">
-            <span class="share-circle" style="background:#25d366;">💬</span>
-            <span>واتساب</span>
-          </button>
-          <button class="share-opt" onclick="confirmShare('${id}', 'إرسال لصديق')" type="button">
-            <span class="share-circle" style="background:#fe2c55;">✈️</span>
-            <span>إرسال</span>
-          </button>
+          <button class="share-choice" onclick="confirmShare('${id}','إعادة النشر')" type="button">إعادة النشر</button>
+          <button class="share-choice" onclick="confirmShare('${id}','نسخ الرابط')" type="button">نسخ الرابط</button>
+          <button class="share-choice" onclick="shareToChatDirect('${id}')" type="button">إرسال في الدردشة</button>
+          <button class="share-choice" onclick="confirmShare('${id}','مشاركة خارجية')" type="button">مشاركة خارجية</button>
         </div>
       `);
+    }
+
+    function shareToChatDirect(vidId) {
+      const vid = state.videos.find(x => x.id === vidId);
+      const chat = state.chats[0];
+      if (vid && chat) {
+        chat.messages.push({ id: "m_" + Date.now(), from: "me", type: "post", postId: vid.id, text: vid.caption, time: "الآن", read: true });
+        vid.shares = (vid.shares || 0) + 1;
+        save(); closeSheet(); selectPersonChat(chat.id); toast("تم إرسال المقطع في الدردشة");
+      }
     }
 
     function confirmShare(id, method) {
       const v = state.videos.find(x => x.id === id);
       if (!v) return;
       v.shares = (v.shares || 0) + 1;
-      save(); render(); closeModal();
+      save(); render(); closeSheet();
       toast(`تمت المشاركة عبر ${method}`);
     }
 
-    function openWalletModal() {
-      closeDrawer();
+    function openBalanceSheet() {
       const gws = ["زين كاش", "سوبر كي", "زين العراق", "آسياسيل"];
-      const mShare = Math.round(state.profile.grossCoins * 0.6);
-      const pShare = Math.round(state.profile.grossCoins * 0.4);
-      openModal("الرصيد", `
-        <div style="font-size:24px;font-weight:800;">${state.profile.coins} عملة</div>
-        <div style="font-size:12.5px;color:var(--muted);margin-top:4px;">حصة المذيع (60%): ${mShare} • حصة المنصة (40%): ${pShare}</div>
-        <div class="gw-row">
-          ${gws.map(g => `<button class="gw-opt ${state.profile.gateway === g ? "active" : ""}" onclick="pickGateway('${g}')" type="button">${g}</button>`).join("")}
+      const mShare = Math.round(state.user.grossCoins * 0.6);
+      const pShare = Math.round(state.user.grossCoins * 0.4);
+      openSheet("الرصيد", `
+        <div style="font-size:24px;font-weight:800;">${state.user.coins} عملة</div>
+        <div style="font-size:12.5px;color:var(--text-muted);margin-top:4px;">حصة المذيع (60%): ${mShare} • حصة المنصة (40%): ${pShare}</div>
+        <div class="gw-grid">
+          ${gws.map(g => `<button class="gw-opt ${state.user.gateway === g ? "active" : ""}" onclick="pickGateway('${g}')" type="button">${g}</button>`).join("")}
         </div>
-        <button class="m-btn" onclick="topupWallet()" type="button">+ شحن 200 عملة (${esc(state.profile.gateway)})</button>
+        <button class="primary-submit" onclick="topupCoins()" type="button">+ شحن 200 عملة (${esc(state.user.gateway)})</button>
       `);
     }
 
-    function pickGateway(g) { state.profile.gateway = g; save(); openWalletModal(); }
-    function topupWallet() {
-      state.profile.coins += 200;
-      state.profile.grossCoins += 200;
-      save(); render(); openWalletModal(); toast("تم شحن 200 عملة");
+    function pickGateway(g) { state.user.gateway = g; save(); openBalanceSheet(); }
+    function topupCoins() {
+      state.user.coins += 200;
+      state.user.grossCoins += 200;
+      save(); render(); openBalanceSheet(); toast("تم شحن 200 عملة");
     }
 
-    function addOfflineVideo() { state.profile.offlineCount += 1; save(); toast("تم حفظ فيديو دون اتصال"); }
-    function addPromoCampaign() { state.profile.promoCount += 1; save(); toast("تمت إضافة حملة ترويج"); }
-    function togglePrivateAccount() { state.profile.privateAcc = !state.profile.privateAcc; save(); toast("تم تحديث الخصوصية"); }
+    function togglePrivate() { state.user.privateAcc = !state.user.privateAcc; save(); render(); toast("تم تحديث الخصوصية"); }
+    function toggleTwoFactor() { state.user.twoFactor = !state.user.twoFactor; save(); render(); toast("تم تحديث المصادقة الثنائية"); }
+    function toggleOnlineVis() { state.user.onlineStatusVisible = !state.user.onlineStatusVisible; save(); render(); toast("تم تحديث حالة الاتصال"); }
 
-    function openEditProfileModal() {
-      openModal("تعديل الملف الشخصي", `
-        <input class="m-input" id="eName" value="${esc(state.profile.name)}" placeholder="الاسم" />
-        <input class="m-input" id="eHandle" value="${esc(state.profile.handle)}" placeholder="@username" />
-        <textarea class="m-input" id="eBio" rows="3" placeholder="النبذة التعريفية">${esc(state.profile.bio)}</textarea>
-        <button class="m-btn" onclick="saveProfileEdits()" type="button">حفظ</button>
+    function openEditProfile() {
+      openSheet("تعديل الملف الشخصي", `
+        <input class="field-inp" id="pName" value="${esc(state.user.name)}" placeholder="الاسم" />
+        <input class="field-inp" id="pHandle" value="${esc(state.user.handle)}" placeholder="@username" />
+        <textarea class="field-inp" id="pBio" rows="3" placeholder="النبذة التعريفية">${esc(state.user.bio)}</textarea>
+        <button class="primary-submit" onclick="saveProfile()" type="button">حفظ</button>
       `);
     }
 
-    function saveProfileEdits() {
-      state.profile.name = document.getElementById("eName").value.trim() || state.profile.name;
-      const h = document.getElementById("eHandle").value.trim();
-      if (h) state.profile.handle = h.startsWith("@") ? h : "@" + h;
-      state.profile.bio = document.getElementById("eBio").value;
-      save(); render(); closeModal(); toast("تم الحفظ");
+    function saveProfile() {
+      state.user.name = document.getElementById("pName").value.trim() || state.user.name;
+      const h = document.getElementById("pHandle").value.trim();
+      if (h) state.user.handle = h.startsWith("@") ? h : "@" + h;
+      state.user.bio = document.getElementById("pBio").value;
+      save(); render(); closeSheet(); toast("تم الحفظ");
     }
 
-    function openInboxItem(id) {
-      const item = state.inbox.find(x => x.id === id);
-      if (!item) return;
-      item.dot = false;
-      save(); render();
-      openModal(item.title, `
-        <p style="font-size:14px;line-height:1.6;">${esc(item.sub)}</p>
-        <input class="m-input" id="rInp" placeholder="اكتب رداً..." />
-        <button class="m-btn" onclick="replyInbox('${id}')" type="button">إرسال</button>
-      `);
-    }
-
-    function replyInbox(id) {
-      const val = document.getElementById("rInp").value.trim();
-      if (!val) return;
-      const item = state.inbox.find(x => x.id === id);
-      item.sub = val;
-      item.time = "الآن";
-      save(); render(); openInboxItem(id);
-    }
-
-    function openSearchModal() {
-      openModal("بحث", `
-        <input class="m-input" id="sInp" placeholder="ابحث عن حساب أو هاشتاغ..." oninput="filterSearchResults(this.value)" />
-        <div id="sRes" style="margin-top:12px;"></div>
-      `);
-      filterSearchResults("");
-    }
-
-    function filterSearchResults(q) {
-      const term = q.trim().toLowerCase();
-      const res = state.videos.filter(v => !term || v.author.toLowerCase().includes(term) || v.caption.toLowerCase().includes(term));
-      document.getElementById("sRes").innerHTML = res.map(v => `
-        <div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:13.5px;cursor:pointer;" onclick="closeModal();openComments('${v.id}')">
-          <strong>${esc(v.author)}</strong> — ${esc(v.caption)}
+    function openLiveModal() {
+      openSheet("البث المباشر (LIVE)", `
+        <div style="text-align:center;padding:10px 0;">
+          <div style="font-size:15px;font-weight:800;">بدء بث مباشر على DERT</div>
+          <div style="font-size:12.5px;color:var(--text-muted);margin-top:6px;">نسبة أرباح الهدايا: 60% للمذيع • 40% للمنصة</div>
+          <button class="primary-submit" onclick="closeSheet();toast('تم بدء البث المباشر')" type="button">ابدأ البث المباشر</button>
         </div>
-      `).join("");
-    }
-
-    function openCreateModal() {
-      openModal("نشر فيديو جديد", `
-        <input class="m-input" id="vCap" placeholder="اكتب وصف المقطع والهاشتاغات..." />
-        <button class="m-btn" onclick="publishVideo()" type="button">نشر الآن</button>
       `);
     }
 
-    function publishVideo() {
-      const cap = document.getElementById("vCap").value.trim() || "مقطع جديد على DERT 🔥";
-      const rnd = Math.floor(210 + Math.random() * 70);
+    function openUploadModal() {
+      openSheet("نشر مقطع جديد", `
+        <input class="field-inp" id="capInp" placeholder="اكتب وصف المقطع..." />
+        <input class="field-inp" id="urlInp" placeholder="رابط فيديو MP4 مباشر (اختياري)" />
+        <button class="primary-submit" onclick="createNewVideo()" type="button">نشر الآن</button>
+      `);
+    }
+
+    function createNewVideo() {
+      const cap = document.getElementById("capInp").value.trim() || "مقطع جديد على DERT";
+      const customUrl = document.getElementById("urlInp").value.trim();
+      const rnd = Math.floor(60 + Math.random() * 40);
       state.videos.unshift({
         id: "v_" + Date.now(),
-        author: state.profile.name,
-        handle: state.profile.handle,
-        avatar: state.profile.avatar,
-        media: `https://picsum.photos/480/850?random=${rnd}`,
+        author: state.user.name,
+        handle: state.user.handle,
+        avatar: state.user.avatar,
+        videoUrl: customUrl || "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
+        poster: `https://picsum.photos/480/850?random=${rnd}`,
         caption: cap,
-        sound: "الصوت الأصلي - " + state.profile.handle,
+        sound: "الصوت الأصلي - " + state.user.handle,
         plays: "1",
         likes: 0,
         saves: 0,
@@ -1667,25 +1937,17 @@
         following: true,
         comments: []
       });
-      save(); closeModal(); state.nav = "home"; state.homeTab = "foryou"; render(); toast("تم نشر المقطع");
+      save(); closeSheet(); state.page = "home"; state.feedFilter = "foryou"; render(); toast("تم نشر المقطع");
     }
 
-    document.querySelectorAll(".tt-nav-btn[data-nav]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        state.nav = btn.dataset.nav;
-        save();
-        render();
-      });
+    document.querySelectorAll(".nav-item[data-page]").forEach(btn => {
+      btn.addEventListener("click", () => goPage(btn.dataset.page));
     });
 
-    document.getElementById("createPostBtn").addEventListener("click", openCreateModal);
-    document.getElementById("closeDrawerBtn").addEventListener("click", closeDrawer);
-    document.getElementById("drawerOverlay").addEventListener("click", e => {
-      if (e.target.id === "drawerOverlay") closeDrawer();
-    });
-    document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-    document.getElementById("modalOverlay").addEventListener("click", e => {
-      if (e.target.id === "modalOverlay") closeModal();
+    document.getElementById("openUploadBtn").addEventListener("click", openUploadModal);
+    document.getElementById("closeModalBtn").addEventListener("click", closeSheet);
+    document.getElementById("modalBackdrop").addEventListener("click", e => {
+      if (e.target.id === "modalBackdrop") closeSheet();
     });
 
     render();

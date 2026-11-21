@@ -1717,15 +1717,10 @@ function toggleBlockUser(userId,labelName="المستخدم"){
  else{set.add(key);blockedNow=true;addSecurityAlert(`تم حظر ${labelName}`)}
  saveSecurityConfig({blockedUsers:[...set]});return blockedNow;
 }
-function encryptText(plain){
- const str=String(plain||"");if(!str)return "";
- if(getSecurityConfig().encryptChats===false)return str;
- try{
-  const bytes=new TextEncoder().encode(str);let bin="";
-  bytes.forEach(b=>bin+=String.fromCharCode(b));
-  return "ENC1:"+btoa(bin);
- }catch(e){return str}
-}
+// Base64 is encoding, not encryption. New messages remain readable until real
+// end-to-end encryption and key exchange are implemented on the backend.
+function encryptText(plain){return String(plain||"")}
+// Backward compatibility: decode legacy ENC1 messages written by older builds.
 function decryptText(cipher){
  const str=String(cipher||"");if(!str.startsWith("ENC1:"))return str;
  try{
@@ -1763,19 +1758,7 @@ function lockAppNow(){
  el("unlockPinInput").value="";msg("appLockStatus","");el("appLockModal").classList.remove("hidden");
 }
 async function unlockWithBiometrics(){
- if(!window.PublicKeyCredential || !navigator.credentials){msg("appLockStatus","البصمة / Face ID غير مدعومة هنا، استخدم رمز PIN.");return}
- try{
-  msg("appLockStatus","جارٍ التحقق بالبصمة / Face ID...");
-  const cred=await navigator.credentials.create({
-   publicKey:{
-    challenge:crypto.getRandomValues(new Uint8Array(16)),rp:{name:"DERT"},
-    user:{id:crypto.getRandomValues(new Uint8Array(16)),name:currentProfile?.username||"dert_user",displayName:currentProfile?.full_name||"DERT User"},
-    pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
-    authenticatorSelection:{userVerification:"required"},timeout:20000
-   }
-  });
-  if(cred){el("appLockModal").classList.add("hidden");msg("appLockStatus","")}
- }catch(e){msg("appLockStatus","تعذر التحقق الحيوي أو تم الإلغاء، جرّب رمز PIN.")}
+ msg("appLockStatus","ميزة Face ID / البصمة غير مربوطة بتسجيل اعتماد آمن في هذا الإصدار. استخدم رمز PIN.");
 }
 el("unlockByPinBtn").onclick=()=>{
  const cfg=getSecurityConfig();const entered=el("unlockPinInput").value.trim();
@@ -1797,22 +1780,24 @@ async function openPrivacyCenter(){
  const alerts=Array.isArray(cfg.securityAlerts)?cfg.securityAlerts:[];
  body.innerHTML=`
   <div class="tt-sub-box">
-   <strong>🔐 قفل التطبيق والتحقق بخطوتين (2FA)</strong>
+   <strong>🔐 قفل التطبيق وإعدادات أمان الحساب</strong>
+   <p class="small">مهم: رمز PIN يُحفظ محلياً على هذا الجهاز. خيار 2FA والبصمة غير مفعّلين فعلياً بعد، فلا تعتمد عليهما لحماية الحساب.</p>
    <label class="tt-switch-label" style="margin-top:8px"><span>تفعيل قفل التطبيق (بصمة / Face ID / PIN)</span><input type="checkbox" id="secAppLockChk" ${cfg.appLockEnabled?"checked":""}></label>
    <label class="tt-switch-label" style="margin-top:8px"><span>دعم المصادقة الحيوية (بصمة / Face ID)</span><input type="checkbox" id="secBioChk" ${cfg.biometricEnabled?"checked":""}></label>
    <input id="secPinInput" type="password" inputmode="numeric" maxlength="8" placeholder="تعيين رمز القفل السريع (4-8 أرقام)" value="${cfg.pinCode||""}" dir="ltr">
-   <label class="tt-switch-label" style="margin-top:8px"><span>تفعيل التحقق بخطوتين (2FA)</span><input type="checkbox" id="sec2faChk" ${cfg.twoFactorEnabled?"checked":""}></label>
+   <label class="tt-switch-label" style="margin-top:8px"><span>تفضيل تفعيل 2FA لاحقاً (غير مطبق حالياً)</span><input type="checkbox" id="sec2faChk" ${cfg.twoFactorEnabled?"checked":""}></label>
    <button type="button" class="green full" id="saveLock2faBtn" style="margin-top:8px">حفظ إعدادات القفل و 2FA</button>
    <button type="button" class="gray full" onclick="lockAppNow()" style="margin-top:6px">اختبار قفل التطبيق الآن</button>
   </div>
   <div class="tt-sub-box">
-   <strong>💬 تشفير المحادثات وحماية المحتوى الحساس</strong>
-   <label class="tt-switch-label" style="margin-top:8px"><span>تشفير المحادثات بين المستخدمين</span><input type="checkbox" id="secEncChk" ${cfg.encryptChats!==false?"checked":""}></label>
+   <strong>💬 حماية المحتوى والمحادثات</strong>
+   <p class="small">المحادثات ليست مشفّرة من طرف إلى طرف حالياً. لا ترسل كلمات مرور أو معلومات شديدة الحساسية داخل الدردشة.</p>
    <label class="tt-switch-label" style="margin-top:8px"><span>حماية الصور والملفات الخاصة</span><input type="checkbox" id="secMediaChk" ${cfg.protectMedia!==false?"checked":""}></label>
-   <label class="tt-switch-label" style="margin-top:8px"><span>منع تصوير الشاشة / إخفاء الشاشة عند تبديل النوافذ</span><input type="checkbox" id="secShotChk" ${cfg.blockScreenshots!==false?"checked":""}></label>
+   <label class="tt-switch-label" style="margin-top:8px"><span>إخفاء المحتوى عند مغادرة التطبيق (لا يمنع تصوير الشاشة)</span><input type="checkbox" id="secShotChk" ${cfg.blockScreenshots!==false?"checked":""}></label>
   </div>
   <div class="tt-sub-box">
-   <strong>👁️ الخصوصية والظهور والمراسلات</strong>
+   <strong>👁️ تفضيلات الخصوصية (محلية وغير مفروضة على الخادم بعد)</strong>
+   <p class="small">تغييرات من يستطيع مشاهدة ملفك أو مراسلتك تُحفظ كتفضيلات على جهازك فقط، ولا تضمن منع الوصول من قاعدة البيانات حالياً.</p>
    <div class="tt-opt-row" style="margin-top:8px"><span>من يشاهد الملف الشخصي</span><select id="secProfileVisSel"><option value="public" ${cfg.profileVisibility==="public"?"selected":""}>الجميع</option><option value="followers" ${cfg.profileVisibility==="followers"?"selected":""}>المتابعون</option><option value="private" ${cfg.profileVisibility==="private"?"selected":""}>أنا فقط</option></select></div>
    <div class="tt-opt-row" style="margin-top:8px"><span>من يستطيع مراسلتي</span><select id="secMsgPermSel"><option value="everyone" ${cfg.messagePermission==="everyone"?"selected":""}>الجميع</option><option value="followers" ${cfg.messagePermission==="followers"?"selected":""}>المتابعون فقط</option><option value="nobody" ${cfg.messagePermission==="nobody"?"selected":""}>لا أحد</option></select></div>
    <label class="tt-switch-label" style="margin-top:8px"><span>إخفاء حالة الاتصال</span><input type="checkbox" id="secHideOnlineChk" ${cfg.hideOnlineStatus?"checked":""}></label>
@@ -1824,7 +1809,7 @@ async function openPrivacyCenter(){
    <div style="margin-top:6px">${blockedList.length?blockedList.map(uid=>{const p=blockedProfiles.find(x=>x.id===uid);const label=p?`${p.full_name||p.username} (@${p.username||uid.slice(0,6)})`:uid;return `<div class="item" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="small">${label}</span><button type="button" class="gray" style="padding:5px 10px;font-size:11px" data-unblock="${uid}">إلغاء الحظر</button></div>`}).join(""):`<div class="small">لا يوجد مستخدمون محظورون</div>`}</div>
   </div>
   <div class="tt-sub-box">
-   <strong>📱 الأجهزة المتصلة وتنبيهات الأمان</strong>
+   <strong>📱 سجل الأجهزة والتنبيهات (محفوظ محلياً على هذا الجهاز)</strong>
    <div style="margin-top:6px">${devices.length?devices.map(d=>`<div class="item small"><strong>${d.label}</strong><div>آخر نشاط: ${d.lastActive}</div></div>`).join(""):`<div class="small">جهازك الحالي نشط</div>`}</div>
    <button type="button" class="red full" id="signOutAllDevicesBtn" style="margin-top:8px">تسجيل الخروج من جميع الأجهزة</button>
    <div style="margin-top:10px"><strong class="small">سجل التنبيهات الأمنية:</strong>${alerts.length?alerts.map(a=>`<div class="item small">${a}</div>`).join(""):`<div class="small">لا توجد تنبيهات أمنية بعد</div>`}</div>
@@ -1851,8 +1836,8 @@ async function openPrivacyCenter(){
   saveSecurityConfig({appLockEnabled:appLock,biometricEnabled:el("secBioChk").checked,pinCode:pin,twoFactorEnabled:el("sec2faChk").checked});
   addSecurityAlert("تم تحديث إعدادات القفل والتحقق بخطوتين");alert("تم حفظ إعدادات القفل و 2FA ✓");
  };
- const syncShield=()=>saveSecurityConfig({encryptChats:el("secEncChk").checked,protectMedia:el("secMediaChk").checked,blockScreenshots:el("secShotChk").checked});
- el("secEncChk").onchange=syncShield;el("secMediaChk").onchange=syncShield;el("secShotChk").onchange=syncShield;
+ const syncShield=()=>saveSecurityConfig({protectMedia:el("secMediaChk").checked,blockScreenshots:el("secShotChk").checked});
+ el("secMediaChk").onchange=syncShield;el("secShotChk").onchange=syncShield;
  el("savePrivacyPrefsBtn").onclick=()=>{
   const hideOn=el("secHideOnlineChk").checked;
   saveSecurityConfig({profileVisibility:el("secProfileVisSel").value,messagePermission:el("secMsgPermSel").value,hideOnlineStatus:hideOn,hideLastSeen:el("secHideSeenChk").checked});
@@ -1907,6 +1892,7 @@ function openAddStoryModal(){
  if(!currentUser)return;
  el("storyModalTitle").textContent="إضافة حالة أو قصة يومية";
  el("storyModalBody").innerHTML=`
+  <p class="small">ملاحظة: القصص تُحفظ محلياً على هذا الجهاز حالياً، ولا تظهر تلقائياً لمستخدمي الأجهزة الأخرى.</p>
   <textarea id="storyTextInput" placeholder="اكتب نص حالتك أو قصتك اليومية..."></textarea>
   <input id="storyImageFile" type="file" accept="image/*,video/*">
   <button type="button" class="green full" id="publishStoryBtn">نشر القصة</button>
@@ -1945,6 +1931,8 @@ async function initiateCall(peerId,peerName="مستخدم",peerAvatar=null,withV
  if(!currentUser || !peerId){alert("حدد المستخدم أولاً لبدء الاتصال.");return}
  if(peerId===currentUser.id){alert("لا يمكنك الاتصال بنفسك.");return}
  if(isUserBlocked(peerId)){alert("هذا المستخدم محظور.");return}
+ alert("الاتصال المباشر غير مكتمل بعد. سجل المكالمات ظاهر، لكن يلزم إعداد WebRTC ونظام تبادل الإشارات حتى يسمعك أو يراك الطرف الآخر. لم نبدأ اتصالاً وهمياً.");
+ return;
 
  isIncomingRinging=false;
  callMuted=false;callCamOff=false;callSeconds=0;
@@ -2035,6 +2023,8 @@ async function handleIncomingCallRecord(callRow){
 }
 
 el("acceptIncomingCallBtn").onclick=async()=>{
+ alert("ميزة الصوت والفيديو بين الطرفين غير مكتملة بعد. لا تضغط ردّاً على أنها مكالمة حقيقية.");
+ return;
  isIncomingRinging=false;
  el("incomingCallControls").classList.add("hidden");
  el("activeCallControls").classList.remove("hidden");
@@ -2332,7 +2322,7 @@ async function openLiveRoom(){
  const st=getDertState();const dbBal=await fetchWalletBalance(currentUser.id);
  body.innerHTML=`
   <div class="tt-live-stage">
-   <div class="tt-live-screen" id="liveScreenBox"><span class="tt-live-badge-top">● LIVE مباشر</span><strong id="liveRoomHeading">بث DERT المباشر</strong><div class="small" style="margin-top:4px;color:#d6d9e2">60% صاحب البث • 40% أرباحك</div></div>
+   <div class="tt-live-screen" id="liveScreenBox"><span class="tt-live-badge-top">● معاينة LIVE</span><strong id="liveRoomHeading">معاينة كاميرتك على هذا الجهاز</strong><div class="small" style="margin-top:4px;color:#d6d9e2">هذا الإصدار لا يرسل الفيديو أو التعليقات إلى مشاهدين آخرين بعد</div></div>
    <div class="tt-split-summary">
     <div class="tt-split-box"><strong id="liveStreamerEarned">${dbBal || Number(st.streamerBalance||0)}</strong><span>رصيدك / حصة البث (60%)</span></div>
     <div class="tt-split-box"><strong id="liveOwnerEarned">${Number(st.ownerProfit||0)}</strong><span>أرباحك أنت (40%)</span></div>
@@ -2359,6 +2349,8 @@ async function openLiveRoom(){
  el("sendLiveMsgBtn").onclick=()=>{const inp=el("liveMsgInput");const t=inp.value.trim();if(!t)return;liveChatMessages.push(`${currentProfile?.full_name||currentProfile?.username||"أنت"}: ${t}`);inp.value="";renderLiveChat()};
 }
 async function sendLiveGift(gift,amount=10){
+ alert("الهدايا والمدفوعات المباشرة غير مفعّلة بأمان بعد. لم يتم خصم أو إضافة أي رصيد.");
+ return;
  const split=await processSupportSplit(amount,gift,currentUser?.id||ADMIN_ID);if(!split)return;
  const sender=currentProfile?.full_name||currentProfile?.username||"أنت";
  liveChatMessages.push(`🎁 دعم ${gift} (${split.total}) من ${sender} ⬅️ صاحب البث: ${split.streamerCut} (60%) | أرباحك: ${split.ownerCut} (40%)`);
